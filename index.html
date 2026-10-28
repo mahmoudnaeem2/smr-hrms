@@ -351,8 +351,15 @@ html[data-comfort=dark] .b.p{background:#2a7bd1;color:#fff}
 #gate .err{color:#b3261e;min-height:18px;font-size:13px;text-align:left;margin-top:6px}#gate .lnk{margin-top:8px;display:block}.gnote{font-size:12px;opacity:.8;margin-top:12px;text-transform:none;letter-spacing:0;font-weight:400}
 #gate .gdemo{margin-top:16px;text-align:left;border-top:1px solid var(--bd);padding-top:12px}#gate .gdemo summary{cursor:pointer;font-size:13px;color:var(--brand,#0460B5)}
 .seg[aria-label="Data source"]{display:none}
+#esbar{color:#fff}#esbar .mu{color:rgba(255,255,255,.88)!important}#esbar b{color:#fff}#esbar .b{background:#fff;color:#0460B5;border-color:#fff}
+.act .b{flex:none;width:auto}.act{gap:10px}
+.g .b[type=submit],.g button[type=submit]{white-space:normal;height:auto;min-height:40px;padding:8px 16px;line-height:1.25}
+.acts{display:flex;gap:6px;flex-wrap:wrap;min-width:210px;max-width:300px}
+.credl{display:grid;gap:10px;margin:12px 0}.cred b{display:block;margin-bottom:8px;font-size:15px}
+.cr{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--bd)}.cr span{font-size:12px;color:var(--mu,#44546f);text-transform:uppercase;letter-spacing:.04em}.cr code{font-size:14px;overflow-wrap:anywhere;text-align:right}
+.pbody .act{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}.pbody .act>span{flex:1;min-width:0}.pbody .act .b{flex:none}
 </style></head><body>
-<div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><div id="gform"></div><div hidden><select id="grole"></select><button id="gok" type="button"></button></div></div></div>
+<div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
 <aside id="side" aria-label="Main navigation"><div class="brand"><img class="slogo" alt="SMR – savills management resources"><div class="prod">HRMS &amp; Payroll<small>Egypt</small></div></div><nav id="nav"></nav>
 <div class="side-u"><div class="me"><i class="av" id="me">HR</i><select id="role" aria-label="Preview as role"></select></div></div><div class="side-f"><button class="nav" data-x="collapse" title="Collapse menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="lb">Collapse menu</span></button></div></aside>
@@ -579,7 +586,7 @@ const tick=()=>{const c=$("#clk");if(c)c.textContent=new Date().toLocaleTimeStri
 function work(){
  const all=allEmps().filter(e=>inScope(e)&&e.status!=="Terminated");
  if(!all.length)return`<div class="card"><div class="empty">No employees yet. Add employees in the directory, or switch to Sample data.</div></div>`;
- if(window.ESES)WSNO=ESES.no;if(!all.some(e=>e.no===WSNO))WSNO=all[0].no;
+ if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!all.some(e=>e.no===WSNO))WSNO=all[0].no;
  const e=all.find(x=>x.no===WSNO),b=balances(e),T=iso(T0),pu=PUNCH[e.no+"|"+T]||[],open=pu.length%2===1,wk=isWk(T0);
  let mins=0;for(let i=0;i<pu.length;i+=2){const a=new Date(pu[i]),z=pu[i+1]?new Date(pu[i+1]):new Date();mins+=Math.max(0,(z-a)/6e4)}
  let lateTxt="";if(pu.length&&!wk){const f=new Date(pu[0]),st=new Date(T0);st.setHours(9,0,0,0);const lm=Math.round((f-st)/6e4);lateTxt=lm>15?`<span class="badge s-wn">Arrived ${lm} min after the 09:00 start (grace 15 min)</span>`:`<span class="badge s-ok">On time</span>`}
@@ -695,7 +702,7 @@ const PACT={dash:()=>`${canSee("appr")?`<button class="b" data-go="appr">${ic("a
 function draw(){if(!canSee(page))page=homeFor(role);document.body.classList.toggle("pdash",page==="dash");const pg=PAGES[page];$("#title").textContent=pg.title;$("#desc").textContent=pg.desc;nav();
  $("#crumb").innerHTML=`<b>SMR HRMS &amp; Payroll</b><span>· Savills Management Resources Egypt</span>`;$("#pact").innerHTML=PACT[page]?PACT[page]():"";trackNav();
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
- $("#me").textContent=ini(role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
+ $("#me").textContent=ini(typeof SSES!=="undefined"&&SSES?SSES.name:typeof ESES!=="undefined"&&ESES?(empBy(ESES.no)||{name:role}).name:role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
  $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span><span class="mu">Prototype: data and roles stay in this browser.</span>`;
  try{applyMoves()}catch(_){}STD={};STDN=0;$("#view").innerHTML=pg.fn();linkify($("#view"));injectXl();esUI();palUI();relUI();cmfUI();wire();updBell()}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-go]");if(t)go(t.dataset.go)});
@@ -1344,7 +1351,7 @@ function notif(){const R2=db("nread",{}),items=[],ap=apprItems().filter(i=>!i.fi
 ACTS.nread=k=>{db("nread",{})[k]=1;sv("nread");draw()};
 ACTS.nall=()=>{const o=db("nread",{});document.querySelectorAll("[data-act^='nread:']").forEach(b=>{o[b.dataset.act.slice(6)]=1});sv("nread");draw()};
 reg("notif","Notifications","Items that need your attention, shown once each.",A("HRD","HRS","PAY","FIN","DM","EMP","ADM"),notif);
-const USR=()=>db("users",Object.values(R).map((r,i)=>({id:"u"+i,name:"Demo "+r,role:r,active:true,email:""})),false);
+const USR=()=>{const L=db("users",[],false);for(let i=L.length-1;i>=0;i--)if(/^u\d$/.test(L[i].id)&&/^Demo /.test(L[i].name))L.splice(i,1);return L};
 function users(){const can=[R.ADM,R.HRD].includes(role);
  return`${note("<b>Prototype:</b> these are demo accounts used by the role preview. Real sign-in, passwords, two-step verification and session control need a backend.","sm")}${tbl(["Account","Role","Status",can?"Actions":""],USR().map(u=>[esc(u.name),esc(u.role),u.active?bd("Active","s-ok"):bd("Disabled","s-mu"),can?`<button class="b" data-act="utog:${u.id}">${u.active?"Disable":"Enable"}</button> <button class="b" data-act="urole:${u.id}">Change role</button>`:""]))}`}
 ACTS.utog=id=>ask("Change the status of this account?","Confirm",(t)=>{const u=USR().find(x=>x.id===id);if(!u||![R.ADM,R.HRD].includes(role))return;if(u.role===R.ADM&&u.active&&USR().filter(x=>x.role===R.ADM&&x.active).length<2)return toast("Keep at least one active administrator.");u.active=!u.active;sv("users",false);audit("User "+(u.active?"enabled":"disabled"),u.name+": "+t);draw()},{reason:1});
@@ -1756,19 +1763,18 @@ const slugN=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");
 function empUsers(){const o={},used={};allEmps().slice().sort((a,b)=>a.no<b.no?-1:1).forEach(e=>{const w=String(e.name||"").trim().split(/\s+/).filter(Boolean),base=(w.length>1?slugN(w[0])+"."+slugN(w[w.length-1]):slugN(w[0]))||slugN(e.no);let u=base,i=1;while(used[u])u=base+(++i);used[u]=1;o[e.no]=u});return o}
 const unameOf=no=>empUsers()[no]||no;
 let LASTCRED=[];
-function showCred(list){LASTCRED=list;$("#dt").textContent="Sign-in details";$("#dd").textContent="Share each temporary password privately. It is shown only now and must be changed at first sign-in.";
- $("#db").innerHTML=`<div class="bar"><button class="b p" data-act="credxl">Export Excel</button><button class="b" data-act="credcp">Copy for Excel</button></div>${tbl(["No.","Name","Username","Temporary password"],list.map(x=>[esc(x.no),esc(x.name),`<code>${esc(unameOf(x.no))}</code>`,`<code>${esc(x.pw)}</code>`]))}<div class="notice sm">Employees sign in with <b>Employee sign-in</b> (bottom of the left menu) on the first screen, using their employee number as the username and this password.</div>`;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")}
+function showCred(list){LASTCRED=list;$("#dt").textContent="Sign-in details";$("#dd").textContent="Give each person their username and temporary password privately. The password is shown only now and must be changed at first sign-in.";
+ $("#db").innerHTML=`<div class="bar"><button class="b p" data-act="credxl">Export Excel</button><button class="b" data-act="credcp">Copy for Excel</button></div><div class="credl">${list.map(x=>`<div class="card cred"><b>${esc(x.name)}</b><div class="cr"><span>Username</span><code>${esc(unameOf(x.no))}</code></div><div class="cr"><span>Employee number</span><code>${esc(x.no)}</code></div><div class="cr"><span>Temporary password</span><code>${esc(x.pw)}</code></div></div>`).join("")}</div><div class="notice sm">People sign in on the first screen with the username (or the employee number) and this password.</div>`;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")}
 ACTS.credxl=()=>XL.save("Employee sign-in details",[{name:"Sign-in",cols:["Employee number","Name","Username","Temporary password"],rows:LASTCRED.map(x=>[x.no,x.name,unameOf(x.no),x.pw])}]);
 ACTS.credcp=()=>XL.copy(["Employee number","Name","Username","Temporary password"],LASTCRED.map(x=>[x.no,x.name,unameOf(x.no),x.pw]));
 const hasMgr=d=>Object.entries(ACCT()).some(([k,a])=>a.lvl==="mgr"&&a.on&&k.startsWith(MODE+"|")&&((allEmps().find(e=>e.no===k.split("|")[1])||{}).dept===d));
 const canAcc=()=>[R.HRD,R.HRS,R.ADM].includes(role);
 function emp_access(){if(!canAcc())return forbid("Only HR Director, HR Specialist or System Administrator can manage employee access.");
  const L=ALLE().filter(e=>e.status!=="Terminated"),AC=ACCT(),none=L.filter(e=>!AC[akey(e.no)]);
- const rows=L.map(e=>{const a=AC[akey(e.no)];return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button>`,esc(e.no)+"<br><code>"+esc(unameOf(e.no))+"</code>",esc(e.dept),a?(a.lvl==="mgr"?bd("Department Manager","s-in"):a.srole?bd(a.srole,"s-in"):"Employee"):"–",a?(a.on?(a.must?bd("Waiting for first sign-in","s-wn"):bd("Active","s-ok")):bd("Disabled","s-mu")):bd("No access","s-mu"),a&&a.last?a.last.slice(0,16).replace("T"," "):"–",
-  !a?`<button class="b p" data-act="acc_mk:${esc(e.no)}">Create access</button>`:(a.on?`<button class="b" data-act="acc_rs:${esc(e.no)}">Reset password</button> <button class="b" data-act="acc_off:${esc(e.no)}">Disable</button> ${[R.HRD,R.ADM].includes(role)?`<button class="b" data-act="acc_lvl:${esc(e.no)}">${a.lvl==="mgr"?"Make employee only":"Make department manager"}</button> <button class="b" data-act="acc_role:${esc(e.no)}">Set work role</button>`:""}`:`<button class="b" data-act="acc_on:${esc(e.no)}">Enable</button>`)]});
+ const rows=L.map(e=>{const a=AC[akey(e.no)];return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button><div class="mu" style="font-size:12px">${esc(e.dept)}</div>`,esc(e.no)+"<br><code>"+esc(unameOf(e.no))+"</code>",a?(a.lvl==="mgr"?bd("Department Manager","s-in"):a.srole?bd(a.srole,"s-in"):"Employee"):"–",a?(a.on?(a.must?bd("Waiting for first sign-in","s-wn"):bd("Active","s-ok")):bd("Disabled","s-mu")):bd("No access","s-mu"),  "<div class=\"acts\">"+(!a?`<button class="b p" data-act="acc_mk:${esc(e.no)}">Create access</button>`:(a.on?`<button class="b" data-act="acc_rs:${esc(e.no)}">Reset password</button> <button class="b" data-act="acc_off:${esc(e.no)}">Disable</button> ${[R.HRD,R.ADM].includes(role)?`<button class="b" data-act="acc_lvl:${esc(e.no)}">${a.lvl==="mgr"?"Make employee only":"Make department manager"}</button> <button class="b" data-act="acc_role:${esc(e.no)}">Set work role</button>`:""}`:`<button class="b" data-act="acc_on:${esc(e.no)}">Enable</button>`))+"</div>"]});
  return`${note("<b>Prototype sign-in.</b> Employees can sign in to see only their own workspace, profile, leave and payslips. Credentials are stored in this browser, so this is for trying the experience. Real accounts need a secure server with proper authentication.","sm")}
  <div class="bar" style="margin-top:10px">${none.length?`<button class="b p" data-act="acc_all">Create access for all ${none.length} employee(s) without access</button>`:'<span class="mu">Every employee in service has access.</span>'}${LASTCRED.length?`<button class="b" data-act="acc_last">Show last created passwords</button>`:""}</div>
- <div style="margin-top:10px">${ptbl("acc",["Employee","No. and username","Department","Level","Access","Last sign-in",""],rows,{csv:"acc",empty:"No employees yet."})}</div>`}
+ <div style="margin-top:10px">${ptbl("acc",["Employee","No. and username","Level","Access",""],rows,{csv:"acc",empty:"No employees yet."})}</div>`}
 reg("emp_access","Employee Access","Give employees a sign-in to their own workspace, leave requests and payslips.",A("HRD","HRS","ADM"),emp_access);
 ACTS.acc_mk=async no=>{if(!canAcc())return;const e=allEmps().find(x=>x.no===no),pw=await mkAccess(no);showCred([{no,name:e?e.name:no,pw}]);draw2b()};
 ACTS.acc_rs=no=>ask("Reset the password? The old password stops working and a new temporary one is created.","Reset password",async()=>{if(!canAcc())return;const e=allEmps().find(x=>x.no===no),pw=await mkAccess(no);audit("Employee password reset",no);showCred([{no,name:e?e.name:no,pw}]);draw2b()});
@@ -1782,7 +1788,7 @@ function draw2b(){const open=$("#drawer").classList.contains("open"),h=$("#db").
 /* sign-in / sign-out */
 ACTS.esin=()=>{$("#dt").textContent="Employee sign-in";$("#dd").textContent="Open your own workspace: leave requests, profile and payslips.";
  $("#db").innerHTML=`<form class="g1" data-esf="login">${fld("Employee number","no","text",{req:1})}<label>Password*<input name="pw" type="password" required autocomplete="current-password"></label><button class="b p" type="submit">Sign in</button></form><div class="err"></div><div class="cs">Ask HR for your temporary password. Prototype only: sign-in details are kept in this browser.</div>`;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
-function esDone(no,m){MODE=m;try{localStorage.setItem("smr_mode",MODE)}catch(e){}const a0=ACCT()[akey(no,m)]||{},e0=allEmps().find(x=>x.no===no),wr=a0.lvl==="mgr"?R.DM:(a0.srole||R.EMP),mg=wr!==R.EMP;MGRD=e0?e0.dept:"Operations";role=wr;WSNO=no;ESES={no,mode:m,lvl:mg?"mgr":"emp",view:mg?"mgr":"emp",dept:MGRD,wrole:wr};try{sessionStorage.setItem("smr_es",JSON.stringify(ESES))}catch(e){}const a=ACCT()[akey(no,m)];if(a){a.last=new Date().toISOString();sv("acct",false)}audit("Employee signed in",no);closeDr();{const g=$("#gate");if(g)g.style.display="none"}SSES=null;try{sessionStorage.removeItem("smr_ss")}catch(e){}page=mg?homeFor(wr):"work";draw()}
+function esDone(no,m){MODE=m;try{localStorage.setItem("smr_mode",MODE)}catch(e){}const a0=ACCT()[akey(no,m)]||{},e0=allEmps().find(x=>x.no===no),wr=a0.lvl==="mgr"?R.DM:(a0.srole||R.EMP),mg=wr!==R.EMP;MGRD=e0?e0.dept:"Operations";role=wr;WSNO=no;ESES={no,mode:m,lvl:mg?"mgr":"emp",view:mg?"mgr":"emp",dept:MGRD,wrole:wr};try{sessionStorage.setItem("smr_es",JSON.stringify(ESES))}catch(e){}const a=ACCT()[akey(no,m)];if(a){a.last=new Date().toISOString();sv("acct",false)}audit("Employee signed in",no);closeDr();if(typeof HIST!=="undefined")HIST.length=0;{const g=$("#gate");if(g)g.style.display="none"}SSES=null;try{sessionStorage.removeItem("smr_ss")}catch(e){}page=mg?homeFor(wr):"work";draw()}
 document.addEventListener("submit",async ev=>{const f=ev.target.closest("[data-esf]");if(!f)return;ev.preventDefault();const o=Object.fromEntries(new FormData(f)),er=f.parentNode.querySelector(".err"),bad=t=>{er.textContent=t};
  if(f.dataset.esf==="login"){const no=(o.no||"").trim(),L=LOCKS[no]||{n:0,until:0};if(Date.now()<L.until)return bad("Too many wrong attempts. Wait a minute and try again.");
   let hit=null;for(const m of [MODE,MODE==="sample"?"mine":"sample"]){const a=ACCT()[akey(no,m)];if(a&&a.on&&a.hash===await hashPw(o.pw,a.salt)){hit={m,a};break}}
@@ -1796,7 +1802,7 @@ ACTS.esview=()=>{if(!ESES||ESES.lvl!=="mgr")return;ESES.view=ESES.view==="mgr"?"
 function esUI(){document.body.classList.toggle("esess",!!(ESES||SSES));let b=$("#esbar");if(!b){const u=document.querySelector(".side-u");if(!u)return;u.insertAdjacentHTML("beforeend",'<div id="esbar"></div>');b=$("#esbar")}
  if(ESES){const e=allEmps().find(x=>x.no===ESES.no);b.innerHTML=`<div class="mu" style="font-size:13px;margin:8px 0 4px">Signed in as <b>${esc(e?e.name:ESES.no)}</b></div>${ESES.lvl==="mgr"?`<div class="mu" style="font-size:12px;margin-bottom:6px">${ESES.view==="mgr"?((ESES.wrole||R.DM)===R.DM?"Manager view: "+esc(ESES.dept)+" department":esc(ESES.wrole)+" view"):"Your own workspace"}</div><button class="b" data-act="esview" style="width:100%;margin-bottom:6px">${ESES.view==="mgr"?"Switch to my own workspace":"Switch to my work role"}</button>`:""}<button class="b" data-act="esout" style="width:100%">Sign out</button>`;const r=$("#role");if(r&&r.value!==role)r.value=role}
  else if(SSES){const u=USR().find(x=>x.id===SSES.id);b.innerHTML=`<div class="mu" style="font-size:13px;margin:8px 0 4px">Signed in as <b>${esc(SSES.name)}</b></div><div class="mu" style="font-size:12px;margin-bottom:6px">${esc(SSES.role)}</div><button class="b" data-act="esout" style="width:100%">Sign out</button>`}
- else b.innerHTML=`<button class="b" data-act="esin" style="width:100%;margin-top:8px">Employee sign-in</button>`}
+ else b.innerHTML=""}
 
 /* ===== m14: smart navigation (command search, related links, drill links) ===== */
 const REL={rep_cost:[["Payroll Register","pay_reg"],["Payroll Processing","pay_proc"],["Payroll Inputs","pay_inputs"],["Reports by Department & Project","rep_dp"]],
@@ -1993,17 +1999,18 @@ function pt_ct(e){const s=salAt(e,iso(T0)),w=alwOf(e,s),rn=db("renew",{})[e.no],
 function pt_to(e){const p=wparts();return`<div class="grid ws" style="grid-template-columns:minmax(0,520px)">${p.leave}</div>${p.tail}`}
 function pt_at(e){const p=wparts(),pre=iso(T0).slice(0,7),rows=Object.keys(PUNCH).filter(k=>k.startsWith(e.no+"|"+pre)).sort().reverse().map(k=>{const pu=PUNCH[k],f=t=>new Date(t).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});let m=0;for(let i=0;i<pu.length;i+=2)if(pu[i+1])m+=Math.max(0,(new Date(pu[i+1])-new Date(pu[i]))/6e4);return[k.split("|")[1],f(pu[0]),pu.length%2?"Still in":f(pu[pu.length-1]),hh(m)]});
  return`<div class="grid ws" style="grid-template-columns:minmax(0,520px)">${p.att}</div>${secH("This month")}${ptbl("pat",["Date","First in","Last out","Worked"],rows,{empty:"No punches recorded this month.",csv:"mypunch"})}<div class="kt" style="margin-top:10px">Total this month: <b>${hh(mins(e.no,pre))}</b></div>`}
-function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(window.ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
+function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
  if(!e)return`<div class="card"><div class="empty">No employees yet. Add employees in the directory, or switch to Sample data.</div></div>`;
  if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}const cur=TAB.pt||"ov";
  const body=({ov:pt_ov,ps:pt_ps,dc:pt_dc,wn:pt_wn,ln:pt_ln,ct:pt_ct,to:pt_to,at:pt_at,rq:()=>my_req(),pf:()=>profile()}[cur]||pt_ov)(e);
  const nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length;
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
- <div class="pbn"><div class="pwho"><i class="pav">${ini(e.name)}</i><div><h1>${esc(e.name)}</h1><div class="pps">${esc(e.pos||"–")} · ${esc(e.dept)} · ${esc(e.no)}</div></div></div><div class="pact">${window.ESES?"":`<label class="pprev">Preview as<select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}<button class="pnew" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg> New Request</button></div></div>
+ <div class="pbn"><div class="pwho"><i class="pav">${ini(e.name)}</i><div><h1>${esc(e.name)}</h1><div class="pps">${esc(e.pos||"–")} · ${esc(e.dept)} · ${esc(e.no)}</div></div></div><div class="pact">${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev">Preview as<select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}<button class="pnew" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg> New Request</button></div></div>
  <div class="ptabs" role="tablist">${PTABS.map(([k,l])=>`<button role="tab" aria-selected="${k===cur}" class="ptab ${k===cur?"on":""}" data-act="pt:${k}">${pico(k)}<span>${l}</span>${k==="wn"&&nWn?`<i class="pdot">${nWn}</i>`:""}</button>`).join("")}</div>
  <div class="pbody">${body}</div>`}
-ACTS.pt=k=>{TAB.pt=k;if(k==="rq")TAB.hq="";closeDr();draw();window.scrollTo(0,0)};
-ACTS.pt_req=k=>{TAB.pt="rq";TAB.hq=k;draw();window.scrollTo(0,0)};
+const tabVis=()=>{const t=document.querySelector(".ptab.on");if(t&&t.scrollIntoView)t.scrollIntoView({inline:"center",block:"nearest"})};
+ACTS.pt=k=>{TAB.pt=k;if(k==="rq")TAB.hq="";closeDr();draw();window.scrollTo(0,0);tabVis()};
+ACTS.pt_req=k=>{TAB.pt="rq";TAB.hq=k;draw();window.scrollTo(0,0);tabVis()};
 
 /* ===== m17: username and password sign-in for every role (prototype: credentials live in this browser) ===== */
 const STAFF=()=>db("staff",[],false);
@@ -2016,7 +2023,7 @@ function renderGate(){const g=$("#gform");if(!g)return;const none=!STAFF().lengt
  g.innerHTML=`<p>Sign in with your username and password.</p><form class="g1" data-gf="login"><label>Username*<input name="u" required autocomplete="username"></label><label>Password*<input name="pw" type="password" required autocomplete="current-password"></label><button class="b p" type="submit">Sign in</button></form><div class="err"></div>${none?`<button class="lnk" data-act="gm:setup">First time here? Set up the administrator</button>`:""}<div class="gnote">Forgot your password? Employees ask HR. Staff ask an administrator.</div>`}
 ACTS.gm=m=>{GM=m;renderGate()};
 function chgForm(kind,id,m){$("#gform").innerHTML=`<p>Choose a new password. Your temporary password must be replaced before you continue.</p><form class="g1" data-gf="chg"><input type="hidden" name="kind" value="${kind}"><input type="hidden" name="id" value="${esc(id)}"><input type="hidden" name="m" value="${m||""}"><label>New password* (8+ characters, letters and a digit)<input name="p1" type="password" minlength="8" required autocomplete="new-password"></label><label>Repeat the new password*<input name="p2" type="password" minlength="8" required autocomplete="new-password"></label><button class="b p" type="submit">Save and continue</button></form><div class="err"></div>`}
-function staffDone(s){const u=USR().find(x=>x.id===s.id);if(!u||!u.active)return false;ESES=null;try{sessionStorage.removeItem("smr_es")}catch(e){}SSES={id:s.id,name:s.name,role:u.role};try{sessionStorage.setItem("smr_ss",JSON.stringify(SSES))}catch(e){}s.last=new Date().toISOString();sv("staff",false);role=u.role;const r=$("#role");if(r)r.value=role;audit("Staff signed in",s.username);closeDr();page=role===R.ADM?"users":homeFor(role);hideGate();draw();return true}
+function staffDone(s){const u=USR().find(x=>x.id===s.id);if(!u||!u.active)return false;ESES=null;try{sessionStorage.removeItem("smr_es")}catch(e){}SSES={id:s.id,name:s.name,role:u.role};try{sessionStorage.setItem("smr_ss",JSON.stringify(SSES))}catch(e){}s.last=new Date().toISOString();sv("staff",false);role=u.role;const r=$("#role");if(r)r.value=role;audit("Staff signed in",s.username);closeDr();if(typeof HIST!=="undefined")HIST.length=0;page=role===R.ADM?"users":homeFor(role);hideGate();draw();return true}
 document.addEventListener("submit",async ev=>{const f=ev.target.closest("[data-gf]");if(!f)return;ev.preventDefault();const o=Object.fromEntries(new FormData(f)),er=f.parentNode.querySelector(".err"),bad=t=>{er.textContent=t},k=f.dataset.gf;
  if(k==="setup"){const u=(o.u||"").trim();if(STAFF().length)return bad("Setup was already done. Sign in.");if(!/^[A-Za-z0-9._-]{3,30}$/.test(u))return bad("Username: 3 to 30 letters, digits, dot, dash or underscore.");if(o.p1!==o.p2)return bad("The two passwords do not match.");if(!pwOk(o.p1))return bad("Use at least 8 characters, with letters and a digit.");
   const salt=rndPw(8),id="s"+Date.now(),s={id,username:u,name:o.name.trim(),salt,hash:await hashPw(o.p1,salt),must:0,on:1,t:iso(T0)};STAFF().push(s);USR().push({id,name:s.name,role:R.ADM,active:true,email:""});sv("staff",false);sv("users",false);audit("Administrator created",u);staffDone(s);if(typeof seedAccess==="function")await seedAccess();return}
@@ -2062,6 +2069,34 @@ DEPTS.splice(0,DEPTS.length,"Management","Finance","Human Resources");db("depts"
 async function seedAccess(){try{if(localStorage.getItem("smr_seed_pending")!=="1")return;localStorage.removeItem("smr_seed_pending");const out=[];
  for(const s of SEEDE){if(!allEmps().some(e=>e.no===s.no))continue;const pw=await mkAccess(s.no),a=ACCT()[akey(s.no)];a.srole=s.srole;out.push({no:s.no,name:s.name+" ("+s.srole+")",pw})}
  sv("acct",false);if(out.length){showCred(out);$("#dd").textContent="Sign in on the first screen with the username shown here (or the employee number). Each person sets a new password at first sign-in. These passwords are shown only now."}}catch(e){}}
+
+/* ===== m19: in-app notifications for every signed-in person ===== */
+const nkey=()=>(typeof ESES!=="undefined"&&ESES?ESES.no:typeof SSES!=="undefined"&&SSES?SSES.id:role===R.EMP?"emp:"+WSNO:role);
+const nid=x=>nkey()+"|"+x.id;
+const isRead=x=>!!db("nread",{})[nid(x)];
+let NF=[];
+function feed(){const o=[],who=(typeof ESES!=="undefined"&&ESES)?ESES.no:(role===R.EMP?WSNO:null);
+ const ap=apprItems().filter(i=>!i.fin&&canAct(i));if(ap.length)o.push({id:"ap|"+ap.map(i=>i.id).join(","),t:ap.length+" approval"+(ap.length>1?"s":"")+" waiting for you",d:ap.slice(0,3).map(i=>i.type+" · "+((empBy(i.no)||{}).name||"")).join(", "),go:"appr",tone:"s-er"});
+ if(who){
+  LR.filter(r=>r.mode===MODE&&r.no===who&&(r.status==="Approved"||r.status==="Rejected")).forEach(r=>o.push({id:"lr|"+r.id+"|"+r.status,t:"Your "+r.type.toLowerCase()+" request for "+r.start+" was "+r.status.toLowerCase(),act:"to",tone:r.status==="Approved"?"s-ok":"s-er"}));
+  HQL().filter(r=>r.no===who&&r.status!=="Pending").forEach(r=>o.push({id:"hq|"+r.id+"|"+r.status,t:"Your request ("+((HQT(r.type)||{}).t||r.type)+") is "+(HQS[r.status]||[r.status])[0].toLowerCase(),d:r.resp||"",act:"rq",tone:r.status==="Rejected"?"s-er":"s-ok"}));
+  WARNS().filter(w=>w.no===who&&!w.withdrawn&&!w.ack).forEach(w=>o.push({id:"wn|"+w.id,t:"You have a warning to acknowledge ("+w.level+")",act:"wn",tone:"s-wn"}));
+  const dm=DOCS_REQ.filter(d=>docStatus(who,d)==="Missing");if(dm.length)o.push({id:"dm|"+dm.join(","),t:dm.length+" document"+(dm.length>1?"s":"")+" HR still needs from you",d:dm.join(", "),act:"dc",tone:"s-wn"})}
+ if(canSee("hr_req")){const n=hqOpen();if(n)o.push({id:"hr|"+n,t:n+" employee request"+(n>1?"s":"")+" waiting for HR",go:"hr_req",tone:"s-wn"})}
+ return o}
+function updBell(){const b=$("#bdg");if(!b)return;let n=0;try{n=feed().filter(x=>!isRead(x)).length;if(canSee("dash")){const m=page==="dash"?M:build();n+=m.alerts.filter(a=>a[0]!=="low"&&a[3]).length}}catch(e){}b.textContent=n;b.hidden=!n}
+function openNotif(){NF=feed();LASTDRILL=null;$("#dt").textContent="Notifications";$("#dd").textContent="What needs you, and what happened to your requests.";
+ const m=canSee("dash")?build():null,order={high:0,med:1,low:2},al=m?m.alerts.filter(a=>a[3]).sort((a,b)=>order[a[0]]-order[b[0]]):[];
+ const un=NF.filter(x=>!isRead(x)).length;
+ $("#db").innerHTML=`${NF.length?`<div class="bar"><b>${un} new</b>${un?`<button class="b" data-act="nrdall">Mark all as read</button>`:""}</div>`+NF.map((x,i)=>`<div class="act" style="align-items:flex-start;gap:10px"><span style="min-width:0">${isRead(x)?"":bd("New","s-in")+" "}${esc(x.t)}${x.d?`<div class="mu">${esc(x.d)}</div>`:""}</span><span style="display:flex;gap:6px;flex:none"><button class="b p" data-act="nopen:${i}">Open</button>${isRead(x)?"":`<button class="b" data-act="nrd:${i}">Read</button>`}</span></div>`).join(""):`<div class="empty">Nothing new for you.</div>`}
+ ${al.length?`<h3 class="kt" style="margin-top:16px">HR alerts</h3>`+al.map(([sv,t,id,n])=>`<button class="al" data-d="${id}"><i class="sv ${sv}"></i><span>${t}</span><span class="badge ${sv==="high"?"s-er":sv==="med"?"s-wn":"s-mu"}">${n}</span></button>`).join(""):""}
+ <div class="mu" style="margin-top:14px;font-size:12px">In-app only. Email and push messages need a server and are not active in this prototype.</div>`;
+ $("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open");$("#dcl").focus()}
+const markN=x=>{db("nread",{})[nid(x)]=1;sv("nread")};
+ACTS.nrd=i=>{const x=NF[+i];if(x)markN(x);openNotif();updBell()};
+ACTS.nrdall=()=>{NF.forEach(markN);openNotif();updBell()};
+ACTS.ptg=k=>{page="work";TAB._pp="work";TAB.pt=k;closeDr();draw();window.scrollTo(0,0);if(typeof tabVis==="function")tabVis()};
+ACTS.nopen=i=>{const x=NF[+i];if(!x)return;markN(x);closeDr();if(x.act)ACTS.ptg(x.act);else{page=x.go;PG=0;draw()}};
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
