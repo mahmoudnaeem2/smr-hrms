@@ -389,6 +389,8 @@ tbody tr:hover td,table tr:hover td{background:var(--soft)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .nrq{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.nq{display:grid;gap:3px;text-align:left;padding:12px;background:var(--surf,#fff);border:1px solid var(--bd);border-radius:12px;cursor:pointer;color:inherit}.nq:hover{border-color:var(--btn);box-shadow:0 6px 16px rgba(4,96,181,.12);transform:translateY(-1px)}.nq b{font-size:14.5px}.nq small{color:var(--mu);font-size:12.5px}
+
+.chk{display:flex!important;align-items:center;gap:8px;grid-column:1/-1}.chk input{width:auto}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2202,8 +2204,8 @@ reg("depts","Departments","Departments, their heads and headcount. HR Director c
 document.addEventListener("click",ev=>{if(ev.target.closest(".nav[data-k]"))HIST.length=0},true);
 
 /* Role-based sidebar: daily pages first, the rest under More */
-const DAILY={[R.HRD]:["dash","appr","hr_req","emp","org","leave_req","att_d","holidays","docs","warns","pay_proc","payslips","rep_hr"],
- [R.HRS]:["dash","appr","hr_req","emp","org","leave_req","leave_bal","att_d","holidays","docs","warns","offboard"],
+const DAILY={[R.HRD]:["dash","appr","hr_req","mail_out","emp","org","leave_req","att_d","holidays","docs","warns","pay_proc","payslips","rep_hr"],
+ [R.HRS]:["dash","appr","hr_req","mail_out","emp","org","leave_req","leave_bal","att_d","holidays","docs","warns","offboard"],
  [R.PAY]:["paydash","appr","pay_proc","pay_inputs","overtime","loans","pay_reg","payslips","pay_je","pay_rec","rep_pay"],
  [R.FIN]:["paydash","appr","pay_reg","pay_je","pay_rec","pay_fs","rep_cost","rep_pay","loans"],
  [R.DM]:["dash","appr","work","emp","org","leave_req","att_d"]};
@@ -2226,10 +2228,10 @@ FORMS.lvman=o=>{if(![R.HRD,R.HRS].includes(role))return"Only HR can add leave fo
 
 /* UX layer: quick actions on the home pages */
 function qaList(){const n=canSee("appr")?apprItems().filter(canAct).length:0;
- const T={emp:["Add employee","Open the form","go:emp+eadd"],att:["Record attendance","For someone who missed clock-in","go:att_d+att_man"],lv:["Add leave","On behalf of an employee","go:leave_req+lv_man"],appr:["Approvals",n?n+" waiting for you":"Nothing waiting","go:appr",n],hrq:["HR Requests","Letters, loans, changes","go:hr_req"],run:["Payroll run","Calculate and approve","go:pay_proc"],inp:["Payroll inputs","Bonuses, deductions","go:pay_inputs"],je:["Journal entry","Accounting entry for a run","go:pay_je"],slip:["Payslips","Publish and review","go:payslips"],reg:["Payroll register","All runs and totals","go:pay_reg"],rec:["Reconciliation","Match payroll to the bank","go:pay_rec"],cost:["Cost analysis","By department and project","go:rep_cost"],org:["Organization chart","Reporting lines","go:org"],tl:["Team leave","Requests from your team","go:leave_req"],ta:["Team attendance","Who is in today","go:att_d"]};
- const by={[R.HRD]:["emp","lv","att","appr","hrq","run"],[R.HRS]:["emp","lv","att","appr","hrq","org"],[R.DM]:["appr","tl","ta","org"],[R.PAY]:["run","inp","je","slip","appr"],[R.FIN]:["reg","je","rec","cost","appr"]}[role]||[];
+ const T={emp:["Add employee","Open the form","go:emp+eadd"],att:["Record attendance","For someone who missed clock-in","go:att_d+att_man"],lv:["Add leave","On behalf of an employee","go:leave_req+lv_man"],appr:["Approvals",n?n+" waiting for you":"Nothing waiting","go:appr",n],hrq:["HR Requests","Letters, loans, changes","go:hr_req"],mail:["Email outbox",MQ().filter(m=>m.st!=="Sent").length+" to send","go:mail_out"],run:["Payroll run","Calculate and approve","go:pay_proc"],inp:["Payroll inputs","Bonuses, deductions","go:pay_inputs"],je:["Journal entry","Accounting entry for a run","go:pay_je"],slip:["Payslips","Publish and review","go:payslips"],reg:["Payroll register","All runs and totals","go:pay_reg"],rec:["Reconciliation","Match payroll to the bank","go:pay_rec"],cost:["Cost analysis","By department and project","go:rep_cost"],org:["Organization chart","Reporting lines","go:org"],tl:["Team leave","Requests from your team","go:leave_req"],ta:["Team attendance","Who is in today","go:att_d"]};
+ const by={[R.HRD]:["emp","lv","att","appr","hrq","mail"],[R.HRS]:["emp","lv","att","appr","hrq","mail"],[R.DM]:["appr","tl","ta","org"],[R.PAY]:["run","inp","je","slip","appr"],[R.FIN]:["reg","je","rec","cost","appr"]}[role]||[];
  return by.map(k=>({k,t:T[k]})).filter(x=>{const g=x.t[2].slice(3).split("+")[0];return canSee(g)})}
-function uxUI(){const v=$("#view");if(!v)return;const old=v.querySelector(".qa");if(old)old.remove();
+function uxUI(){try{if(typeof mailScan==="function")mailScan()}catch(e){}const v=$("#view");if(!v)return;const old=v.querySelector(".qa");if(old)old.remove();
  if(page!=="dash"&&page!=="paydash")return;const L=qaList();if(!L.length)return;
  const h=`<div class="qa" role="group" aria-label="Quick actions">${L.map(x=>`<button type="button" class="qt" data-q="${x.t[2]}">${ic(x.t[2].slice(3).split("+")[0])}<span class="qx"><b>${esc(x.t[0])}</b><small>${esc(x.t[1])}</small></span>${x.t[3]?`<i class="qn">${x.t[3]}</i>`:""}</button>`).join("")}</div>`;
  v.insertAdjacentHTML("afterbegin",h)}
@@ -2252,6 +2254,50 @@ ACTS.nrq=a=>{const[k,no]=a.split("|"),e=allEmps().find(x=>x.no===no);if(!e)retur
  const t=HQT(k);if(!t)return;const pr=t.proof||t.proofAlways;
  openDr2(t.t+": "+e.name,"Created by HR for the employee. It opens in the HR inbox so you can decide.",`<form class="g1" data-form="hrqnew"><input type="hidden" name="type" value="${t.k}"><input type="hidden" name="on" value="${esc(no)}">${t.f.map(f=>hqField(f)).join("")}<label>Note<input name="note"></label><div class="fl">Supporting document${pr?" (required)":" (optional)"}${attBox("hrqform|"+no,true)}</div><button class="b p" type="submit">Create request</button></form><div class="err"></div>`)};
 ["wnnew","lnnew"].forEach(n=>{const f=FORMS[n];FORMS[n]=o=>{const r=f(o);if(!r&&o._dr)closeDr();return r}});
+
+/* ===== m21: email notifications through Outlook (compose links and outbox) ===== */
+const MCFG=()=>{const c=db("mailcfg",{},false);if(!c.client)Object.assign(c,{client:"web",on:1,ev:{ap:1,dec:1,hq:1,wn:1},cc:"",sig:"Savills Management Resources (SMR) HR",link:"https://mahmoudnaeem2.github.io/smr-hrms/",rm:{}});return c};
+const MQ=()=>db("mailq",[]);
+const mEmail=no=>{const e=no?empBy(no):null;return e&&/^\S+@\S+\.\S+$/.test(e.email||"")?e.email.trim():""};
+const rmEmail=r=>((MCFG().rm||{})[r]||"").trim();
+function mailPush(o){const c=MCFG();if(!c.on)return;const to=o.to||"";MQ().push({id:"m"+Date.now()+Math.floor(Math.random()*999),t:iso(T0),to,cc:c.cc||"",subject:o.subject,body:o.body+"\n\n"+(c.link?"Open the system: "+c.link+"\n\n":"")+c.sig,kind:o.kind,st:to?"Ready":"No address",who:o.who||""});sv("mailq")}
+function mailScan(){if(MODE!=="mine")return;const c=MCFG(),m=db("mailseen",{}),first=!m.init;if(first)m.init=1;let n=0;const take=k=>{if(m[k])return false;m[k]=1;return !first};
+ const nm=no=>(empBy(no)||{}).name||no,dep=no=>(empBy(no)||{}).dept||"";
+ try{apprItems().forEach(it=>{if(!it.no||!it.d)return;
+  if(it.fin){if(take("fin|"+it.id)&&c.ev.dec){mailPush({kind:"Decision",who:nm(it.no),to:mEmail(it.no),subject:"[SMR HR] Your "+it.type.toLowerCase()+" was "+String(it.fin).toLowerCase(),body:"Hello "+nm(it.no)+",\n\nYour request ("+it.detail+") was "+String(it.fin).toLowerCase()+"."});n++}}
+  else{if(take("ap|"+it.id+"|"+it.d.step)&&c.ev.ap){const ap=apprOf(it),r=nextRole(it),to=(r===R.DM&&ap&&mEmail(ap.no))||rmEmail(r);mailPush({kind:"Approval",who:(r===R.DM&&ap?ap.name:r),to,subject:"[SMR HR] Approval needed: "+it.type+" - "+nm(it.no),body:"Hello "+((r===R.DM&&ap)?ap.name:r)+",\n\n"+nm(it.no)+" ("+dep(it.no)+") submitted: "+it.detail+".\nPlease review and decide."});n++}}})}catch(e){}
+ try{HQL().forEach(r=>{const t=(HQT(r.type)||{}).t||r.type;if(r.status==="Pending"){if(take("hq|"+r.id)&&c.ev.hq){mailPush({kind:"HR request",who:"HR",to:rmEmail(R.HRD)||rmEmail(R.HRS),subject:"[SMR HR] New employee request: "+t+" - "+nm(r.no),body:"A new request is waiting for HR.\n\nEmployee: "+nm(r.no)+" ("+dep(r.no)+")\nRequest: "+t});n++}}
+  else if(take("hqd|"+r.id+"|"+r.status)&&c.ev.dec){mailPush({kind:"Decision",who:nm(r.no),to:mEmail(r.no),subject:"[SMR HR] Your request ("+t+") is "+(HQS[r.status]||[r.status])[0].toLowerCase(),body:"Hello "+nm(r.no)+",\n\nYour request ("+t+") is "+(HQS[r.status]||[r.status])[0].toLowerCase()+"."+(r.resp?"\nHR note: "+r.resp:"")});n++}})}catch(e){}
+ try{WARNS().forEach(w=>{if(take("wn|"+w.id)&&c.ev.wn){mailPush({kind:"Warning",who:nm(w.no),to:mEmail(w.no),subject:"[SMR HR] A notice was added to your file",body:"Hello "+nm(w.no)+",\n\nHR added a notice to your file. Please sign in to read it and acknowledge it. Details are not included in this email."});n++}})}catch(e){}
+ sv("mailseen");if(n){toast(n+" email"+(n>1?"s":"")+" ready in the Email Outbox")}}
+function outlookUrl(m){const c=MCFG(),q=(k,v)=>v?k+"="+encodeURIComponent(v):"";
+ if(c.client==="desktop")return"mailto:"+encodeURIComponent(m.to||"").replace(/%40/g,"@")+"?"+[q("cc",m.cc),q("subject",m.subject),q("body",m.body)].filter(Boolean).join("&").replace(/%20/g,"%20");
+ const base=c.client==="personal"?"https://outlook.live.com/mail/0/deeplink/compose":"https://outlook.office.com/mail/deeplink/compose";
+ return base+"?"+[q("to",m.to),q("cc",m.cc),q("subject",m.subject),q("body",m.body)].filter(Boolean).join("&")}
+function mailOpen(m){const u=outlookUrl(m);if(MCFG().client==="desktop")location.href=u;else window.open(u,"_blank","noopener")}
+function mail_out(){const L=MQ().slice().reverse(),can=[R.HRD,R.HRS,R.ADM].includes(role),c=MCFG();
+ const rows=L.map(m=>[m.t,esc(m.kind),esc(m.who||""),m.to?esc(m.to):`<span class="badge s-wn">No address</span>`,esc(m.subject),m.st==="Sent"?bd("Sent","s-ok"):m.st==="Opened"?bd("Opened","s-in"):bd(m.st,m.st==="Ready"?"s-in":"s-wn"),can?`<button class="b p" data-act="mo_open:${m.id}">Open in Outlook</button> <button class="b" data-act="mo_sent:${m.id}">Mark sent</button> <button class="b" data-act="mo_copy:${m.id}">Copy</button> <button class="b" data-act="mo_del:${m.id}">Remove</button>`:""]);
+ return`${c.on?"":note("Email notifications are switched off in Email Settings.")}<div class="bar"><span class="tag">${L.filter(m=>m.st!=="Sent").length} to send</span><button class="b" data-go="mail_set">Email Settings</button></div>${tbl(["Date","Type","To","Address","Subject","Status",""],rows,{empty:"No emails yet. They appear here when a request is submitted, decided or a notice is issued."})}${note("This system cannot send email on its own. Each message opens ready-filled in Outlook, and you press Send there. Sending automatically needs a mail server connection, which is a separate step.")}`}
+reg("mail_out","Email Outbox","Emails the system prepared for approvers and employees. Open each in Outlook to send.",A("HRD","HRS","ADM"),mail_out);
+ACTS.mo_open=id=>{const m=MQ().find(x=>x.id===id);if(!m)return;mailOpen(m);if(m.st!=="Sent")m.st="Opened";sv("mailq");setTimeout(draw,100)};
+ACTS.mo_sent=id=>{const m=MQ().find(x=>x.id===id);if(m){m.st="Sent";sv("mailq");draw()}};
+ACTS.mo_del=id=>{const a=MQ(),i=a.findIndex(x=>x.id===id);if(i>=0)a.splice(i,1);sv("mailq");draw()};
+ACTS.mo_copy=id=>{const m=MQ().find(x=>x.id===id);if(!m)return;const t="To: "+m.to+"\nSubject: "+m.subject+"\n\n"+m.body;try{navigator.clipboard.writeText(t).then(()=>toast("Copied"),()=>toast("Copy is blocked here"))}catch(e){toast("Copy is blocked here")}};
+function mail_set(){const c=MCFG(),can=[R.HRD,R.ADM].includes(role),dis=can?"":"disabled",R4=[R.HRD,R.HRS,R.PAY,R.FIN];
+ return`<form class="g" data-form="mailcfg" style="max-width:900px"><div class="card" style="grid-column:1/-1"><h2>How emails are opened</h2><label>Outlook version<select name="client" ${dis}><option value="web" ${c.client==="web"?"selected":""}>Outlook on the web (work or school, outlook.office.com)</option><option value="personal" ${c.client==="personal"?"selected":""}>Outlook.com (personal account)</option><option value="desktop" ${c.client==="desktop"?"selected":""}>Outlook desktop app (needs it set as the default mail app)</option></select></label>
+ <label class="chk"><input type="checkbox" name="on" ${c.on?"checked":""} ${dis}> Prepare emails for the events below</label>
+ ${[["ap","An approval is waiting for someone"],["dec","A request is approved or rejected"],["hq","An employee sends a request to HR"],["wn","A notice is added to an employee's file (no details in the email)"]].map(([k,l])=>`<label class="chk"><input type="checkbox" name="ev_${k}" ${c.ev[k]?"checked":""} ${dis}> ${l}</label>`).join("")}</div>
+ <div class="card" style="grid-column:1/-1"><h2>Mailboxes for roles</h2><div class="cs">Used when the approver is a role and not a named person. Employee emails come from their record (Work email).</div>${R4.map(r=>`<label>${esc(r)} mailbox<input name="rm_${esc(r)}" type="email" value="${esc((c.rm||{})[r]||"")}" ${dis}></label>`).join("")}</div>
+ <div class="card" style="grid-column:1/-1"><h2>Message</h2><label>Always copy (optional)<input name="cc" type="email" value="${esc(c.cc||"")}" ${dis}></label><label>Link to the system in each email<input name="link" type="url" value="${esc(c.link||"")}" ${dis}></label><label>Signature<input name="sig" value="${esc(c.sig||"")}" ${dis}></label></div>
+ ${can?`<div class="bar"><button class="b p" type="submit">Save</button><input id="mtest" type="email" placeholder="your email for a test" style="min-width:240px"><button type="button" class="b" data-act="mail_test">Open a test email</button></div><div class="err"></div>`:""}</form>
+ ${(()=>{const miss=ALLE().filter(e=>e.status!=="Terminated"&&!mEmail(e.no));return miss.length?note(miss.length+" employee(s) have no work email on file: "+miss.slice(0,6).map(e=>esc(e.name)).join(", ")+(miss.length>6?"…":"")+". Add it in Edit details."):""})()}`}
+reg("mail_set","Email Settings","Choose how Outlook opens the prepared emails, who receives approvals, and what is sent.",A("HRD","ADM"),mail_set);
+FORMS.mailcfg=o=>{if(![R.HRD,R.ADM].includes(role))return"Only HR Director or the administrator can change this.";const c=MCFG();
+ for(const k of["cc"]){if(o[k]&&!/^\S+@\S+\.\S+$/.test(o[k]))return"The copy address is not a valid email."}
+ const rm={};for(const r of[R.HRD,R.HRS,R.PAY,R.FIN]){const v=(o["rm_"+r]||"").trim();if(v&&!/^\S+@\S+\.\S+$/.test(v))return r+": the email is not valid.";rm[r]=v}
+ Object.assign(c,{client:o.client,on:o.on?1:0,ev:{ap:o.ev_ap?1:0,dec:o.ev_dec?1:0,hq:o.ev_hq?1:0,wn:o.ev_wn?1:0},rm,cc:(o.cc||"").trim(),link:(o.link||"").trim(),sig:o.sig||""});sv("mailcfg",false);audit("Email settings changed","");toast("Email settings saved");draw()};
+ACTS.mail_test=()=>{const to=($("#mtest")||{}).value||"";if(!/^\S+@\S+\.\S+$/.test(to))return toast("Type a valid email for the test.");mailOpen({to,cc:"",subject:"[SMR HR] Test email",body:"This is a test message from the SMR HRMS.\n\n"+MCFG().sig})};
+NAV.forEach(g=>{if(g[0]==="Administration"){g[1].push(["Email Outbox","mail_out"],["Email Settings","mail_set"])}});
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
