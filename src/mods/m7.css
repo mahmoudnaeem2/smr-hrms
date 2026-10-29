@@ -483,3 +483,9 @@ input[type=checkbox],input[type=radio]{min-width:24px;min-height:24px;accent-col
 table.stk td:last-child,table.stk th:last-child{position:sticky;right:0;background:var(--surf)!important;box-shadow:-10px 0 14px -10px rgba(15,35,70,.18);z-index:1}
 table.stk td:last-child{min-width:206px}
 table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}table.stk td:last-child .b{display:inline-flex;align-items:center;justify-content:center}
+/* request tiles: coloured icon chips */
+.hqi{width:56px!important;height:56px!important;border-radius:16px!important;background:var(--ib,var(--soft))!important;color:var(--ic,#0460B5)!important}
+.hqi svg{width:26px;height:26px;stroke-width:1.7}
+.hqc:hover .hqi,.hqc.on .hqi{background:var(--ic,#0460B5)!important;color:#fff!important}
+.hqc{transition:transform .15s,box-shadow .15s}.hqc:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,35,70,.1)}
+@media (prefers-reduced-motion:reduce){.hqc:hover{transform:none}}
