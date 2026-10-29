@@ -1,0 +1,91 @@
+
+/* ===== m8: design system layer (tokens + shared components). Read DESIGN.md before editing. Loaded last. ===== */
+:root{
+ /* type */
+ --fs-xs:12px;--fs-sm:13px;--fs-md:14px;--fs-base:15.5px;--fs-lg:18px;--fs-xl:22px;--fs-2xl:28px;--fs-3xl:36px;
+ --fw-reg:400;--fw-med:500;--fw-semi:600;--fw-bold:700;--fw-x:800;
+ /* space (4px grid) */
+ --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;
+ /* radius: controls < inner panels < cards */
+ --r-xs:6px;--r-sm:8px;--r-md:10px;--r-lg:14px;--r-xl:20px;--r-pill:999px;
+ /* elevation, tinted with the brand navy */
+ --e-1:0 1px 2px rgba(16,35,61,.06),0 1px 3px rgba(16,35,61,.05);
+ --e-2:0 6px 20px rgba(16,35,61,.08),0 1px 3px rgba(16,35,61,.05);
+ --e-3:0 18px 48px rgba(16,35,61,.18),0 2px 6px rgba(16,35,61,.08);
+ /* controls */
+ --h-ctl:40px;--h-ctl-sm:34px;--h-fld:42px;
+ --ring:0 0 0 3px color-mix(in srgb,var(--brand) 26%,transparent);
+ --ring-er:0 0 0 3px color-mix(in srgb,var(--er) 22%,transparent);
+ /* motion */
+ --dur-1:.12s;--dur-2:.2s;--dur-3:.32s;--ease:cubic-bezier(.2,.7,.2,1);
+ /* layers */
+ --z-top:15;--z-side:20;--z-drawer:40;--z-toast:60;--z-menu:1000;
+}
+body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ---- buttons ---- */
+.b{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:var(--h-ctl);padding:0 var(--sp-4);border-radius:var(--r-md)!important;font-weight:var(--fw-semi);line-height:1.2;transition:background-color var(--dur-1),border-color var(--dur-1),box-shadow var(--dur-2),transform var(--dur-1) var(--ease)}
+.b:active:not(:disabled){transform:translateY(1px)}
+.b.p{box-shadow:var(--e-1)}.b.p:hover:not(:disabled){box-shadow:0 4px 14px color-mix(in srgb,var(--btn) 32%,transparent)}
+.b:disabled{opacity:.48;cursor:not-allowed}
+.b.dng,.b.danger{color:var(--er);border-color:color-mix(in srgb,var(--er) 30%,var(--bd))}.b.dng:hover:not(:disabled),.b.danger:hover:not(:disabled){background:var(--erb)}
+.b.ghost{background:transparent;border-color:transparent}.b.ghost:hover:not(:disabled){background:var(--soft)}
+td .b,.bar .b.sm,.b.sm{min-height:var(--h-ctl-sm);padding:0 var(--sp-3);font-size:var(--fs-sm)}
+.b[aria-busy="true"]{pointer-events:none;opacity:.75}
+.b[aria-busy="true"]::after{content:"";width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- fields ---- */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]),select,textarea{min-height:var(--h-fld);border-radius:var(--r-md);transition:border-color var(--dur-1),box-shadow var(--dur-2)}
+textarea{min-height:96px;padding:10px 12px;line-height:1.5}
+input:not([type=checkbox]):not([type=radio]):hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--mu) 45%,var(--bd))}
+input:not([type=checkbox]):not([type=radio]):focus,select:focus,textarea:focus{border-color:var(--brand)!important;box-shadow:var(--ring);outline:none}
+input:not([type=checkbox]):not([type=radio]):focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brand)!important;outline-offset:1px}
+[aria-invalid="true"]{border-color:var(--er)!important}[aria-invalid="true"]:focus{box-shadow:var(--ring-er)!important}
+label{font-weight:var(--fw-med)}
+.err:not(:empty){display:flex;gap:6px;align-items:flex-start;font-weight:var(--fw-med)}
+.err:not(:empty)::before{content:"!";flex:none;display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--er);color:#fff;font-size:11px;font-weight:800;margin-top:1px}
+
+/* ---- cards and panels ---- */
+.card{border-radius:var(--r-xl)!important}
+.card .card,.notice{border-radius:var(--r-lg)!important}
+.sc{border-radius:var(--r-xl)!important}
+.empty{padding:var(--sp-6) var(--sp-4)!important;font-size:var(--fs-md)!important;line-height:1.5}
+
+/* ---- tables: aligned numbers, scroll cue on wide tables ---- */
+th{font-size:12.5px!important;font-weight:var(--fw-semi)!important;letter-spacing:0!important}
+td{font-variant-numeric:tabular-nums}
+.card.wrap{background:linear-gradient(90deg,var(--surf) 30%,transparent) left/40px 100% no-repeat local,linear-gradient(270deg,var(--surf) 30%,transparent) right/40px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,rgba(16,35,61,.14),transparent) left/14px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,rgba(16,35,61,.14),transparent) right/14px 100% no-repeat scroll,var(--surf)!important}
+.card.wrap:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ---- badges ---- */
+.badge{display:inline-flex;align-items:center;gap:5px;font-weight:var(--fw-semi)!important;font-size:12px!important;line-height:1;padding:5px 10px!important;border-radius:var(--r-pill)!important;white-space:nowrap}
+
+/* ---- toast ---- */
+#toast{border-radius:var(--r-lg)!important;box-shadow:var(--e-3)!important;z-index:var(--z-toast)}
+
+/* ---- drawer ---- */
+#drawer{box-shadow:var(--e-3)!important;z-index:var(--z-drawer)}
+
+/* ---- loading skeleton ---- */
+.skel{display:grid;gap:10px;padding:var(--sp-4)}
+.skel i{display:block;height:14px;border-radius:var(--r-xs);background:linear-gradient(90deg,var(--soft) 25%,color-mix(in srgb,var(--soft) 40%,var(--surf)) 50%,var(--soft) 75%);background-size:300% 100%;animation:skel 1.2s ease-in-out infinite}
+.skel i:nth-child(3n){width:62%}.skel i:nth-child(3n+2){width:84%}
+@keyframes skel{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ---- motion: GSAP takes over page entrances when it is loaded (html.mo) ---- */
+html.mo #view>*{animation:none!important}
+html.mo .mo-h{opacity:0}
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+ html.mo .mo-h{opacity:1}
+}
+/* drawer backdrop: dims the page so the panel reads as the focus (click outside still closes it) */
+body::after{content:"";position:fixed;inset:0;background:rgba(10,25,45,.28);opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease);z-index:calc(var(--z-drawer) - 1)}
+body:has(#drawer.open)::after{opacity:1}
+#drawer .b:first-child{flex:none}
+/* sticky action column: cover the card padding so scrolled columns don't peek out on its right */
+table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rgba(16,35,61,.2),14px 0 0 var(--surf)!important}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#cg button[aria-busy="true"]{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+#cg button[aria-busy="true"]::after{content:"";width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}

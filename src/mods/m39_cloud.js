@@ -28,7 +28,7 @@
  const ago=d=>{if(!d)return bd("Never signed in","s-mu");const t=new Date(d);return isNaN(t)?"":t.toISOString().slice(0,10).split("-").reverse().join("/")};
  function usersPage(){
   if(!isAdm())return forbid("Only the System Administrator or HR Director can manage accounts.");
-  if(UP===null){loadUP();return`<div class="card"><div class="empty">Loading accounts…</div></div>`}
+  if(UP===null){loadUP();return`<div class="card" aria-busy="true"><span class="sr-only">Loading accounts…</span><div class="skel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>`}
   const rows=UP.map(u=>{const me=u.id===C.uid,locked=me||(role!==R.ADM&&u.role===R.ADM),st=u.role==="Pending"?bd("No role yet","s-wn"):u.active?bd("Active","s-ok"):bd("Disabled","s-mu"),en=u.emp_no?allEmps().find(e=>e.no===u.emp_no):null;
    const nm=u.full_name||(u.email||"").split("@")[0],rl=u.role==="Pending"?'<span class="uapill pend">Pending</span>':'<span class="uapill">'+esc(u.role)+"</span>";
    return[`<div class="uacc"><i class="av">${esc(ini(nm))}</i><div><b>${esc(nm)}</b>${me?' <span class="uyou">You</span>':""}<div class="mu">${esc(u.email||"")}</div></div></div>`,rl,u.emp_no?`<b>${esc(u.emp_no)}</b>`+(en?'<div class="mu">'+esc(en.dept||"")+"</div>":""):'<span class="mu">Not linked</span>',st,`<span class="mu2">${typeof lrNice==="function"&&u.last_sign_in_at?esc(lrNice(String(u.last_sign_in_at).slice(0,10))):ago(u.last_sign_in_at)}</span>`,locked?"":`<div class="acts uact"><button class="b" data-act="ua_role:${u.id}">Change role</button><button class="b" data-act="ua_rst:${u.id}">Reset password</button><button class="b ${u.active?"dng":""}" data-act="ua_tog:${u.id}">${u.active?"Disable":"Enable"}</button></div>`]});

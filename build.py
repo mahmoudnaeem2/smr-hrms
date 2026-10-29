@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m41_drawer','m42_photo','m39_cloud','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m41_drawer','m42_photo','m44_motion','m39_cloud','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -133,7 +133,7 @@ R_('${g}${b}${xl({H},labels,cx)}</svg>','${g}${b}${xl({H},labels,cx,o.k)}</svg>'
 R_('${x.f?`data-f="${x.f}"`:""}><span class="n"','${x.d?`data-d="${x.d}"`:x.f?`data-f="${x.f}"`:""}><span class="n"')
 R_('function openDr0(id){const f=M.DR&&M.DR[id];','function openDr0(id){const f=(M.DR&&M.DR[id])||(window.CDRES&&CDRES(id))||(STD[id]&&STD[id].fn);')
 R_('const p=DRGO[id];','const p=DRGO[id]||(window.CDGO&&CDGO(id))||(STD[id]&&STD[id].go);')
-css=open('src/mods/m5.css').read()+open('src/mods/m6.css').read()+open('src/mods/m7.css').read()
+css=open('src/mods/m5.css').read()+open('src/mods/m6.css').read()+open('src/mods/m7.css').read()+open('src/mods/m8.css').read()
 mp={9:12.5,10:12.5,11:12.5,12:13.5,13:14.5,14:15.5,15:16,18:19,20:21,22:24}
 def fz(m):
     v=float(m.group(1));return 'font-size:%gpx'%mp.get(int(v),v)
@@ -154,7 +154,9 @@ _cfg=json.load(open(_cfgp)) if os.path.exists(_cfgp) else {}
 _cfg={k:v for k,v in _cfg.items() if k in ('url','key') and v}
 _ld=open('src/cloud_loader.js').read()
 assert '</script' not in js
-APP='<script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
+_gs=open('src/vendor/gsap.min.js').read()
+assert '</script' not in _gs
+APP='<script>'+_gs+'</script><script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
 frag=pre+APP+post
 open('dist/frag.html','w').write(frag)
 head=pre.split('<style>')[0]
@@ -165,7 +167,7 @@ R_('cmfUI();wire();updBell()}','cmfUI();uxUI();wire();updBell()}')
 R_('const adj=ladjSum(e.no,t);r[t]={open,used','const adj=ladjSum(e.no,t);open=accOpen(e,t,open);r[t]={open,used')
 R_('${note("Entitlements are sample policy values.','${accrualCard()}${note("Entitlements are sample policy values.')
 R_('(STD[id]&&STD[id].fn);if(!f)return;const o=f();LASTDRILL=o;','(STD[id]&&STD[id].fn);if(!f)return;const o=f();LASTDRILL=o;return drOpenNice(o);')
-APP='<script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
+APP='<script>'+_gs+'</script><script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
 frag=pre+APP+post
 open('dist/frag.html','w').write(frag)
 full='<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'+HEAD+'<style>'+CSS+'</style></head><body>'+BODY+APP+'</body></html>\n'

@@ -50,6 +50,13 @@
     g.innerHTML = '<div class="cgc" role="dialog" aria-modal="true"><div class="cgl">' + '<div>' + (LG ? '<img src="' + LG + '" alt="SMR">' : "") + '<p>Savills Management Resources, Egypt</p></div>' +
       '<ul><li><i>&#10003;</i>Your own data, protected by your account</li><li><i>&#10003;</i>Leave, attendance and payslips</li><li><i>&#10003;</i>Works on phone and desktop</li></ul></div><div class="cgr">' + html + "</div></div>";
     var f = g.querySelector("input"); if (f) f.focus();
+    // one entrance when the sign-in card first appears (GSAP is loaded before this script)
+    if (!g._an && window.gsap && window.matchMedia && matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      g._an = 1; var c = g.querySelector(".cgc");
+      gsap.timeline({ defaults: { ease: "power3.out" } }).from(c, { autoAlpha: 0, y: 18, scale: .985, duration: .5, clearProps: "all" })
+        .from(g.querySelectorAll(".cgr>*,.cgr form>*"), { autoAlpha: 0, y: 8, duration: .32, stagger: .035, clearProps: "all" }, .15)
+        .from(g.querySelectorAll(".cgl li"), { autoAlpha: 0, x: -8, duration: .3, stagger: .06, clearProps: "all" }, .25);
+    }
     return g;
   }
   function closeGate() { var g = $("cg"); if (g) g.remove(); }
@@ -188,10 +195,10 @@
     g.querySelector("#cgf").onsubmit = function (ev) {
       ev.preventDefault(); var b = g.querySelector(".p");
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("cge").value.trim())) { g.querySelector("#cgx").textContent = "Enter your full work email, for example name@savills.me."; $("cge").focus(); return; }
-      b.disabled = true; g.querySelector("#cgx").textContent = "";
+      b.disabled = true; b.setAttribute("aria-busy", "true"); g.querySelector("#cgx").textContent = "";
       var rm = $("cgrm").checked; try { if (rm) localStorage.setItem("cg_email", $("cge").value.trim()); else localStorage.removeItem("cg_email"); } catch (e) { }
       authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t, rm); start(); })
-        .catch(function (e) { b.disabled = false; g.querySelector("#cgx").textContent = /invalid login/i.test(e.message) ? "Wrong email or password." : e.message; });
+        .catch(function (e) { b.disabled = false; b.removeAttribute("aria-busy"); g.querySelector("#cgx").textContent = /invalid login/i.test(e.message) ? "Wrong email or password." : e.message; });
     };
     try { var le = localStorage.getItem("cg_email"); if (le) { $("cge").value = le; $("cgp").focus(); } else { $("cgrm").checked = true; } } catch (e) { }
     g.querySelector("#cgfp").onclick = function () {
