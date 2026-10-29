@@ -360,6 +360,8 @@ html[data-comfort=dark] .b.p{background:#2a7bd1;color:#fff}
 .pbody .act{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}.pbody .act>span{flex:1;min-width:0}.pbody .act .b{flex:none}
 
 .orgb{display:inline-flex;gap:6px;align-items:center;margin-left:10px;flex-wrap:wrap}.orgb .b.s{padding:3px 9px;font-size:12px}
+
+:focus-visible{outline:2px solid var(--blue,#0460B5);outline-offset:2px}button:focus-visible,.b:focus-visible,.nav:focus-visible{outline:2px solid #0460B5;outline-offset:2px;box-shadow:0 0 0 4px rgba(4,96,181,.25)}.skip{position:absolute;left:-999px;top:8px;background:#0460B5;color:#fff;padding:8px 14px;border-radius:8px;z-index:100}.skip:focus{left:8px}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -1586,7 +1588,14 @@ function rep_hr(){const asof=rpAsof(),L=rpEmps(),AL=ALLE().filter(rpOk),yr0=new 
  const EMd=(t,A)=>()=>({title:t,desc:"Employees in service.",cols:["No.","Name","Department","Status","Hire date"],rows:A.map(e=>[e.no,e.name,e.dept,e.status,e.hire])}),LVd=()=>({title:"Leavers in the 12 months to "+asof,desc:"",cols:["No.","Name","Department","Last day"],rows:left.map(e=>[e.no,e.name,e.dept,e.term])});
  const bands=[["Under 1 year",e=>yrs(e)<1],["1 to 3 years",e=>yrs(e)>=1&&yrs(e)<3],["3 to 5 years",e=>yrs(e)>=3&&yrs(e)<5],["5 years or more",e=>yrs(e)>=5]];
  return`${rpBar()}<div class="grid kpis" style="margin-top:10px">${stat("Headcount",L.length,"As at "+asof,EMd("Headcount",L))}${stat("Leavers (12 months)",left.length,"",LVd)}${stat("Turnover rate",(left.length/avg*100).toFixed(1)+" %","Leavers ÷ average headcount",LVd)}${stat("Average tenure",(L.reduce((s,e)=>s+yrs(e),0)/Math.max(1,L.length)).toFixed(1)+" years","",()=>({title:"Tenure by employee",desc:"Years since hire date.",cols:["No.","Name","Department","Hire date","Years"],rows:L.map(e=>[e.no,e.name,e.dept,e.hire,yrs(e).toFixed(1)]).sort((a,b)=>b[4]-a[4])}))}</div>
- ${secH("By employment status")}${rtab("rh1",["Status","Employees"],grpL(AL,e=>e.status,"Status"))}${secH("By contract type")}${rtab("rh2",["Type","Employees"],grpL(L,e=>e.type,"Contract type"))}${secH("By tenure")}${rtab("rh3",["Tenure","Employees"],bands.map(([l,f])=>[l,dlink(L.filter(f).length,EMd("Tenure: "+l,L.filter(f)))]))}${secH("Leavers by reason (12 months)")}${rtab("rh4",["Reason","Leavers"],grpL(left.map(e=>({...e,termReason:e.termReason||"Not recorded"})),e=>e.termReason,"Reason"))}`}
+ ${secH("By employment status")}${rtab("rh1",["Status","Employees"],grpL(AL,e=>e.status,"Status"))}${secH("By contract type")}${rtab("rh2",["Type","Employees"],grpL(L,e=>e.type,"Contract type"))}${secH("By tenure")}${rtab("rh3",["Tenure","Employees"],bands.map(([l,f])=>[l,dlink(L.filter(f).length,EMd("Tenure: "+l,L.filter(f)))]))}${secH("Leavers by reason (12 months)")}${rtab("rh4",["Reason","Leavers"],grpL(left.map(e=>({...e,termReason:e.termReason||"Not recorded"})),e=>e.termReason,"Reason"))}${orgHealth(L,asof)}`}
+function orgHealth(L,asof){const nm=new Map(L.map(e=>[e.name,e])),dc={};L.forEach(e=>{if(e.mgr&&nm.has(e.mgr))(dc[e.mgr]=dc[e.mgr]||[]).push(e)});
+ const mg=Object.keys(dc).map(n=>nm.get(n)),depth=e=>{let d=1,x=e,s=new Set();while(x.mgr&&nm.has(x.mgr)&&!s.has(x.no)){s.add(x.no);x=nm.get(x.mgr);d++}return d},layers=L.length?Math.max(...L.map(depth)):0,avg=mg.length?(L.filter(e=>e.mgr&&nm.has(e.mgr)).length/mg.length):0;
+ const in30=iso(new Date(new Date(asof+"T00:00:00").getTime()+30*864e5)),prob=L.filter(e=>e.probend&&e.probend>=asof&&e.probend<=in30),noMgr=L.filter(e=>!dc[e.name]&&(!e.mgr||(!nm.has(e.mgr)&&e.mgr!=="Executive team")));
+ const flag=n=>n>10?bd("Wide span","s-wn"):n===1?bd("Single report","s-wn"):bd("OK","s-ok");
+ const MD=(t,A)=>()=>({title:t,desc:"",cols:EMC,rows:empRows(A)});
+ return`${secH("Organization health")}<div class="grid kpis">${stat("Managers",mg.length,"People with direct reports",MD("Managers",mg))}${stat("Average span of control",avg.toFixed(1),"Direct reports per manager",MD("Managers",mg))}${stat("Management layers",layers,"From the top to the lowest level",MD("All employees",L))}${stat("Probation ending in 30 days",prob.length,"Confirm or extend",MD("Probation ending in 30 days",prob))}${stat("No reporting manager",noMgr.length,"Fix in Employee Profiles",MD("No reporting manager",noMgr))}</div>
+ ${secH("Span of control by manager")}${rtab("rh5",["Manager","Department","Direct reports","Check"],mg.sort((a,b)=>dc[b.name].length-dc[a.name].length).map(m=>[dlink(esc(m.name),MD("Direct reports of "+m.name,dc[m.name])),esc(m.dept),dc[m.name].length,flag(dc[m.name].length)]),{empty:"No reporting lines yet."})}`}
 reg("rep_hr","HR Analytics","Headcount mix, turnover and tenure for a chosen month, department and project.",A("HRD","HRS","FIN"),rep_hr);
 /* attendance */
 function rep_att(){const days=rpDays(),L=ALLE().filter(e=>e.status!=="Terminated"&&rpOk(e));
@@ -2112,6 +2121,14 @@ document.addEventListener("click",ev=>{const t=ev.target.closest("[data-rg]");if
 try{const hp=unhk(location.hash.slice(1));if(hp)page=hp}catch(e){}
 
 Object.defineProperty(PAGES.work,"title",{get:()=>role===R.EMP?"My Portal":"My Workspace"});Object.defineProperty(PAGES.work,"desc",{get:()=>role===R.EMP?"Your details, payslips, leave, loans and requests to HR.":"Clock in and out, check leave balances, request time off and see who is out."});
+
+/* accessibility: label unlabeled controls, modal semantics, skip link */
+(function(){const fix=()=>{document.querySelectorAll("#view input,#view select,#view textarea,#drawer input,#drawer select").forEach(e=>{if(e.type==="hidden"||e.closest("label")||e.getAttribute("aria-label")||(e.id&&document.querySelector('label[for="'+e.id+'"]')))return;const t=e.placeholder||(e.tagName==="SELECT"&&e.options[0]?e.options[0].text.replace(/^All /,"Filter by "):"")||e.name||"Field";e.setAttribute("aria-label",t)});
+ document.querySelectorAll("#view table").forEach(t=>{if(!t.getAttribute("aria-label"))t.setAttribute("aria-label",(document.getElementById("title")||{}).textContent||"Table")});
+ const d=document.getElementById("drawer");if(d&&!d.getAttribute("aria-modal"))d.setAttribute("aria-modal","true");
+ const m=document.querySelector("main");if(m&&!m.id){m.id="main";m.tabIndex=-1}
+ if(!document.querySelector(".skip")){const a=document.createElement("a");a.className="skip";a.href="#main";a.textContent="Skip to main content";a.onclick=ev=>{ev.preventDefault();const mm=document.getElementById("main");mm&&mm.focus()};document.body.prepend(a)}};
+ const v=document.getElementById("view");if(v){new MutationObserver(fix).observe(v,{childList:true,subtree:true});const dr=document.getElementById("drawer");dr&&new MutationObserver(fix).observe(dr,{childList:true,subtree:true});fix()}})();
 
 
 $("#role").innerHTML=Object.keys(ROLES).map(r=>`<option>${r}</option>`).join("");$("#grole").innerHTML=$("#role").innerHTML;
