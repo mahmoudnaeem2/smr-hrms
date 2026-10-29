@@ -391,6 +391,8 @@ tbody tr:hover td,table tr:hover td{background:var(--soft)}
 .nrq{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.nq{display:grid;gap:3px;text-align:left;padding:12px;background:var(--surf,#fff);border:1px solid var(--bd);border-radius:12px;cursor:pointer;color:inherit}.nq:hover{border-color:var(--btn);box-shadow:0 6px 16px rgba(4,96,181,.12);transform:translateY(-1px)}.nq b{font-size:14.5px}.nq small{color:var(--mu);font-size:12.5px}
 
 .chk{display:flex!important;align-items:center;gap:8px;grid-column:1/-1}.chk input{width:auto}
+
+.nf{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}.nf .nsec{grid-column:1/-1;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);border-top:1px solid var(--bd);padding-top:12px;margin-top:6px}.nf .nsec:first-child{border:0;margin:0;padding:0}.nf .nsub{grid-column:1/-1;height:46px;font-size:16px}.nf label{min-width:0}@media(max-width:560px){.nf{grid-template-columns:1fr}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2264,6 +2266,28 @@ document.addEventListener("submit",ev=>{const f=ev.target;if(!f||!f.querySelecto
 {let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;moneyize()})}).observe(document.body,{childList:true,subtree:true})}
 
 document.addEventListener("focusin",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.money)setTimeout(()=>{try{i.select()}catch(e){}},0)});
+
+/* Compact Add employee: only what is needed to start; the rest is completed later */
+ACTS.eadd=()=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist can add employees.");if(MODE==="sample")return toast("Sample data is read-only.");
+ const no=nextEmpNo(),mgrs=allEmps().filter(e=>e.status!=="Terminated"),ccs=ccOpts("").filter(x=>x[0]);
+ const sec=t=>`<div class="nsec">${t}</div>`;
+ openDr2("Add employee","Number "+no+" is assigned automatically. Fill the essentials now; other details can be added later from the profile.",
+ `<form class="nf" data-form="empnew"><input type="hidden" name="no" value="${no}">
+ ${sec("Who")}${fld("Full name","name","text",{req:1})}${fld("Mobile","mobile","tel")}${fld("Work email","email","email")}${fld("National ID (14 digits)","nid","text")}
+ ${sec("Job")}${fld("Department","dept","select",{req:1,opts:DEPTS})}${fld("Job title","pos","text",{req:1})}${fld("Reporting to","mgr","select",{opts:[["","None"],...mgrs.map(e=>[e.name,e.name])]})}${fld("Start date","hire","date",{req:1,val:iso(T0)})}${fld("Employment type","type","select",{opts:TYPES,val:"Full-time"})}${fld("Status","status","select",{opts:["Active","Probation"],val:"Active"})}${ccs.length?fld("Project or cost center","project","select",{opts:ccs}):""}
+ ${sec("Pay")}<label>Basic salary (EGP / month)<input name="n_basic" type="number" placeholder="0" required></label>${ALWT.map(([k,l])=>`<label>${l} allowance<input name="n_${k}" type="number" placeholder="0"></label>`).join("")}
+ ${sec("Bank (optional)")}${fld("Bank name","bankname","text")}${fld("Account number","bankacct","text")}${fld("IBAN","iban","text")}
+ <button class="b p nsub" type="submit">Add employee</button></form><div class="err"></div>`)};
+FORMS.empnew=o=>{if(!canEditEmp())return"Only HR can add employees.";const g=k=>(o[k]||"").trim(),num=v=>+String(v||0).replace(/,/g,"");
+ if(!g("name"))return"Enter the full name.";if(!g("pos"))return"Enter the job title.";if(!g("hire"))return"Enter the start date.";if(!g("dept"))return"Choose the department.";
+ if(g("email")&&!/^\S+@\S+\.\S+$/.test(g("email")))return"The email address looks invalid.";if(g("mobile")&&!/^\+?[\d\s\-]{8,16}$/.test(g("mobile")))return"The mobile number looks invalid.";
+ const ch={no:g("no"),name:g("name"),mobile:g("mobile"),email:g("email"),dept:g("dept"),pos:g("pos"),mgr:g("mgr"),hire:g("hire"),type:g("type")||"Full-time",status:g("status")||"Active",loc:"Head Office",project:g("project")||"",nat:"Egyptian",sched:SCHEDS[0],coach:"",lapp:"",tapp:"",bank:false};
+ if(g("nid")){const x=egyId(g("nid"));if(!x)return"The National ID must be 14 digits with a valid birth date inside it.";if(allEmps().some(e=>String(e.nid||"")===g("nid")))return"An employee with this National ID already exists.";ch.nid=g("nid");ch.dob=x.dob;ch.gender=x.gender}
+ const bs=num(o.n_basic);if(!o.n_basic||isNaN(bs)||bs<0)return"Enter the basic salary.";const alw={};let al=0;for(const[k,l]of ALWT){const v=num(o["n_"+k]);if(isNaN(v)||v<0)return l+" allowance must be zero or more.";if(v>0){alw[k]=v;al+=v}}
+ if(g("iban")&&!ibanOK(g("iban")))return"The IBAN is not valid. An Egyptian IBAN is EG followed by 27 digits.";if(g("bankacct")&&!/^\d{6,24}$/.test(g("bankacct").replace(/\s/g,"")))return"Account number should be 6 to 24 digits.";
+ if((g("bankacct")||g("iban"))&&!g("bankname"))return"Enter the bank name.";if(g("bankname")&&(g("bankacct")||g("iban"))){ch.bankname=g("bankname");ch.bankacct=g("bankacct");ch.iban=g("iban");ch.bank=true}
+ if(allEmps().some(e=>e.no===ch.no))return"Employee number already used, close and try again.";
+ E.push({...ch,basic:bs,allow:al,alw,end:""});save();LOGC(ch.no,"New joiner","Added, start "+ch.hire+", basic "+bs);audit("Employee added",ch.no+" - "+ch.name);closeDr();toast(ch.name+" added");PROF=ch.no;TAB.prof="ov";draw()};
 
 /* ===== m21: email notifications through Outlook (compose links and outbox) ===== */
 const MCFG=()=>{const c=db("mailcfg",{},false);if(!c.client)Object.assign(c,{client:"web",on:1,ev:{ap:1,dec:1,hq:1,wn:1},cc:"",sig:"Savills Management Resources (SMR) HR",link:"https://mahmoudnaeem2.github.io/smr-hrms/",rm:{}});return c};
