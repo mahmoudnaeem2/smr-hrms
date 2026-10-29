@@ -23,3 +23,9 @@
  document.addEventListener("click",ev=>{const d=document.getElementById("drawer");if(!d||!d.classList.contains("open"))return;const t=ev.target;if(!t||!t.closest)return;if(t.closest("#drawer,#confirm,.scrim,.rmo,.toast,#toast,#cg"))return;if(!document.contains(t))return;closeDr()},true);
  document.addEventListener("keydown",ev=>{if(ev.key!=="Escape")return;const d=document.getElementById("drawer"),c=document.getElementById("confirm");if(c&&!c.hidden)return;if(d&&d.classList.contains("open"))closeDr()});
 })();
+/* typing in a search box or changing a filter redraws the page: do not replay the page-enter animation each time (it looked like shaking) */
+(function(){let lastKey="",lastIn=0;const mark=()=>{lastIn=Date.now()};
+ ["input","change","keydown"].forEach(t=>document.addEventListener(t,ev=>{const e=ev.target;if(e&&e.closest&&e.closest("#view"))mark()},true));
+ const v=document.getElementById("view");if(!v)return;
+ new MutationObserver(()=>{const k=page+"|"+role+"|"+MODE;v.classList.toggle("nov",k===lastKey&&Date.now()-lastIn<1200);lastKey=k}).observe(v,{childList:true});
+})();

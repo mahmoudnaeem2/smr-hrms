@@ -618,3 +618,5 @@ body.cloud label:has(input[name=access]){display:none!important}
 body:has(.zback) #strip,body:has(.pbn) #strip{display:none}
 body:has(.zback) .ph,body:has(.pbn) .ph{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 body:has(.zback) main,body:has(.pbn) main{padding-top:18px}
+/* no page-enter animation when only a filter or search changed; keep the scrollbar from shifting the layout */
+#view.nov>*{animation:none!important}html{scrollbar-gutter:stable}
