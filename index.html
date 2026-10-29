@@ -462,6 +462,20 @@ form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 .lvd{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;margin-bottom:14px}.lvdc h3{margin:0 0 2px;font-size:20px;font-weight:600}.lvdg{display:grid;place-items:center;margin:6px 0}.lvdf{display:flex;justify-content:space-between;align-items:center;gap:8px}.lvdf .lnk{font-weight:600}
 :root{--dnb:#e1e4e8}html[data-comfort=dark]{--dnb:#2c3b52}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dnb:#2c3b52}}
 .lrpf .nf{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end}.lrpb{display:flex;align-items:end}.lrpb .b{height:46px}
+/* sidebar search */
+.sps{position:relative;margin:10px 14px 6px;display:flex;align-items:center}
+.sps>svg{position:absolute;left:11px;width:16px;height:16px;color:rgba(255,255,255,.7);pointer-events:none}
+.sps input{width:100%;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12);color:#fff;padding:0 54px 0 34px;font-size:13.5px;outline:0}
+.sps input::placeholder{color:rgba(255,255,255,.7)}
+.sps input:focus{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55)}
+.sps kbd{position:absolute;right:8px;font:600 10px/1 inherit;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.3);border-radius:5px;padding:3px 5px;pointer-events:none}
+.sps input:focus~kbd,.sps input:not(:placeholder-shown)~kbd{display:none}
+#pal2{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:280px;max-height:60vh;overflow:auto;background:var(--surf);color:var(--tx);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);z-index:80;padding:6px}
+#pal2 .pg{padding:8px 10px 4px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mu)}
+#pal2 .pi{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--tx);gap:1px}
+#pal2 .pi small{color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#pal2 .pi:hover,#pal2 .pi.on{background:var(--soft)}
+body.rail .sps{display:none}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2637,6 +2651,22 @@ function rep_leave(){const D=lrpData(),F=D.F,dp=[...new Set(allEmps().map(e=>e.d
 document.addEventListener("change",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.lrp){TAB["lrp_"+i.dataset.lrp]=i.value;if(i.dataset.lrp==="from"&&TAB.lrp_to&&i.value>TAB.lrp_to)TAB.lrp_to=i.value;draw()}});
 ACTS.lrp_xl=()=>{const D=lrpData(),F=D.F;XL.save("Leave report "+F.from+" to "+F.to,[{name:"Summary",cols:["Measure","Value"],rows:[["Period",dmyS(F.from)+" to "+dmyS(F.to)],["Department",F.dept||"All"],["Leave type",F.type||"All"],["Status",F.st||"All"],["People who took leave",D.people],["Employees in scope",D.emps.length],["Leave days taken",D.days],["Pending requests",D.pend],["People with no leave taken",D.none.length]]},{name:"Leave requests",cols:LRP_COLS.rows,rows:D.rows},{name:"Balances per employee",cols:LRP_COLS.bal,rows:D.bal},{name:"No leave taken",cols:LRP_COLS.none,rows:D.none}]);audit("Leave report exported",F.from+" to "+F.to)};
 reg("rep_leave","Leave Report","Who took leave, how many days, and everyone's balance. Download it as Excel.",A("HRD","HRS","DM","FIN"),rep_leave);
+
+/* Sidebar search: pages, people, projects (uses palResults) */
+let SPI=-1,SPR=[];
+function spInit(){const side=$("#side");if(!side||$("#sps"))return;const br=side.querySelector(".brand");if(!br)return;
+ br.insertAdjacentHTML("afterend",'<div class="sps" id="sps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs2" type="search" placeholder="Search pages, people…" autocomplete="off" aria-label="Search pages, people, projects"><kbd>Ctrl K</kbd><div id="pal2" role="listbox" hidden></div></div>');
+ const g=$("#gs2");
+ g.addEventListener("input",()=>{SPI=-1;spDraw()});g.addEventListener("focus",()=>{SPI=-1;spDraw()});
+ g.addEventListener("blur",()=>setTimeout(()=>{const b=$("#pal2");if(b)b.hidden=true},180));
+ g.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();SPI=(SPI+(e.key==="ArrowDown"?1:-1)+SPR.length)%Math.max(1,SPR.length);spDraw()}else if(e.key==="Enter"){e.preventDefault();spPick(SPI>=0?SPI:0)}else if(e.key==="Escape"){g.value="";g.blur()}});
+ $("#pal2").addEventListener("mousedown",e=>{const b=e.target.closest("[data-si]");if(b){e.preventDefault();spPick(+b.dataset.si)}})}
+function spDraw(){const g=$("#gs2"),b=$("#pal2");if(!g||!b)return;const qq=g.value.trim().toLowerCase();SPR=palResults(g.value);if(qq){const w=r=>r.t.toLowerCase().startsWith(qq)?0:r.t.toLowerCase().includes(qq)?1:2;const gi={};SPR.forEach(r=>{if(!(r.g in gi))gi[r.g]=Object.keys(gi).length});SPR=SPR.map((r,i)=>[r,i]).sort((a,b)=>gi[a[0].g]-gi[b[0].g]||w(a[0])-w(b[0])||a[1]-b[1]).map(x=>x[0])}
+ if(!SPR.length){b.innerHTML=g.value.trim()?'<div class="pg">No results</div>':"";b.hidden=!g.value.trim()||document.activeElement!==g;return}
+ let last="";b.innerHTML=SPR.map((r,i)=>{const h=r.g!==last?`<div class="pg">${esc(r.g)}</div>`:"";last=r.g;return h+`<button type="button" class="pi ${i===SPI?"on":""}" data-si="${i}" role="option"><b>${esc(r.t)}</b><small>${esc((r.s||"").slice(0,80))}</small></button>`}).join("");b.hidden=document.activeElement!==g}
+function spPick(i){const r=SPR[i];if(!r)return;$("#pal2").hidden=true;const g=$("#gs2");g.value="";g.blur();try{document.body.classList.remove("navopen")}catch(e){}r.a()}
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){const g=$("#gs2");if(g&&g.offsetParent!==null){e.preventDefault();e.stopImmediatePropagation();g.focus();g.select()}}},true);
+spInit();
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
