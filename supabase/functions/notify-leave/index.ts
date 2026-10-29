@@ -3,7 +3,7 @@
 //   kind "submitted": an employee sent a request  -> email to the approver (line manager, else HR)
 //   kind "decided"  : HR approved or rejected it  -> email to the employee
 // The function reads the request from the database itself, so a caller cannot make it send text of their choice.
-// Mail provider (set as secrets): RESEND_API_KEY + MAIL_FROM, or SMTP_HOST + SMTP_PORT + SMTP_USER + SMTP_PASS + MAIL_FROM.
+// Mail provider (set as secrets): MS_TENANT_ID + MS_CLIENT_ID + MS_CLIENT_SECRET + MAIL_FROM (Microsoft 365), or RESEND_API_KEY + MAIL_FROM, or SMTP_HOST + SMTP_PORT + SMTP_USER + SMTP_PASS + MAIL_FROM.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
@@ -29,6 +29,23 @@ function page(title: string, lines: string[], appUrl: string, button: string) {
 async function send(to: string[], subject: string, html: string) {
   const from = Deno.env.get("MAIL_FROM");
   if (!from) throw new Error("mail_not_configured");
+  const tid = Deno.env.get("MS_TENANT_ID"), cid = Deno.env.get("MS_CLIENT_ID"), csec = Deno.env.get("MS_CLIENT_SECRET");
+  if (tid && cid && csec) {
+    // Microsoft 365 via Graph (app-only, Mail.Send). MAIL_FROM = the mailbox to send as, e.g. "SMR HRMS <hr-system@savills.me>".
+    const addr = (from.match(/<([^>]+)>/)?.[1] || from).trim();
+    const tr = await fetch(`https://login.microsoftonline.com/${tid}/oauth2/v2.0/token`, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ client_id: cid, client_secret: csec, scope: "https://graph.microsoft.com/.default", grant_type: "client_credentials" }),
+    });
+    const tj = await tr.json();
+    if (!tr.ok) throw new Error("Microsoft sign-in: " + (tj.error_description || tj.error));
+    const r = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(addr)}/sendMail`, {
+      method: "POST", headers: { Authorization: `Bearer ${tj.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ message: { subject, body: { contentType: "HTML", content: html }, toRecipients: to.map((a) => ({ emailAddress: { address: a } })) }, saveToSentItems: false }),
+    });
+    if (!r.ok) throw new Error("Graph: " + (await r.text()));
+    return;
+  }
   const rk = Deno.env.get("RESEND_API_KEY");
   if (rk) {
     const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${rk}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to, subject, html }) });
