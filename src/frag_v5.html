@@ -303,8 +303,8 @@ const RULES=[["Minimum monthly insurable wage","Social Insurance","EGP 2,700"],[
 const EMPTY=["Income tax brackets","Annual personal exemption","Overtime multipliers","Annual and sick leave entitlements","Public holidays","Final settlement rules"];
 function comp(){return`<div class="notice">Reference values from your brief for the 2026 configuration. They are <b>not verified</b> against official sources and must not be used for production payroll.</div>
 <div class="card wrap"><table><tr><th>Rule</th><th>Category</th><th>Value</th><th>Effective from</th><th>Legal reference / source URL</th><th>Approval</th><th>Verified by / date</th></tr>
-${RULES.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>2026-01-01 (to confirm)</td><td>Not recorded</td><td><span class="badge s-wn">Unverified – review required</span></td><td>–</td></tr>`).join("")}
-${EMPTY.map(r=>`<tr><td>${r}</td><td>–</td><td>Not configured</td><td>–</td><td>Not recorded</td><td><span class="badge s-er">Missing – payroll blocked</span></td><td>–</td></tr>`).join("")}</table></div>
+${RULES.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>2026-01-01 (to confirm)</td><td>–</td><td><span class="badge s-wn">Unverified – review required</span></td><td>–</td></tr>`).join("")}
+${EMPTY.map(r=>`<tr><td>${r}</td><td>–</td><td>Not configured</td><td>–</td><td>–</td><td><span class="badge s-er">Missing – payroll blocked</span></td><td>–</td></tr>`).join("")}</table></div>
 <p class="sub" style="margin-top:12px">Payroll cannot be calculated until each rule is entered with a legal reference, an effective date, and a documented review.</p>`}
 
 
