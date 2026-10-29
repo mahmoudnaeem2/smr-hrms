@@ -433,3 +433,8 @@ h2{font-size:17px;letter-spacing:-.01em;font-weight:700}
 @media (max-width:700px){td{padding:10px 12px!important}h1{font-size:23px!important}}
 /* touch targets on phones */
 @media (max-width:700px){.chip2,.backl,select,.b,#side .nav{min-height:42px}.backl{padding:8px 4px}td button.lnk{padding:10px 2px}input[type=checkbox],input[type=radio]{width:22px;height:22px}}
+/* WCAG 2.2: focus not obscured, target size */
+html{scroll-padding-top:90px}
+input[type=checkbox],input[type=radio]{min-width:24px;min-height:24px;accent-color:var(--btn)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--btn) 45%,transparent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

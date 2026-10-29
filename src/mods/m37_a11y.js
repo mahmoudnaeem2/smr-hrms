@@ -1,0 +1,3 @@
+/* ===== m37: accessibility upgrades (WCAG 2.2 AA) ===== */
+(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
+ new MutationObserver(()=>{if(!t)t=setTimeout(fix,60)}).observe(document.body,{childList:true,subtree:true});fix()})();

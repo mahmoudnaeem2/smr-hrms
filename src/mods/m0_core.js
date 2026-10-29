@@ -36,7 +36,7 @@ const META=new Proxy({},{get:(_,k)=>PAGES[k]?[PAGES[k].title,PAGES[k].desc]:["",
 
 /* ----- tables, tabs, paging ----- */
 const PGS={},TAB={},CSVS={};
-function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${o.empty||"No records yet."}</div></div>`;return`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`}
+function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${o.empty||"Nothing here yet. Records will show up in this table once they are added."}</div></div>`;return`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`}
 function ptbl(key,cols,rows,o={}){const ps=o.ps||15,n=Math.max(1,Math.ceil(rows.length/ps));let p=PGS[key]||0;if(p>=n)p=n-1;PGS[key]=p;const ck=o.csv||key;CSVS[ck]={cols,rows};
  return tbl(cols,rows.slice(p*ps,p*ps+ps),{...o,csv:ck})+(n>1?`<div class="bar" style="margin-top:10px"><button class="b" data-pgk="${key}:-1" ${p?"":"disabled"}>Previous</button><span>Page ${p+1} of ${n} · ${rows.length} records</span><button class="b" data-pgk="${key}:1" ${p>=n-1?"disabled":""}>Next</button></div>`:"")}
 const csvBtn=(name,cols,rows)=>{CSVS[name]={cols,rows};return`<button class="b" data-act="xlsx:${name}">Export Excel</button> <button class="b" data-act="csv:${name}">Copy as CSV</button>`};

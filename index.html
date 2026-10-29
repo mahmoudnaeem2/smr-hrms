@@ -621,6 +621,11 @@ h2{font-size:17px;letter-spacing:-.01em;font-weight:700}
 @media (max-width:700px){td{padding:10px 12px!important}h1{font-size:23px!important}}
 /* touch targets on phones */
 @media (max-width:700px){.chip2,.backl,select,.b,#side .nav{min-height:42px}.backl{padding:8px 4px}td button.lnk{padding:10px 2px}input[type=checkbox],input[type=radio]{width:22px;height:22px}}
+/* WCAG 2.2: focus not obscured, target size */
+html{scroll-padding-top:90px}
+input[type=checkbox],input[type=radio]{min-width:24px;min-height:24px;accent-color:var(--btn)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--btn) 45%,transparent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -915,7 +920,7 @@ const META=new Proxy({},{get:(_,k)=>PAGES[k]?[PAGES[k].title,PAGES[k].desc]:["",
 
 /* ----- tables, tabs, paging ----- */
 const PGS={},TAB={},CSVS={};
-function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${o.empty||"No records yet."}</div></div>`;return`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`}
+function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${o.empty||"Nothing here yet. Records will show up in this table once they are added."}</div></div>`;return`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`}
 function ptbl(key,cols,rows,o={}){const ps=o.ps||15,n=Math.max(1,Math.ceil(rows.length/ps));let p=PGS[key]||0;if(p>=n)p=n-1;PGS[key]=p;const ck=o.csv||key;CSVS[ck]={cols,rows};
  return tbl(cols,rows.slice(p*ps,p*ps+ps),{...o,csv:ck})+(n>1?`<div class="bar" style="margin-top:10px"><button class="b" data-pgk="${key}:-1" ${p?"":"disabled"}>Previous</button><span>Page ${p+1} of ${n} · ${rows.length} records</span><button class="b" data-pgk="${key}:1" ${p>=n-1?"disabled":""}>Next</button></div>`:"")}
 const csvBtn=(name,cols,rows)=>{CSVS[name]={cols,rows};return`<button class="b" data-act="xlsx:${name}">Export Excel</button> <button class="b" data-act="csv:${name}">Copy as CSV</button>`};
@@ -1619,7 +1624,7 @@ reg("notif","Notifications","Items that need your attention, shown once each.",A
 const USR=()=>{const L=db("users",[],false);for(let i=L.length-1;i>=0;i--)if(/^u\d$/.test(L[i].id)&&/^Demo /.test(L[i].name))L.splice(i,1);return L};
 function users(){const can=[R.ADM,R.HRD].includes(role);
  return`${note("<b>Prototype:</b> these are demo accounts used by the role preview. Real sign-in, passwords, two-step verification and session control need a backend.","sm")}${tbl(["Account","Role","Status",can?"Actions":""],USR().map(u=>[esc(u.name),esc(u.role),u.active?bd("Active","s-ok"):bd("Disabled","s-mu"),can?`<button class="b" data-act="utog:${u.id}">${u.active?"Disable":"Enable"}</button> <button class="b" data-act="urole:${u.id}">Change role</button>`:""]))}`}
-ACTS.utog=id=>ask("Change the status of this account?","Confirm",(t)=>{const u=USR().find(x=>x.id===id);if(!u||![R.ADM,R.HRD].includes(role))return;if(u.role===R.ADM&&u.active&&USR().filter(x=>x.role===R.ADM&&x.active).length<2)return toast("Keep at least one active administrator.");u.active=!u.active;sv("users",false);audit("User "+(u.active?"enabled":"disabled"),u.name+": "+t);draw()},{reason:1});
+ACTS.utog=id=>ask(((USR().find(x=>x.id===id)||{}).active?"Disable this account? The user will no longer be able to sign in.":"Enable this account? The user will be able to sign in again."),((USR().find(x=>x.id===id)||{}).active?"Disable account":"Enable account"),(t)=>{const u=USR().find(x=>x.id===id);if(!u||![R.ADM,R.HRD].includes(role))return;if(u.role===R.ADM&&u.active&&USR().filter(x=>x.role===R.ADM&&x.active).length<2)return toast("Keep at least one active administrator.");u.active=!u.active;sv("users",false);audit("User "+(u.active?"enabled":"disabled"),u.name+": "+t);draw()},{reason:1});
 ACTS.urole=id=>ask("Choose the new role and give a reason.","Change role",(t,c)=>{const u=USR().find(x=>x.id===id);if(!u||![R.ADM,R.HRD].includes(role))return;if(u.role===R.ADM&&c!==R.ADM&&USR().filter(x=>x.role===R.ADM&&x.active).length<2)return toast("Keep at least one active administrator.");audit("User role changed",u.name+": "+u.role+" to "+c+". "+t);u.role=c;sv("users",false);draw()},{reason:1,choices:Object.values(R)});
 reg("users","User Management","Accounts and their roles.",A("ADM","HRD"),users);
 function perms(){const can=[R.ADM,R.HRD].includes(role),roles=Object.values(R),ps=NAV.flatMap(g=>g[1].map(i=>i[1])).filter(k=>PAGES[k]);const was=role;
@@ -2922,7 +2927,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 82";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 83";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -3067,6 +3072,10 @@ RCATS.splice(0,RCATS.length,
 function NAVGRP(k){if(REPKEYS.includes(k)&&k!=="auditlog"&&k!=="reporting"&&k!=="leave_bal"&&k!=="pay_fs")return"Reports";if(k==="profile")return"People";const x=NAV.find(n=>n[1].some(i=>i[1]===k));return x?x[0]:""}
 function NAVACT(k){return k===page||(k==="emp"&&page==="profile")||(k==="reports"&&REPKEYS.includes(page)&&!["auditlog","reporting","leave_bal","pay_fs"].includes(page))}
 reg("reports","Reports","Every report in one place. Pick one, or search by name.",A("HRD","HRS","DM","FIN","PAY","ADM"),reports);
+
+/* ===== m37: accessibility upgrades (WCAG 2.2 AA) ===== */
+(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
+ new MutationObserver(()=>{if(!t)t=setTimeout(fix,60)}).observe(document.body,{childList:true,subtree:true});fix()})();
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
