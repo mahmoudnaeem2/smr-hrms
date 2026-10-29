@@ -815,6 +815,16 @@ body:has(.zback) main,body:has(.pbn) main{padding-top:18px}
 .avb{width:28px;height:28px;border-radius:50%;border:2px solid var(--surf,#fff);background:#0460B5;color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 2px 8px rgba(10,30,60,.25)}.avb:hover{background:#034a8c}.avb.avx{background:#6b7a90}
 .avb:focus-visible{outline:2px solid #f4c430;outline-offset:2px}
 @media(max-width:700px){.avb{width:34px;height:34px}}
+
+/* Users & Access table */
+.uatb td{vertical-align:middle!important;padding:14px 16px!important}.uatb th{padding:16px 16px 8px!important}
+.uacc{display:flex;align-items:center;gap:12px;min-width:0}.uacc .av{width:40px;height:40px;font-size:13px;font-weight:700;flex:none}.uacc b{font-size:14.5px}.uacc .mu{font-size:12.5px;overflow-wrap:anywhere}
+.uyou{font-size:11px;font-weight:700;background:var(--soft);color:var(--brand);border-radius:999px;padding:2px 8px;margin-left:4px;vertical-align:1px}
+.uapill{display:inline-block;font-size:12.5px;font-weight:600;background:var(--soft);color:var(--brand);border-radius:999px;padding:4px 12px;white-space:nowrap}.uapill.pend{background:var(--wnb,#fff3d1);color:var(--wn,#8f5f00)}
+.uatb .mu2{font-size:13.5px;color:var(--mu);white-space:nowrap}
+.uact{display:flex;gap:6px;justify-content:flex-end;flex-wrap:nowrap}.uact .b{height:34px;padding:0 12px;font-size:13px;white-space:nowrap}.uact .b.dng{color:var(--er);border-color:color-mix(in srgb,var(--er) 30%,var(--bd))}.uact .b.dng:hover{background:var(--erb)}
+@media(max-width:1200px){.uatb .card.wrap{overflow-x:auto}.uatb table{min-width:980px}}
+.uatb tr:hover>td{background:transparent!important}.uatb tr:hover>td:first-child,.uatb tr:hover>td:last-child{border-radius:0}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3425,11 +3435,12 @@ ACTS.phdel=no=>{if(!canPhoto(empBy(no)))return;ask("Remove this profile photo?",
   if(!isAdm())return forbid("Only the System Administrator or HR Director can manage accounts.");
   if(UP===null){loadUP();return`<div class="card"><div class="empty">Loading accounts…</div></div>`}
   const rows=UP.map(u=>{const me=u.id===C.uid,locked=me||(role!==R.ADM&&u.role===R.ADM),st=u.role==="Pending"?bd("No role yet","s-wn"):u.active?bd("Active","s-ok"):bd("Disabled","s-mu"),en=u.emp_no?allEmps().find(e=>e.no===u.emp_no):null;
-   return[`<b>${esc(u.full_name||"")}</b>${me?' <span class="mu">(you)</span>':""}<div class="mu" style="font-size:12px">${esc(u.email||"")}</div>`,esc(u.role),u.emp_no?esc(u.emp_no)+(en?'<div class="mu" style="font-size:12px">'+esc(en.dept||"")+"</div>":""):"–",st,ago(u.last_sign_in_at),locked?"":`<div class="acts"><button class="b" data-act="ua_role:${u.id}">Change role</button> <button class="b" data-act="ua_rst:${u.id}">Reset password</button> <button class="b" data-act="ua_tog:${u.id}">${u.active?"Disable":"Enable"}</button></div>`]});
+   const nm=u.full_name||(u.email||"").split("@")[0],rl=u.role==="Pending"?'<span class="uapill pend">Pending</span>':'<span class="uapill">'+esc(u.role)+"</span>";
+   return[`<div class="uacc"><i class="av">${esc(ini(nm))}</i><div><b>${esc(nm)}</b>${me?' <span class="uyou">You</span>':""}<div class="mu">${esc(u.email||"")}</div></div></div>`,rl,u.emp_no?`<b>${esc(u.emp_no)}</b>`+(en?'<div class="mu">'+esc(en.dept||"")+"</div>":""):'<span class="mu">Not linked</span>',st,`<span class="mu2">${typeof lrNice==="function"&&u.last_sign_in_at?esc(lrNice(String(u.last_sign_in_at).slice(0,10))):ago(u.last_sign_in_at)}</span>`,locked?"":`<div class="acts uact"><button class="b" data-act="ua_role:${u.id}">Change role</button><button class="b" data-act="ua_rst:${u.id}">Reset password</button><button class="b ${u.active?"dng":""}" data-act="ua_tog:${u.id}">${u.active?"Disable":"Enable"}</button></div>`]});
   return`${UPERR?note(esc(UPERR),"er"):""}
   <div class="card" style="margin-bottom:12px"><h2>Add an account</h2><form class="g" data-form="cuser">${fld("Work email","email","email",{req:1})}${fld("Role","role","select",{req:1,opts:rolesFor(),val:"Employee"})}${fld("Employee (for the Employee role)","emp_no","select",{opts:empOpts()})}${fld("Full name (staff roles)","full_name","text")}<button class="b p" type="submit">Create account</button></form><div class="err"></div><div class="mu" style="margin-top:6px">An employee account shows that person's own data only. You get a temporary password to hand over, and they choose their own at first sign-in.</div></div>
   <div class="bar" style="margin-bottom:8px"><button class="b" data-act="ua_ref">Refresh</button><span class="mu">${UP.length} account(s)</span></div>
-  ${tbl(["Account","Role","Employee","Status","Last sign-in",""],rows,{empty:"No accounts yet."})}`}
+  <div class="uatb">${tbl(["Account","Role","Employee","Status","Last sign-in",""],rows,{empty:"No accounts yet."})}</div>`}
  ["users","emp_access"].forEach(k=>{if(PAGES[k]){PAGES[k].fn=usersPage;PAGES[k].title="Users & Access";PAGES[k].desc="Create sign-ins, set roles, and turn accounts on or off."}});
  ACTS.ua_ref=()=>{UP=null;draw()};
  ACTS.ua_role=id=>{const u=(UP||[]).find(x=>x.id===id);if(!u)return;openDr2("Change role",u.full_name+" · "+u.email,`<form class="g1" data-form="uarole"><input type="hidden" name="id" value="${esc(id)}">${fld("Role","role","select",{req:1,opts:rolesFor(),val:u.role==="Pending"?"Employee":u.role})}${fld("Employee (for the Employee role)","emp_no","select",{opts:empOpts(),val:u.emp_no||""})}<button class="b p" type="submit">Save role</button></form><div class="err"></div>`)};
