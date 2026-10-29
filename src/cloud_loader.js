@@ -165,12 +165,12 @@
         .catch(function (e) { g.querySelector("#cgx").textContent = e.message; });
     };
   }
-  function passwordScreen(t) {
-    var g = gate("<h1>Choose your password</h1><p>Use at least 8 characters, with letters and a digit.</p><form id='cgf' novalidate><label for='cgn'>New password</label><input id='cgn' type='password' required minlength='8' autocomplete='new-password'><div class='e' id='cgx' role='alert'></div><button class='p' type='submit'>Save password</button></form>");
+  function passwordScreen(t, first) {
+    var g = gate("<h1>" + (first ? "Set your own password" : "Choose your password") + "</h1><p>" + (first ? "You signed in with a temporary password. Choose a new one to continue. " : "") + "Use at least 8 characters, with letters and a digit.</p><form id='cgf' novalidate><label for='cgn'>New password</label><input id='cgn' type='password' required minlength='8' autocomplete='new-password'><div class='e' id='cgx' role='alert'></div><button class='p' type='submit'>Save password</button></form>");
     g.querySelector("#cgf").onsubmit = function (ev) {
       ev.preventDefault(); var p = $("cgn").value, x = g.querySelector("#cgx");
       if (!(p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p))) { x.textContent = "Use at least 8 characters, with letters and a digit."; return; }
-      authCall("user", { password: p }, "PUT", t.access_token).then(function () { history.replaceState(null, "", location.pathname + location.search); start(); })
+      authCall("user", { password: p, data: { must_change: false } }, "PUT", t.access_token).then(function () { history.replaceState(null, "", location.pathname + location.search); start(); })
         .catch(function (e) { x.textContent = e.message; });
     };
   }
@@ -196,10 +196,17 @@
   function start() {
     var s = sess(); if (!s) { loginScreen(); return; }
     gate("<h1>Loading…</h1><p>Getting your data.</p>");
+    authCall("user", null, "GET", s.access).then(function (u) { return u; }, function () { return null; }).then(function (u) {
+      if (u && u.user_metadata && u.user_metadata.must_change) { passwordScreen({ access_token: s.access }, true); return null; }
+      return load(s);
+    });
+  }
+  function load(s) {
     rest("profiles?select=full_name,role,active,emp_no&id=eq." + s.uid).then(function (rows) {
       var p = rows && rows[0];
       if (!p) return blocked("Account not set up", "Your account has no profile yet. Ask the administrator to set it up.");
-      if (!p.active || p.role === "Pending") return blocked("Waiting for access", "Your account exists but has no role yet. Ask the administrator to give you one, then sign in again.");
+      if (!p.active && p.role !== "Pending") return blocked("Account disabled", "This account was turned off. Ask HR if you need access again.");
+      if (p.role === "Pending") return blocked("Waiting for access", "Your account exists but has no role yet. Ask the administrator to give you one, then sign in again.");
       if (p.role === "Employee") {
         if (!p.emp_no) return blocked("Account not linked", "Your sign-in is not linked to an employee record yet. Ask HR to link it to your work email.");
         portal = true; me = p.emp_no;
@@ -241,6 +248,13 @@
     window.SMR_CLOUD_ON = {
       uid: s.uid, email: s.email, name: prof.full_name || s.email, role: prof.role,
       signOut: function () { flush(); var t = sess(); (t ? authCall("logout", {}, "POST", t.access) : Promise.resolve()).catch(function () { }).then(signedOut); },
+      rpc: function (name, body) { return rest("rpc/" + name, { method: "POST", body: body || {} }); },
+      fn: function (name, body) {
+        return token().then(function (t) {
+          return fetch(URL_ + "/functions/v1/" + name, { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify(body) })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || (r.status === 404 ? "The account service is not set up yet. Deploy the admin-users function in Supabase." : "Request failed")); return j; }); });
+        });
+      },
       status: function () { return status; }, reload: function () { location.reload(); }
     };
     install(); closeGate(); run(); setStatus("saved");

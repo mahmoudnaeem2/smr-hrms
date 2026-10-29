@@ -56,3 +56,12 @@ A user with no role sees "Waiting for access" and cannot read anything.
 * Turn on backups (Project Settings > Database > Backups). Daily backups need the Pro plan.
 * Enter and approve the payroll rules with your accountant (Tax & Insurance).
 * Add custom SMTP (for example your Outlook/Microsoft 365 mailbox) so invite emails are not rate limited.
+
+## Phase 3: manage accounts inside the app (Users & Access)
+
+1. SQL Editor: paste `supabase/003_admin.sql` and Run.
+2. Edge Functions > Deploy a new function > Via Editor. Name it `admin-users`, paste
+   `supabase/functions/admin-users/index.ts`, and Deploy. Keep "Verify JWT" on.
+3. Sign in as HR Director or System Administrator and open Settings > Users & Access.
+   Add an account (email + role + employee), hand over the temporary password shown once.
+   The person chooses their own password at first sign-in.

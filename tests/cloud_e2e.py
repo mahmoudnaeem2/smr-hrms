@@ -7,7 +7,7 @@ USERS={'admin@x.com':{'id':'u-admin','pw':'Passw0rd1','role':'System Administrat
        'emp@x.com':{'id':'u-emp','pw':'Passw0rd1','role':'Employee','name':'Mahmoud E','active':True,'emp_no':'E-1'},
        'new@x.com':{'id':'u-new','pw':'Passw0rd1','role':'Pending','name':'New','active':True}}
 TOK={}
-LOG=[];PUTS=[]
+LOG=[];PUTS=[];SETP=[];FN=[]
 def who(req):
     a=req.headers.get('authorization','').replace('Bearer ','');return TOK.get(a)
 def handler(route):
@@ -28,6 +28,22 @@ def handler(route):
         if us['role']=='Pending':return js(200,[])
         if 'select=k,ver' in u:return js(200,[{'k':k,'ver':x['ver']} for k,x in STORE.items()])
         return js(200,[{'k':k,'v':x['v'],'ver':x['ver']} for k,x in STORE.items()])
+    if '/auth/v1/user' in u and m=='GET':return js(200,{'id':us['id'] if us else 'x','email':'e','user_metadata':{'must_change':bool(us and us.get('must'))}}) if us else js(401,{})
+    if '/rpc/list_profiles' in u:
+        if us['role'] not in('HR Director','System Administrator'):return js(403,{'message':'not_allowed'})
+        return js(200,[{'id':v['id'],'email':k,'full_name':v['name'],'role':v['role'],'active':v['active'],'emp_no':v.get('emp_no'),'last_sign_in_at':None} for k,v in USERS.items()])
+    if '/rpc/set_profile' in u:
+        b=json.loads(r.post_data);SETP.append(b)
+        for k,v in USERS.items():
+            if v['id']==b['p_id']:v['role']=b['p_role'];v['active']=b['p_active'];v['emp_no']=b['p_emp_no']
+        return js(200,None)
+    if '/functions/v1/admin-users' in u:
+        b=json.loads(r.post_data);FN.append(b)
+        if b['action']=='create':
+            if b['email'] in USERS:return js(400,{'error':'This email already has an account.'})
+            USERS[b['email']]={'id':'u-'+b['email'],'pw':'Temp1234ab','role':b['role'],'name':b.get('full_name') or 'Emp','active':True,'emp_no':b.get('emp_no'),'must':True}
+            return js(200,{'ok':True,'email':b['email'],'password':'Temp1234ab','name':USERS[b['email']]['name'],'role':b['role']})
+        return js(200,{'ok':True,'password':'Reset9999xy'})
     if '/rpc/portal_data' in u:
         if us['role']!='Employee':return js(403,{'message':'not_an_employee'})
         me=us['emp_no'];o={}
@@ -117,4 +133,22 @@ with sync_playwright() as p:
     ok(len(PUTS)==0 and not [x for x in LOG if x[1] in('smr_loans_mine',)],'non-writable keys never sent')
     pg5.evaluate("ACTS.esout()");pg5.wait_for_timeout(300);pg5.click('#cy');pg5.wait_for_selector('#cgf',timeout=4000)
     ok(pg5.evaluate("localStorage.getItem('smr_emp')") is None,'sign out wipes cached data')
-    print('errors',errs,e2,e3,e4,e5)
+    # 10 users and access page
+    c6,pg6,e6=ctx();pg6.goto('file:///tmp/full_cloud.html');pg6.wait_for_selector('#cgf');login(pg6,'hd@x.com','Passw0rd1')
+    pg6.wait_for_function("typeof E!=='undefined'&&document.querySelector('#cg')===null",timeout=6000)
+    pg6.evaluate("go('users')");pg6.wait_for_timeout(900)
+    ok('Add an account' in pg6.inner_text('#main') and 'emp@x.com' in pg6.inner_text('#main'),'Users & Access lists accounts and shows add form')
+    ok(pg6.evaluate("!document.querySelector('[data-act^=\"ua_role:u-hd\"]')"),'no actions on your own row')
+    pg6.fill('[data-form=cuser] [name=email]','new.emp@x.com');pg6.select_option('[data-form=cuser] [name=role]','Employee');pg6.click('[data-form=cuser] [type=submit]');pg6.wait_for_timeout(500)
+    ok('Choose the employee' in pg6.inner_text('[data-form=cuser]+.err'),'employee role needs an employee')
+    pg6.evaluate("E.push({no:'E-7',name:'Seven',dept:'Finance',pos:'A',type:'Full-time',status:'Active',hire:'2024-01-01',basic:1,allow:0,loc:'Head Office',mgr:''});save();go('users')");pg6.wait_for_timeout(500)
+    pg6.fill('[data-form=cuser] [name=email]','new.emp@x.com');pg6.select_option('[data-form=cuser] [name=role]','Employee');    pg6.select_option('[data-form=cuser] [name=emp_no]','E-7');pg6.click('[data-form=cuser] [type=submit]');pg6.wait_for_timeout(900)
+    ok(FN and FN[-1]['emp_no']=='E-7' and 'Temp1234ab' in pg6.inner_text('#drawer'),'account created, temporary password shown once')
+    pg6.evaluate("closeDr()");pg6.evaluate("ACTS.ua_tog('u-new.emp@x.com')");pg6.click('#cy');pg6.wait_for_timeout(700)
+    ok(SETP and SETP[-1]['p_active']==False,'disable sends set_profile')
+    pg6.evaluate("ACTS.ua_rst('u-emp')");pg6.click('#cy');pg6.wait_for_timeout(700)
+    ok('Reset9999xy' in pg6.inner_text('#drawer'),'reset shows new temporary password')
+    # must-change flow
+    c7,pg7,e7=ctx();pg7.goto('file:///tmp/full_cloud.html');pg7.wait_for_selector('#cgf');login(pg7,'new.emp@x.com','Temp1234ab');pg7.wait_for_timeout(900)
+    ok('Set your own password' in pg7.inner_text('#cg'),'first sign-in forces a new password')
+    print('errors',errs,e2,e3,e4,e5,e6,e7)
