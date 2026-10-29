@@ -271,3 +271,5 @@ html[data-comfort=soft]{--fld:#fbf9f4;--fld-bd:#d9d2c3;--hov:#ece6d8;--card:#fbf
 .pbody .ws-h{display:none!important}
 form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 .attb{background:var(--red)!important;color:#fff!important}
+.lvd{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;margin-bottom:14px}.lvdc h3{margin:0 0 2px;font-size:20px;font-weight:600}.lvdg{display:grid;place-items:center;margin:6px 0}.lvdf{display:flex;justify-content:space-between;align-items:center;gap:8px}.lvdf .lnk{font-weight:600}
+:root{--dnb:#e1e4e8}html[data-comfort=dark]{--dnb:#2c3b52}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dnb:#2c3b52}}
