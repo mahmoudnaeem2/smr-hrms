@@ -489,6 +489,62 @@ body.rail .sps{display:none}
 #side .side-f .nav .ic,#side .gh .ic{background:none!important;padding:0;box-shadow:none!important;width:22px;height:22px}
 body.rail #side .nav .ic{margin:0}
 #side .nav .ic{box-sizing:content-box!important;width:20px!important;height:20px!important}
+/* ===== MODERN SKIN ===== */
+:root{--rad:16px;--rad-s:10px;--shd:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.04);--shd-h:0 8px 24px rgba(16,24,40,.10)}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:14.5px;line-height:1.5}
+.uline{display:none!important}
+h1{font-size:28px!important;font-weight:700!important;color:var(--tx)!important;letter-spacing:-.025em!important;line-height:1.15!important}
+.ph{margin-bottom:20px!important}.ph p,.ph .sub{font-size:14.5px!important;color:var(--mu)!important;margin-top:4px!important}
+h2{font-size:16px;font-weight:650;letter-spacing:-.01em}
+.card{border-radius:var(--rad)!important;box-shadow:var(--shd)!important;border-color:var(--bd)!important}
+.card.wrap{padding:0!important;overflow-x:auto}
+table{border-collapse:separate;border-spacing:0}
+th{background:color-mix(in srgb,var(--soft) 60%,var(--surf))!important;color:var(--mu)!important;font-size:11.5px!important;font-weight:650!important;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--bd)!important;padding:12px 16px!important}
+td{padding:14px 16px!important;border-bottom:1px solid color-mix(in srgb,var(--bd) 65%,transparent)!important;font-size:14px}
+tbody tr:last-child td,table tr:last-child>td{border-bottom:0!important}
+table tr:hover>td{background:color-mix(in srgb,var(--soft) 55%,transparent)!important}
+.b{border-radius:var(--rad-s)!important;font-weight:600;font-size:14px;padding:9px 16px;transition:background .15s,box-shadow .15s,border-color .15s,transform .05s;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.b:hover{background:var(--soft);border-color:color-mix(in srgb,var(--btn) 35%,var(--bd))}
+.b:active{transform:translateY(1px)}
+.b.p{background:var(--btn)!important;background-image:none!important;border-color:var(--btn)!important;color:#fff!important;box-shadow:0 1px 2px rgba(4,96,181,.35),inset 0 1px 0 rgba(255,255,255,.14)}
+.b.p:hover{background:var(--btn-d)!important;border-color:var(--btn-d)!important}
+input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:var(--rad-s)!important;border:1px solid color-mix(in srgb,var(--bd) 100%,#7a8aa3 18%)!important;transition:border-color .15s,box-shadow .15s}
+input:not([type=checkbox]):not([type=radio]):focus,select:focus,textarea:focus{outline:0!important;border-color:var(--btn)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--btn) 20%,transparent)!important}
+:focus-visible{outline:2px solid color-mix(in srgb,var(--btn) 70%,transparent);outline-offset:2px}
+.tabs:not(.x){display:inline-flex;max-width:100%;gap:2px;background:var(--soft);padding:4px;border-radius:12px;border:0!important;margin-bottom:16px}
+.tabs .tab{border:0!important;border-bottom:0!important;border-radius:9px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--mu);background:transparent}
+.tabs .tab:hover{color:var(--tx)}
+.tabs .tab.on{background:var(--surf);color:var(--btn);box-shadow:var(--shd)}
+.pbody .tabs{background:none;padding:0;display:flex}
+.badge{font-weight:600;font-size:12px;padding:3px 10px}
+.notice{border-radius:12px!important}
+.topbar{background:color-mix(in srgb,var(--surf) 88%,transparent)!important;backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px)}
+#side{background-image:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.08))}
+#side .grp{font-size:10.5px!important;letter-spacing:.12em!important;opacity:.75!important}
+#side .nav{height:46px!important;font-size:15px!important;font-weight:500}
+#side .nav.on{background:rgba(255,255,255,.16)!important;box-shadow:none!important;font-weight:600}
+.qt{border-radius:14px!important;transition:transform .15s,box-shadow .15s,border-color .15s}
+.iconbtn,.me select,#thm{border-radius:10px!important}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--mu) 35%,transparent);border-radius:8px;border:2px solid transparent;background-clip:content-box}::-webkit-scrollbar-track{background:transparent}
+.empty{border-radius:var(--rad)!important}
+@media (max-width:700px){h1{font-size:24px!important}td{padding:12px!important}th{padding:10px 12px!important}}
+/* ===== MODERN SKIN v2: airy tables and soft cards (reference style) ===== */
+:root{--bg:#f3f5fb;--rad:20px;--shd:0 10px 30px rgba(31,45,90,.06),0 1px 2px rgba(31,45,90,.04)}
+:root[data-theme="dark"]{--bg:#0a111d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a111d}}
+html[data-comfort=dark]{--bg:#0a111d}html[data-comfort=soft]{--bg:#f1ede4}
+th{background:transparent!important;text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:500!important;color:color-mix(in srgb,var(--mu) 75%,#fff)!important;border-bottom:0!important;padding:18px 18px 8px!important}
+td{padding:17px 18px!important;border-bottom:1px solid color-mix(in srgb,var(--bd) 35%,transparent)!important;font-weight:500}
+td b,td strong{font-weight:700}
+.card.wrap{padding:6px 10px 10px!important}
+table tr:hover>td{background:color-mix(in srgb,var(--soft) 45%,transparent)!important}
+table tr:hover>td:first-child{border-radius:12px 0 0 12px}table tr:hover>td:last-child{border-radius:0 12px 12px 0}
+.card{border:1px solid color-mix(in srgb,var(--bd) 55%,transparent)!important}
+.tabs:not(.x){background:color-mix(in srgb,var(--soft) 70%,var(--surf))}
+td .av{width:38px!important;height:38px!important;font-size:12.5px!important;font-weight:700;box-shadow:0 2px 6px rgba(31,45,90,.12)}
+html[data-comfort=dark] .crumb b,html[data-comfort=dark] td .av{color:#dbe9f8!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-comfort]) .crumb b{color:#dbe9f8}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
