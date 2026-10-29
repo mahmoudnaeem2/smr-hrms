@@ -620,3 +620,10 @@ body:has(.zback) .ph,body:has(.pbn) .ph{position:absolute;width:1px;height:1px;m
 body:has(.zback) main,body:has(.pbn) main{padding-top:18px}
 /* no page-enter animation when only a filter or search changed; keep the scrollbar from shifting the layout */
 #view.nov>*{animation:none!important}html{scrollbar-gutter:stable}
+
+/* profile pictures */
+.avw{position:relative;display:inline-flex;flex:none}.av.phi,.pav.phi{color:transparent!important;font-size:0!important;border:0}.pav.phi{border:2px solid rgba(255,255,255,.7)!important}
+.avc{position:absolute;right:-6px;bottom:-6px;display:flex;gap:4px}
+.avb{width:28px;height:28px;border-radius:50%;border:2px solid var(--surf,#fff);background:#0460B5;color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 2px 8px rgba(10,30,60,.25)}.avb:hover{background:#034a8c}.avb.avx{background:#6b7a90}
+.avb:focus-visible{outline:2px solid #f4c430;outline-offset:2px}
+@media(max-width:700px){.avb{width:34px;height:34px}}

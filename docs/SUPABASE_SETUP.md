@@ -87,3 +87,7 @@ Run `supabase/005_employee_sync.sql` in the SQL Editor (after 004). Before it, l
 ## Microsoft 365 email
 
 In `notify-leave` set the secrets `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` and `MAIL_FROM` (the mailbox to send from). The app needs the Microsoft Graph application permission `Mail.Send` with admin consent; ask IT to restrict it to that one mailbox.
+
+## Phase 6: profile pictures
+
+Run `supabase/006_photos.sql` in the SQL Editor (after 005). Employees can add, change or remove their own picture from My Profile (it is shrunk to a small square in the browser, under 50 KB). HR Director and HR Specialist can change anyone's picture from the employee profile.

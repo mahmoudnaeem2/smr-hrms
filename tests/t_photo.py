@@ -1,0 +1,21 @@
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b=p.chromium.launch();errs=[];pg=b.new_page(viewport={'width':1300,'height':900});pg.on('pageerror',lambda e:errs.append(str(e)))
+    pg.goto('file:///tmp/full_new.html');pg.wait_for_timeout(600)
+    pg.evaluate("localStorage.setItem('smr_mode','mine')");pg.reload();pg.wait_for_timeout(700);pg.click('text=Continue to prototype');pg.wait_for_timeout(400)
+    pg.evaluate("""()=>{const X=allEmps()[0].no;window.__X=X;sessionStorage.setItem('smr_es',JSON.stringify({no:X,mode:'mine',lvl:'emp',view:'emp',dept:'Finance',wrole:'Employee'}))}""")
+    pg.reload();pg.wait_for_timeout(800)
+    try: pg.click('text=Continue to prototype',timeout=1500)
+    except Exception: pass
+    pg.evaluate("role='Employee';page='myprofile';draw()");pg.wait_for_timeout(500)
+    print('camera button:',pg.locator('.avb').count())
+    with pg.expect_file_chooser() as fc: pg.locator('.avb:visible').first.click()
+    fc.value.set_files('/tmp/face.png');pg.wait_for_timeout(900)
+    r=pg.evaluate("(()=>{const P=PHOTOS(),K=Object.keys(P),d=P[K[0]];return {keys:K.join(','),len:d&&d.length,jpeg:d&&d.startsWith('data:image/jpeg'),av:!!document.querySelector('.av.phi, .pav.phi'),remove:document.querySelectorAll('.avx').length}})()")
+    print(r);pg.screenshot(path='/tmp/ph_emp.png',clip={'x':288,'y':60,'width':1000,'height':260})
+    pg.evaluate("role='HR Director';page='emp';draw()");pg.wait_for_timeout(500)
+    print('directory avatar with photo:',pg.locator('td .av.phi').count());pg.screenshot(path='/tmp/ph_dir.png',clip={'x':288,'y':330,'width':900,'height':260})
+    pg.evaluate("role='Employee';page='myprofile';draw()");pg.wait_for_timeout(300)
+    pg.locator('.avx:visible').first.click();pg.wait_for_timeout(300);pg.click('#cy');pg.wait_for_timeout(400)
+    print('after remove keys:',pg.evaluate("Object.keys(PHOTOS()).length"))
+    print(errs)

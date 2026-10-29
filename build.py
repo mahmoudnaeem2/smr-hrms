@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m39_cloud','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m41_drawer','m42_photo','m39_cloud','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -58,7 +58,7 @@ R_('const at=(k,cs)=>L.filter(e=>e.att&&cs.includes(e.att[k+90]));','const at=(k
 R_('function openDr(id){','const DRGO={apr:"appr",a_leave:"leave_req",a_ot:"overtime",a_exc:"exceptions",a_docs:"docs",a_onb:"onboard",a_exp:"contracts",a_e30:"contracts",a_e90:"contracts",c60:"contracts",vac:"recruit",pay:"pay_reg",ins:"pay_reg",a_run:"pay_proc",a_anom:"pay_var",hc:"emp",act:"emp",hires:"emp",leave:"leave_cal",pres:"att_d",abs:"att_d",late:"att_d"};\nfunction openDr(id){openDr0(id);linkify($("#db"));const p=DRGO[id];if(p&&canSee(p))$("#db").insertAdjacentHTML("afterbegin",`<div class="bar" style="margin-bottom:10px"><button class="b p" data-go="${p}">Open ${PAGES[p].title}</button></div>`)}\nfunction openDr0(id){')
 
 js=js.replace('r[t]={open,used,pend,avail:open==null?null:open-used-pend}','const adj=ladjSum(e.no,t);r[t]={open,used,pend,adj,avail:open==null?null:open+adj-used-pend}')
-R_('<td>${esc(e.no)}</td><td><span class="who"><i class="av">${ini(e.name)}</i>${esc(e.name)}</span></td>','<td>${esc(e.no)}</td><td><button class="lnk who" data-act="prof:${esc(e.no)}"><i class="av">${ini(e.name)}</i>${esc(e.name)}</button></td>')
+R_('<td>${esc(e.no)}</td><td><span class="who"><i class="av">${ini(e.name)}</i>${esc(e.name)}</span></td>','<td>${esc(e.no)}</td><td><button class="lnk who" data-act="prof:${esc(e.no)}">${avi(e)}${esc(e.name)}</button></td>')
 a=js.index('function dash(){');b=js.index('function emp(){')
 
 js=js[:a]+open('src/mods/dash_new.js').read()+'\n'+js[b:]
@@ -164,6 +164,7 @@ R_('<button class="b" data-act="impemp">Import from Excel</button>','${[R.HRD,R.
 R_('cmfUI();wire();updBell()}','cmfUI();uxUI();wire();updBell()}')
 R_('const adj=ladjSum(e.no,t);r[t]={open,used','const adj=ladjSum(e.no,t);open=accOpen(e,t,open);r[t]={open,used')
 R_('${note("Entitlements are sample policy values.','${accrualCard()}${note("Entitlements are sample policy values.')
+R_('(STD[id]&&STD[id].fn);if(!f)return;const o=f();LASTDRILL=o;','(STD[id]&&STD[id].fn);if(!f)return;const o=f();LASTDRILL=o;return drOpenNice(o);')
 APP='<script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
 frag=pre+APP+post
 open('dist/frag.html','w').write(frag)

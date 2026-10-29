@@ -1,0 +1,14 @@
+/* ===== m42: profile pictures (small JPEG, set by the employee or by HR) ===== */
+const PHOTOS=()=>db("photos",{});
+function avi(e,cls){const c=cls||"av",p=e&&PHOTOS()[e.no];
+ return p?`<i class="${c} phi" role="img" aria-label="${esc(e.name)}" style="background-image:url('${p}')!important;background-size:cover!important;background-position:center!important"></i>`:`<i class="${c}">${ini(e?e.name:"")}</i>`}
+const canPhoto=e=>!!e&&(role===R.EMP||role===R.HRD||role===R.HRS);
+function photoCtl(e){if(!canPhoto(e))return"";const has=!!PHOTOS()[e.no];
+ return`<span class="avc"><button type="button" class="avb" data-act="phpick:${esc(e.no)}" aria-label="${has?"Change photo":"Add photo"}" title="${has?"Change photo":"Add photo"}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>${has?`<button type="button" class="avb avx" data-act="phdel:${esc(e.no)}" aria-label="Remove photo" title="Remove photo"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}</span>`}
+/* shrink to a 160 px square (centre crop) and save as JPEG, well under 50 KB */
+function photoShrink(file){return new Promise((ok,bad)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{try{const S=160,c=document.createElement("canvas");c.width=c.height=S;const g=c.getContext("2d"),m=Math.min(im.naturalWidth,im.naturalHeight),sx=(im.naturalWidth-m)/2,sy=(im.naturalHeight-m)/2;g.fillStyle="#fff";g.fillRect(0,0,S,S);g.drawImage(im,sx,sy,m,m,0,0,S,S);let q=.82,d=c.toDataURL("image/jpeg",q);while(d.length>45000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}URL.revokeObjectURL(u);ok(d)}catch(x){bad(x)}};im.onerror=()=>{URL.revokeObjectURL(u);bad(new Error("bad"))};im.src=u})}
+ACTS.phpick=no=>{if(!canPhoto(empBy(no)))return;const i=document.createElement("input");i.type="file";i.accept="image/*";i.style.display="none";document.body.appendChild(i);
+ i.onchange=()=>{const f=i.files&&i.files[0];i.remove();if(!f)return;if(!/^image\//.test(f.type))return toast("Choose a picture file (JPG or PNG).");if(f.size>12e6)return toast("That picture is too large. Choose one under 12 MB.");
+  photoShrink(f).then(d=>{PHOTOS()[no]=d;sv("photos");audit("Profile photo changed",no);toast("Photo saved");draw()}).catch(()=>toast("Could not read that picture. Try a JPG or PNG."))};
+ i.click()};
+ACTS.phdel=no=>{if(!canPhoto(empBy(no)))return;ask("Remove this profile photo?","Remove",()=>{delete PHOTOS()[no];sv("photos");audit("Profile photo removed",no);toast("Photo removed");draw()})};

@@ -10,7 +10,7 @@
 
   var URL_ = String(C.url).replace(/\/+$/, ""), KEY = C.key, SK = "smr_sb";
   var ver = {}, last = {}, pend = {}, timer = null, busy = false, status = "saved", retry = 0, stale = false, portal = false, me = null;
-  var PW = /^smr_(lr|hrq_mine|punch)$/;
+  var PW = /^smr_(lr|hrq_mine|punch|photos_mine)$/;
   var NOSYNC = /^smr_(mode|gopen|rail|comfort|seed2|seed_pending|sb|staff|acct|users|localbak|cloud_init)$/;
   var syncable = function (k) { return typeof k === "string" && k.indexOf("smr_") === 0 && !NOSYNC.test(k) && !/_sample$/.test(k); };
   var $ = function (id) { return document.getElementById(id); };
