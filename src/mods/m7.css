@@ -278,3 +278,4 @@ form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 html.collapsed .brand img,.side.collapsed .brand img,body.collapsed .brand img{width:40px;padding-right:0;border:0}
 .brand{gap:12px;padding:18px 14px 14px}.brand img{width:82px;padding-right:12px}.brand>div{min-width:0}.brand>div b,.brand>div strong,.brand>div .t{white-space:nowrap;font-size:15.5px}
 body.rail .brand{padding:16px 6px 10px;justify-content:center}body.rail .brand img{width:44px;padding-right:0;border:0}
+.brand img{border-radius:0!important;border:0!important;padding-right:0!important}.brand .prod{padding-left:14px;border-left:1px solid rgba(255,255,255,.35);line-height:1.2}body.rail .brand .prod{border:0;padding:0}
