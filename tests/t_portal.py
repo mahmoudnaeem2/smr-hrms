@@ -56,5 +56,5 @@ with sync_playwright() as p:
         ev(f"ACTS.pt('{t}')");print(t,pg.locator('#view').inner_text()[200:420].replace('\n',' | '))
     ev("ACTS.pt('ov')");pg.screenshot(path='/tmp/p_ov.png')
     ev(f"ACTS.wn_ack(db('warns',[])[0].id)");print('ack',ev("db('warns',[])[0].ack"))
-    ev("page='myprofile';draw()");print('myprofile tab',pg.locator('.ptab.on').inner_text())
+    ev("page='myprofile';draw()");print('myprofile ok',len(ev("document.querySelector('#view').innerText"))>100)
     print('ERR',errs)
