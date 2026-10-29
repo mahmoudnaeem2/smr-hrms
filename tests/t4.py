@@ -18,7 +18,7 @@ with sync_playwright() as p:
             else:bad.append(r)
         print(pgn,"drill links",n,"ok",ok,bad[:3])
     # palette
-    ev("go('dash')");pg.click("#gs");pg.fill("#gs","fin");pg.wait_for_timeout(300);print("pal",ev("[...document.querySelectorAll('#pal .pi b')].map(x=>x.textContent).slice(0,6)"))
+    ev("go('dash')");pg.click("#gs2");pg.fill("#gs2","fin");pg.wait_for_timeout(300);print("pal",ev("[...document.querySelectorAll('#pal2 .pi b')].map(x=>x.textContent).slice(0,6)"))
     pg.keyboard.press("Enter");pg.wait_for_timeout(300);print("page",ev("page"))
     ev("go('rep_cost')");pg.wait_for_timeout(200);print("rel",ev("document.querySelector('#view .rel')&&document.querySelector('#view .rel').innerText"))
     pg.screenshot(path="/tmp/sh_cost2.png");print(errs);b.close()
