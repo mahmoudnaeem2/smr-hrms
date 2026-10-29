@@ -1,7 +1,7 @@
 /* ===== m14: smart navigation (command search, related links, drill links) ===== */
 const REL={rep_cost:[["Payroll Register","pay_reg"],["Payroll Processing","pay_proc"],["Payroll Inputs","pay_inputs"],["Reports by Department & Project","rep_dp"]],
- rep_dp:[["Payroll Cost Analysis","rep_cost"],["Headcount Reports","rep_head"],["Cost Centers & Projects","cost_centers"],["Employee Directory","emp"]],
- rep_head:[["HR Analytics","rep_hr"],["Reports by Department & Project","rep_dp"],["Employee Directory","emp"],["Organization Chart","org"]],
+ rep_dp:[["Payroll Cost Analysis","rep_cost"],["Headcount Reports","rep_head"],["Cost Centers & Projects","cost_centers"],["Employees","emp"]],
+ rep_head:[["HR Analytics","rep_hr"],["Reports by Department & Project","rep_dp"],["Employees","emp"],["Organization Chart","org"]],
  rep_hr:[["Headcount Reports","rep_head"],["Offboarding","offboard"],["Probation Tracker","probation"],["Data Completeness","completeness"]],
  rep_att:[["Daily Attendance","att_d"],["Attendance Exceptions","exceptions"],["Overtime","overtime"],["Timesheets","timesheets"]],
  rep_pay:[["Payroll Cost Analysis","rep_cost"],["Payroll Register","pay_reg"],["Payroll Variance Analysis","pay_var"],["Payroll Reconciliation","pay_rec"]],
@@ -10,8 +10,8 @@ const REL={rep_cost:[["Payroll Register","pay_reg"],["Payroll Processing","pay_p
  pay_inputs:[["Payroll Processing","pay_proc"],["Salary Components","pay_comp"]],
  emp:[["Data Completeness","completeness"],["Organization Chart","org"],["Employee Access","emp_access"],["Cost Centers & Projects","cost_centers"]],
  contracts:[["Probation Tracker","probation"],["Contract Expiry","rep_cx"],["Offboarding","offboard"]],
- probation:[["Employment Contracts","contracts"],["Offboarding","offboard"],["Employee Directory","emp"]],
- completeness:[["Employee Directory","emp"],["Headcount Reports","rep_head"]],
+ probation:[["Employment Contracts","contracts"],["Offboarding","offboard"],["Employees","emp"]],
+ completeness:[["Employees","emp"],["Headcount Reports","rep_head"]],
  comp:[["Payroll Processing","pay_proc"],["Salary Components","pay_comp"]],
  overtime:[["Timesheets","timesheets"],["Payroll Inputs","pay_inputs"],["Attendance Reports","rep_att"]]};
 function relUI(){const v=$("#view");if(!v)return;const old=v.querySelector(".rel");if(old)old.remove();const L=(REL[page]||[]).filter(x=>{if(HIDE_NAV.some(h=>PAGES[h]&&PAGES[h].title===x[0]))return false;const k=Object.keys(PAGES).find(k=>PAGES[k].title===x[0]);return k&&canSee(k)});if(!L.length)return;

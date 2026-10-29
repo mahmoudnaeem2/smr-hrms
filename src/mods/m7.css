@@ -519,3 +519,8 @@ table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}tabl
 @media (max-width:600px){.hqm-grid{grid-template-columns:1fr}.hqm-panel{width:100%}.hqm-f .b{flex:1}}
 .pbody{animation-fill-mode:none!important}.hqm{z-index:200}
 .hqm .card{box-shadow:none;border:0;background:transparent;padding:0}.hqm .empty{padding:10px;font-size:13px}.hqm [data-attbox] .card .empty svg{display:none}
+/* EMPLOYEES: birthdays strip */
+.bds{padding:14px 18px;margin-bottom:14px}.bdh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.bdh .lnk{margin-left:auto}
+.bdl{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+.bdi{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--soft)}
+.bdi b{display:block;font-size:14px}.bdi span{font-size:12.5px;color:var(--mu)}

@@ -2,7 +2,7 @@
 const REPKEYS=["rep_hr","rep_head","rep_dp","rep_cx","completeness","reporting","rep_att","rep_leave","leave_bal","rep_pay","rep_cost","pay_reg","pay_var","pay_rec","pay_je","pay_fs","auditlog"];
 NAV.splice(0,NAV.length,
  ["Home",[["Dashboard","dash"],["Payroll Dashboard","paydash"],["Approvals","appr"],["My Portal","work"],["My Profile","myprofile"],["HR Requests","hr_req"],["Notifications","notif"]]],
- ["People",[["Employee Directory","emp"],["Organization Chart","org"],["Reporting Lines","reporting"],["Departments","depts"],["Job Positions","positions"],["Contracts","contracts"],["Probation Tracker","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]],
+ ["People",[["Employees","emp"],["Organization Chart","org"],["Reporting Lines","reporting"],["Departments","depts"],["Job Positions","positions"],["Contracts","contracts"],["Probation Tracker","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]],
  ["Time & Leave",[["Daily Attendance","att_d"],["Monthly Attendance","att_m"],["Timesheets","timesheets"],["Shifts & Scheduling","shifts"],["Overtime","overtime"],["Exceptions","exceptions"],["Leave Requests","leave_req"],["Leave Balances","leave_bal"],["Leave Calendar","leave_cal"]]],
  ["Payroll",[["Payroll Processing","pay_proc"],["Payroll Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Final Settlements","settle"]]],
  ["Reports",[["All Reports","reports"]]],
