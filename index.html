@@ -366,6 +366,27 @@ html[data-comfort=dark] .b.p{background:#2a7bd1;color:#fff}
 :root{--side-mu:#d6e8f8}.nav .grp,.navgrp{color:#e3effb}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid #f5b700;outline-offset:2px}input[type=checkbox],input[type=radio]{min-width:18px;min-height:18px}.orgb .b.s{min-height:28px}
 
 .steps{margin:8px 0 6px 18px;padding:0;line-height:1.6}.steps li{margin:2px 0}
+
+/* ===== UX layer: calmer, clearer, more dynamic ===== */
+h1{font-size:32px;letter-spacing:-.02em}
+#view>*{animation:vin .28s ease both}@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{box-shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.04);transition:box-shadow .2s,transform .2s}
+.tile,.stat,.qt,[data-d]{transition:transform .18s,box-shadow .18s,background .18s}
+button.stat:hover,.stat[data-d]:hover,.tile:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,24,40,.10)}
+.b{transition:background .15s,box-shadow .15s,transform .1s,border-color .15s}.b:hover:not(:disabled){box-shadow:0 2px 8px rgba(4,96,181,.18)}.b:active:not(:disabled){transform:translateY(1px)}
+.b.p{background:linear-gradient(180deg,var(--btn),var(--btn-d));color:#fff}
+.b[data-act^="term"],.b[data-act^="dp_del"],.b[data-act^="hol_x"],.b[data-act^="rj"]{color:#b42318;border-color:#f1c3be}
+.b[data-act^="term"]:hover,.b[data-act^="rj"]:hover{background:#fdeceb}
+tbody tr:hover td,table tr:hover td{background:var(--soft)}
+.empty{padding:28px 16px;border:1.5px dashed var(--bd);background:var(--soft);border-radius:14px;color:var(--mu);text-align:center}
+.tab.on,.tab[aria-selected=true]{background:var(--soft);border-radius:10px 10px 0 0}
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 18px}
+.qt{position:relative;display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;background:var(--surf,#fff);border:1px solid var(--bd);border-radius:14px;cursor:pointer;color:var(--tx,inherit);box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.qt:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(4,96,181,.14);border-color:var(--btn)}
+.qt svg{flex:none;width:40px;height:40px;padding:9px;border-radius:12px;background:var(--soft);color:var(--btn)}
+.qx{display:grid;gap:2px;min-width:0}.qx b{font-size:15px}.qx small{color:var(--mu);font-size:12.5px;white-space:normal}
+.qn{position:absolute;top:8px;right:10px;background:#c0261c;color:#fff;border-radius:999px;font-style:normal;font-size:12px;font-weight:700;min-width:22px;height:22px;display:grid;place-items:center;padding:0 6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -713,7 +734,7 @@ function draw(){if(!canSee(page))page=homeFor(role);document.body.classList.togg
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
  $("#me").textContent=ini(typeof SSES!=="undefined"&&SSES?SSES.name:typeof ESES!=="undefined"&&ESES?(empBy(ESES.no)||{name:role}).name:role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
  $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span><span class="mu">Prototype: data and roles stay in this browser.</span>`;
- try{applyMoves()}catch(_){}STD={};STDN=0;$("#view").innerHTML=pg.fn();linkify($("#view"));injectXl();esUI();palUI();relUI();cmfUI();wire();updBell()}
+ try{applyMoves()}catch(_){}STD={};STDN=0;$("#view").innerHTML=pg.fn();linkify($("#view"));injectXl();esUI();palUI();relUI();cmfUI();uxUI();wire();updBell()}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-go]");if(t)go(t.dataset.go)});
 
 /* every employee number or name in any table opens that employee's profile */
@@ -2200,6 +2221,17 @@ FORMS.lvman=o=>{if(![R.HRD,R.HRS].includes(role))return"Only HR can add leave fo
  if(LR.some(r=>r.mode===MODE&&r.no===e.no&&r.status!=="Rejected"&&r.start<=o.end&&r.end>=o.start))return"These dates overlap an existing leave request.";
  if(b&&b.avail!=null&&days>b.avail)return"Not enough balance: "+b.avail+" day(s) available, "+days+" requested.";
  LR.push({id:Date.now(),mode:MODE,no:e.no,type:o.type,start:o.start,end:o.end,days,note:(o.note||"")+" (entered by "+role+")",status:"Pending"});saveW();audit("Leave added for employee",e.no+" "+o.type+" "+o.start+" to "+o.end);closeDr();toast("Leave request created");draw()};
+
+/* UX layer: quick actions on the home pages */
+function qaList(){const n=canSee("appr")?apprItems().filter(canAct).length:0;
+ const T={emp:["Add employee","Open the form","go:emp+eadd"],att:["Record attendance","For someone who missed clock-in","go:att_d+att_man"],lv:["Add leave","On behalf of an employee","go:leave_req+lv_man"],appr:["Approvals",n?n+" waiting for you":"Nothing waiting","go:appr",n],hrq:["HR Requests","Letters, loans, changes","go:hr_req"],run:["Payroll run","Calculate and approve","go:pay_proc"],inp:["Payroll inputs","Bonuses, deductions","go:pay_inputs"],je:["Journal entry","Accounting entry for a run","go:pay_je"],slip:["Payslips","Publish and review","go:payslips"],reg:["Payroll register","All runs and totals","go:pay_reg"],rec:["Reconciliation","Match payroll to the bank","go:pay_rec"],cost:["Cost analysis","By department and project","go:rep_cost"],org:["Organization chart","Reporting lines","go:org"],tl:["Team leave","Requests from your team","go:leave_req"],ta:["Team attendance","Who is in today","go:att_d"]};
+ const by={[R.HRD]:["emp","lv","att","appr","hrq","run"],[R.HRS]:["emp","lv","att","appr","hrq","org"],[R.DM]:["appr","tl","ta","org"],[R.PAY]:["run","inp","je","slip","appr"],[R.FIN]:["reg","je","rec","cost","appr"]}[role]||[];
+ return by.map(k=>({k,t:T[k]})).filter(x=>{const g=x.t[2].slice(3).split("+")[0];return canSee(g)})}
+function uxUI(){const v=$("#view");if(!v)return;const old=v.querySelector(".qa");if(old)old.remove();
+ if(page!=="dash"&&page!=="paydash")return;const L=qaList();if(!L.length)return;
+ const h=`<div class="qa" role="group" aria-label="Quick actions">${L.map(x=>`<button type="button" class="qt" data-q="${x.t[2]}">${ic(x.t[2].slice(3).split("+")[0])}<span class="qx"><b>${esc(x.t[0])}</b><small>${esc(x.t[1])}</small></span>${x.t[3]?`<i class="qn">${x.t[3]}</i>`:""}</button>`).join("")}</div>`;
+ v.insertAdjacentHTML("afterbegin",h)}
+document.addEventListener("click",ev=>{const q=ev.target.closest("[data-q]");if(!q)return;const[a,b]=q.dataset.q.slice(3).split("+");go(a);if(b)setTimeout(()=>ACTS[b]&&ACTS[b](),60)});
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
