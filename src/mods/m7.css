@@ -614,3 +614,7 @@ body.cloud label:has(input[name=access]){display:none!important}
 #drawer .dh{flex-wrap:wrap;align-items:flex-start;gap:10px 8px;position:relative}
 #drawer .dh h2{flex:1 1 100%;padding-right:84px;line-height:1.3}
 #drawer .dh>div{display:flex;gap:8px;flex-wrap:wrap}#drawer #dcl{position:absolute;top:0;right:0}
+/* employee self-service pages: no prototype chip, no repeated page title above the page's own header */
+body:has(.zback) #strip,body:has(.pbn) #strip{display:none}
+body:has(.zback) .ph,body:has(.pbn) .ph{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body:has(.zback) main,body:has(.pbn) main{padding-top:18px}
