@@ -156,7 +156,7 @@ function genSample(){
   anomalies:sm(3).map((e,i)=>({no:e.no,detail:["Net pay change above 15% vs last month","Gross changed without an effective-dated revision","Salary changed mid-month, proration to confirm"][i],reason:"Reason required"})),
   vacancies:[["Property Manager","Property Management","Site A"],["Maintenance Technician","Facilities","Site B"],["Accountant","Finance","Head Office"],["Leasing Consultant","Leasing","Head Office"],["Site Supervisor","Operations","Site A"],["HR Specialist","Human Resources","Head Office"]].map(v=>({title:v[0],dept:v[1],loc:v[2],opened:iso(addD(T0,-ri(6,70))),applicants:ri(2,24)}))}}
 const SAMPLE=genSample();
-const normE=e=>{const c={...e,b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
+const normE=e=>{const c={...e,pos:(p=>p&&p===p.toLowerCase()?p.replace(/(^|[\s\-\/])([a-z])/g,(m,x,y)=>x+y.toUpperCase()):p)(e.pos),b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
 const allEmps=()=>MODE==="sample"?SAMPLE.emps:E.map(normE);
 const flt=a=>a.filter(e=>inScope(e)&&(!F.dept||e.dept===F.dept)&&(!F.loc||e.loc===F.loc)&&(!F.mgr||e.mgr===F.mgr)&&(!F.type||e.type===F.type)&&(!F.status||e.status===F.status));
 const uniq=(k)=>[...new Set(allEmps().filter(inScope).map(e=>e[k]).filter(Boolean))].sort();
@@ -366,7 +366,7 @@ function draw(){const[t,d]=META[page];$("#title").textContent=t;$("#desc").textC
  const grp={dash:"Overview",work:"Overview",emp:"People",comp:"Payroll"}[page];$("#crumb").innerHTML=`<span>SMR</span><span>${grp}</span><b>${t}</b>`;
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
  $("#me").textContent=ini(role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
- $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only the employees you entered. Cards without a data source show as unavailable.</span>`)+`<span class="grow"></span><span class="mu">Prototype: data and roles stay in this browser.</span>`;
+ $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only the employees you entered. Cards without a data source show as unavailable.</span>`)+`<span class="grow"></span>`;
  $("#view").innerHTML=page==="dash"?dash():page==="emp"?emp():page==="work"?work():comp();wire();updBell()}
 function openDr(id){const f=M.DR&&M.DR[id];if(!f)return;const o=f();LASTDRILL=o;
  $("#dt").textContent=o.title;$("#dd").textContent=o.desc||"";

@@ -661,6 +661,16 @@ input[type=checkbox],input[type=radio]{min-width:24px;min-height:24px;accent-col
 .card.k .v{word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important}
 .card.wrap td:last-child{white-space:normal}
 .card.wrap td:last-child .b,.card.wrap td:last-child button{margin:2px 4px 2px 0}
+/* export buttons under tables: same quiet style; compact action cells */
+[data-act^="xlsx:"],[data-act^="csv:"]{height:30px!important;padding:0 10px!important;font-size:12.5px!important;background:transparent!important;border-color:transparent!important;color:var(--mu)!important;box-shadow:none!important}
+[data-act^="xlsx:"]:hover,[data-act^="csv:"]:hover{background:var(--soft)!important;color:var(--btn)!important}
+.card.wrap td:last-child .b,.card.wrap td:last-child button.b{height:32px!important;padding:0 10px!important;font-size:13px!important}
+.card.wrap td:nth-child(3){max-width:240px}
+.card.wrap td:last-child{min-width:150px;max-width:300px}
+.card.wrap td:nth-child(2),.card.wrap td:nth-child(5){white-space:nowrap}
+table.stk td:last-child,table.stk th:last-child{position:sticky;right:0;background:var(--surf)!important;box-shadow:-10px 0 14px -10px rgba(15,35,70,.18);z-index:1}
+table.stk td:last-child{min-width:206px}
+table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}table.stk td:last-child .b{display:inline-flex;align-items:center;justify-content:center}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -730,7 +740,7 @@ function genSample(){
   anomalies:sm(3).map((e,i)=>({no:e.no,detail:["Net pay change above 15% vs last month","Gross changed without an effective-dated revision","Salary changed mid-month, proration to confirm"][i],reason:"Reason required"})),
   vacancies:[["Property Manager","Property Management","Site A"],["Maintenance Technician","Facilities","Site B"],["Accountant","Finance","Head Office"],["Leasing Consultant","Leasing","Head Office"],["Site Supervisor","Operations","Site A"],["HR Specialist","Human Resources","Head Office"]].map(v=>({title:v[0],dept:v[1],loc:v[2],opened:iso(addD(T0,-ri(6,70))),applicants:ri(2,24)}))}}
 const SAMPLE=genSample();
-const normE=e=>{const c={...e,b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
+const normE=e=>{const c={...e,pos:(p=>p&&p===p.toLowerCase()?p.replace(/(^|[\s\-\/])([a-z])/g,(m,x,y)=>x+y.toUpperCase()):p)(e.pos),b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
 const allEmps=()=>MODE==="sample"?(typeof applyOvr==="function"&&applyOvr(),SAMPLE.emps):E.map(normE);
 const flt=a=>a.filter(e=>inScope(e)&&(!F.dept||e.dept===F.dept)&&(!F.loc||e.loc===F.loc)&&(!F.mgr||e.mgr===F.mgr)&&(!F.type||e.type===F.type)&&(!F.status||e.status===F.status)&&(!F.project||e.project===F.project));
 const uniq=(k)=>[...new Set(allEmps().filter(inScope).map(e=>e[k]).filter(Boolean))].sort();
@@ -1006,7 +1016,7 @@ function draw(){if(!canSee(page))page=homeFor(role);document.body.classList.togg
  $("#crumb").innerHTML=`<b>SMR HRMS &amp; Payroll</b><span>· Savills Management Resources Egypt</span>`;$("#pact").innerHTML=PACT[page]?PACT[page]():"";trackNav();
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
  $("#me").textContent=ini(typeof SSES!=="undefined"&&SSES?SSES.name:typeof ESES!=="undefined"&&ESES?(empBy(ESES.no)||{name:role}).name:role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
- $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span><span class="mu">Prototype: data and roles stay in this browser.</span>`;
+ $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span>`;
  try{applyMoves()}catch(_){}STD={};STDN=0;$("#view").innerHTML=pg.fn();linkify($("#view"));injectXl();esUI();palUI();relUI();cmfUI();uxUI();wire();updBell()}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-go]");if(t)go(t.dataset.go)});
 
@@ -2964,7 +2974,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 85";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 87";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -3111,7 +3121,7 @@ function NAVACT(k){return k===page||(k==="emp"&&page==="profile")||(k==="reports
 reg("reports","Reports","Every report in one place. Pick one, or search by name.",A("HRD","HRS","DM","FIN","PAY","ADM"),reports);
 
 /* ===== m37: accessibility upgrades (WCAG 2.2 AA) ===== */
-(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".xlbar").forEach(x=>{const hasX=el=>el&&el.querySelector&&(el.matches("[data-act^=\"xlsx:\"]")||el.querySelector("[data-act^=\"xlsx:\"]")),c=x.nextElementSibling;x.hidden=!!(hasX(x.previousElementSibling)||(c&&hasX(c.nextElementSibling)))});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
+(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".card.wrap table").forEach(t=>{const r=t.rows[1];if(r&&r.cells.length>3&&r.cells[r.cells.length-1].querySelector("button.b,form"))t.classList.add("stk")});document.querySelectorAll(".xlbar").forEach(x=>{const hasX=el=>el&&el.querySelector&&(el.matches("[data-act^=\"xlsx:\"]")||el.querySelector("[data-act^=\"xlsx:\"]")),c=x.nextElementSibling;x.hidden=!!(hasX(x.previousElementSibling)||(c&&hasX(c.nextElementSibling)))});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
  new MutationObserver(()=>{if(!t)t=setTimeout(fix,60)}).observe(document.body,{childList:true,subtree:true});fix()})();
 
 /* ===== boot: register legacy pages, change handlers ===== */

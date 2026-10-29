@@ -473,3 +473,13 @@ input[type=checkbox],input[type=radio]{min-width:24px;min-height:24px;accent-col
 .card.k .v{word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important}
 .card.wrap td:last-child{white-space:normal}
 .card.wrap td:last-child .b,.card.wrap td:last-child button{margin:2px 4px 2px 0}
+/* export buttons under tables: same quiet style; compact action cells */
+[data-act^="xlsx:"],[data-act^="csv:"]{height:30px!important;padding:0 10px!important;font-size:12.5px!important;background:transparent!important;border-color:transparent!important;color:var(--mu)!important;box-shadow:none!important}
+[data-act^="xlsx:"]:hover,[data-act^="csv:"]:hover{background:var(--soft)!important;color:var(--btn)!important}
+.card.wrap td:last-child .b,.card.wrap td:last-child button.b{height:32px!important;padding:0 10px!important;font-size:13px!important}
+.card.wrap td:nth-child(3){max-width:240px}
+.card.wrap td:last-child{min-width:150px;max-width:300px}
+.card.wrap td:nth-child(2),.card.wrap td:nth-child(5){white-space:nowrap}
+table.stk td:last-child,table.stk th:last-child{position:sticky;right:0;background:var(--surf)!important;box-shadow:-10px 0 14px -10px rgba(15,35,70,.18);z-index:1}
+table.stk td:last-child{min-width:206px}
+table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}table.stk td:last-child .b{display:inline-flex;align-items:center;justify-content:center}

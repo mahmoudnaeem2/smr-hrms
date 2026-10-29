@@ -87,7 +87,7 @@ function draw(){if(!canSee(page))page=homeFor(role);document.body.classList.togg
  $("#crumb").innerHTML=`<b>SMR HRMS &amp; Payroll</b><span>· Savills Management Resources Egypt</span>`;$("#pact").innerHTML=PACT[page]?PACT[page]():"";trackNav();
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
  $("#me").textContent=ini(typeof SSES!=="undefined"&&SSES?SSES.name:typeof ESES!=="undefined"&&ESES?(empBy(ESES.no)||{name:role}).name:role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
- $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span><span class="mu">Prototype: data and roles stay in this browser.</span>`;
+ $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span>`;
  $("#view").innerHTML=pg.fn();linkify($("#view"));wire();updBell()}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-go]");if(t)go(t.dataset.go)});
 
