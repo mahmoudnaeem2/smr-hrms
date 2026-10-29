@@ -476,6 +476,19 @@ form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 #pal2 .pi small{color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 #pal2 .pi:hover,#pal2 .pi.on{background:var(--soft)}
 body.rail .sps{display:none}
+
+.sps kbd{font:600 10px/1 Inter,system-ui,sans-serif!important;letter-spacing:.02em}
+.qa{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}
+#q{min-width:0!important;flex:1 1 260px}
+@media (min-width:900px){.topbar .search{display:none}.topbar .crumb{flex:1}}
+/* icon tiles in the sidebar */
+#side .nav .ic{box-sizing:content-box;width:20px;height:20px;padding:7px;border-radius:11px;background:rgba(255,255,255,.1);opacity:1;stroke-width:1.6;transition:background .15s,color .15s,transform .15s}
+#side .nav:hover .ic{background:rgba(255,255,255,.2)}
+#side .nav.on .ic{background:#fff!important;color:var(--btn,#0460B5)!important;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#side .nav{gap:12px}
+#side .side-f .nav .ic,#side .gh .ic{background:none!important;padding:0;box-shadow:none!important;width:22px;height:22px}
+body.rail #side .nav .ic{margin:0}
+#side .nav .ic{box-sizing:content-box!important;width:20px!important;height:20px!important}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2648,7 +2661,7 @@ const LRP_COLS={rows:["Employee","No.","Department","Leave type","From","To","Da
 function rep_leave(){const D=lrpData(),F=D.F,dp=[...new Set(allEmps().map(e=>e.dept).filter(Boolean))].sort(),lim=["Annual leave","Sick leave","Emergency leave","Unpaid leave"];
  const filt=`<div class="card lrpf"><div class="nf"><label>From<input type="date" name="f" value="${F.from}" data-lrp="from"></label><label>To<input type="date" name="t" value="${F.to}" data-lrp="to"></label><label>Department<select data-lrp="dept"><option value="">All departments</option>${dp.map(d=>`<option ${d===F.dept?"selected":""}>${esc(d)}</option>`).join("")}</select></label><label>Leave type<select data-lrp="type"><option value="">All types</option>${lim.map(t=>`<option ${t===F.type?"selected":""}>${t}</option>`).join("")}</select></label><label>Status<select data-lrp="st"><option value="">All statuses</option>${["Approved","Pending","Rejected"].map(t=>`<option ${t===F.st?"selected":""}>${t}</option>`).join("")}</select></label><div class="lrpb"><button class="b p" data-act="lrp_xl">Download full report (Excel)</button></div></div></div>`;
  const kp=`<div class="grid kpis" style="margin-top:12px">${stat("People who took leave",D.people+" of "+D.emps.length,"Approved leave in the period")}${stat("Leave days taken",D.days,"Working days, approved")}${stat("Pending requests",D.pend,"Waiting for a decision")}${stat("No leave taken",D.none.length,"People with no approved leave in the period")}</div>`;
- return`${filt}${kp}${secH("Leave requests in the period")}${ptbl("lrp1",LRP_COLS.rows,D.rows.map(r=>r.map((x,i)=>i===7?bd(x,x==="Approved"?"s-ok":x==="Rejected"?"s-er":"s-wn"):esc(String(x)))),{csv:"lrp_req",ps:15,empty:"No leave requests match these filters."})}${secH("Balances and days taken per employee")}${ptbl("lrp2",LRP_COLS.bal,D.bal.map(r=>r.map((x,i)=>i<3?esc(String(x)):String(x))),{csv:"lrp_bal",ps:20,empty:"No employees match these filters."})}${secH("People who took no leave in the period")}${ptbl("lrp3",LRP_COLS.none,D.none.map(r=>r.map(x=>esc(String(x)))),{csv:"lrp_none",ps:15,empty:"Everyone took leave in this period."})}${note("Days are working days inside the chosen period; weekends and public holidays are excluded. Balances are as of today.","sm")}`}
+ return`${MODE==="sample"?note("Sample data has no leave requests, so this report is empty. Switch to My records to see real leave.")+" ":""}${filt}${kp}${secH("Leave requests in the period")}${ptbl("lrp1",LRP_COLS.rows,D.rows.map(r=>r.map((x,i)=>i===7?bd(x,x==="Approved"?"s-ok":x==="Rejected"?"s-er":"s-wn"):esc(String(x)))),{csv:"lrp_req",ps:15,empty:"No leave requests match these filters."})}${secH("Balances and days taken per employee")}${ptbl("lrp2",LRP_COLS.bal,D.bal.map(r=>r.map((x,i)=>i<3?esc(String(x)):String(x))),{csv:"lrp_bal",ps:20,empty:"No employees match these filters."})}${secH("People who took no leave in the period")}${ptbl("lrp3",LRP_COLS.none,D.none.map(r=>r.map(x=>esc(String(x)))),{csv:"lrp_none",ps:15,empty:"Everyone took leave in this period."})}${note("Days are working days inside the chosen period; weekends and public holidays are excluded. Balances are as of today.","sm")}`}
 document.addEventListener("change",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.lrp){TAB["lrp_"+i.dataset.lrp]=i.value;if(i.dataset.lrp==="from"&&TAB.lrp_to&&i.value>TAB.lrp_to)TAB.lrp_to=i.value;draw()}});
 ACTS.lrp_xl=()=>{const D=lrpData(),F=D.F;XL.save("Leave report "+F.from+" to "+F.to,[{name:"Summary",cols:["Measure","Value"],rows:[["Period",dmyS(F.from)+" to "+dmyS(F.to)],["Department",F.dept||"All"],["Leave type",F.type||"All"],["Status",F.st||"All"],["People who took leave",D.people],["Employees in scope",D.emps.length],["Leave days taken",D.days],["Pending requests",D.pend],["People with no leave taken",D.none.length]]},{name:"Leave requests",cols:LRP_COLS.rows,rows:D.rows},{name:"Balances per employee",cols:LRP_COLS.bal,rows:D.bal},{name:"No leave taken",cols:LRP_COLS.none,rows:D.none}]);audit("Leave report exported",F.from+" to "+F.to)};
 reg("rep_leave","Leave Report","Who took leave, how many days, and everyone's balance. Download it as Excel.",A("HRD","HRS","DM","FIN"),rep_leave);
@@ -2656,7 +2669,7 @@ reg("rep_leave","Leave Report","Who took leave, how many days, and everyone's ba
 /* Sidebar search: pages, people, projects (uses palResults) */
 let SPI=-1,SPR=[];
 function spInit(){const side=$("#side");if(!side||$("#sps"))return;const br=side.querySelector(".brand");if(!br)return;
- br.insertAdjacentHTML("afterend",'<div class="sps" id="sps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs2" type="search" placeholder="Search pages, people…" autocomplete="off" aria-label="Search pages, people, projects"><kbd>Ctrl K</kbd><div id="pal2" role="listbox" hidden></div></div>');
+ br.insertAdjacentHTML("afterend",'<div class="sps" id="sps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs2" type="search" placeholder="Search…" autocomplete="off" aria-label="Search pages, people, projects"><kbd>Ctrl K</kbd><div id="pal2" role="listbox" hidden></div></div>');
  const g=$("#gs2");
  g.addEventListener("input",()=>{SPI=-1;spDraw()});g.addEventListener("focus",()=>{SPI=-1;spDraw()});
  g.addEventListener("blur",()=>setTimeout(()=>{const b=$("#pal2");if(b)b.hidden=true},180));
@@ -2668,6 +2681,74 @@ function spDraw(){const g=$("#gs2"),b=$("#pal2");if(!g||!b)return;const qq=g.val
 function spPick(i){const r=SPR[i];if(!r)return;$("#pal2").hidden=true;const g=$("#gs2");g.value="";g.blur();try{document.body.classList.remove("navopen")}catch(e){}r.a()}
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){const g=$("#gs2");if(g&&g.offsetParent!==null){e.preventDefault();e.stopImmediatePropagation();g.focus();g.select()}}},true);
 spInit();
+
+/* Modern line icon set (24px grid, rounded strokes). Replaces the older glyphs. */
+(function(){const S={
+dash:"M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z",
+paydash:"M3 3v16a2 2 0 0 0 2 2h16 M18 17V9 M13 17V5 M8 17v-3",
+appr:"M21.801 10A10 10 0 1 1 17 3.335 M9 11l3 3L22 4",
+my_req:"M21.801 10A10 10 0 1 1 17 3.335 M9 11l3 3L22 4",
+hr_req:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z M13 8H7 M17 12H7",
+work:"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8 M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+profile:"M18 20a6 6 0 0 0-12 0 M12 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
+myprofile:"M18 20a6 6 0 0 0-12 0 M12 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
+emp:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
+org:"M9 2h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z M3 16h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z M15 16h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z M6 16v-2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2 M12 8v5",
+depts:"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12 M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17",
+positions:"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16 M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z",
+contracts:"M20 19.5v.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8.5L20 7.5V9 M14 2v6h6 M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z",
+docs:"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z",
+warns:"M21.73 18l-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3 M12 9v4 M12 17h.01",
+att_d:"M8 2v4 M16 2v4 M21 14V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8 M3 10h18 M16 20l2 2 4-4",
+att_m:"M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z",
+timesheets:"M12 6v6l4 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
+shifts:"M17 2l4 4-4 4 M3 11v-1a4 4 0 0 1 4-4h14 M7 22l-4-4 4-4 M21 13v1a4 4 0 0 1-4 4H3",
+overtime:"M5 22h14 M5 2h14 M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22 M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2",
+exceptions:"M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0 M12 8v4 M12 16h.01",
+holidays:"M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41",
+leave_req:"M16 14v2.2l1.6 1 M16 2v4 M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5 M3 10h5 M8 2v4 M22 16a6 6 0 1 1-12 0 6 6 0 0 1 12 0",
+leave_bal:"M12 14l4-4 M3.34 19a10 10 0 1 1 17.32 0",
+leave_cal:"M16 2v4 M3 10h18 M8 2v4 M17 14h-6 M13 18H7 M7 14h.01 M17 18h.01 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+leave_pol:"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z M9 12l2 2 4-4",
+rep_leave:"M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z",
+pay_periods:"M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 14h.01 M12 14h.01 M16 14h.01 M8 18h.01 M12 18h.01 M16 18h.01",
+pay_proc:"M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z M8 6h8 M8 10h.01 M12 10h.01 M16 10h.01 M8 14h.01 M12 14h.01 M16 14h.01 M8 18h.01 M12 18h.01 M16 18h.01",
+pay_inputs:"M8 2h8a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M12 11h4 M12 16h4 M8 11h.01 M8 16h.01",
+pay_reg:"M12 3v18 M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M3 9h18 M3 15h18",
+payslips:"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8 M12 17.5v-11",
+pay_comp:"M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M6 12h.01 M18 12h.01",
+comp:"M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M6 12h.01 M18 12h.01",
+pay_var:"M16 7h6v6 M22 7l-8.5 8.5-5-5L2 17",
+pay_rec:"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4",
+pay_fs:"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z M14 2v4a2 2 0 0 0 2 2h4 M8 18v-2 M12 18v-4 M16 18v-6",
+pay_je:"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20 M8 11h8 M8 7h6",
+loans:"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1 M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4",
+settle:"M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0 M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8 M12 18V6",
+recruit:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M19 8v6 M22 11h-6",
+onboard:"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4 M10 17l5-5-5-5 M15 12H3",
+offboard:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
+probation:"M5 22h14 M5 2h14 M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22 M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2",
+perf:"M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0 M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0 M14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0",
+training:"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z M22 10v6 M6 12.5V16a6 3 0 0 0 12 0v-3.5",
+rep_hr:"M3 3v16a2 2 0 0 0 2 2h16 M18 17V9 M13 17V5 M8 17v-3",
+rep_att:"M16 11l2 2 4-4 M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8",
+rep_pay:"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z M21.21 15.89A10 10 0 1 1 8 2.83",
+rep_head:"M18 21a8 8 0 0 0-16 0 M10 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10 M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3",
+rep_cx:"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18z M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2 M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
+rep_cost:"M3 3v16a2 2 0 0 0 2 2h16 M7 14l4-4 4 4 5-6",
+cost_centers:"M3 22h18 M6 18v-7 M10 18v-7 M14 18v-7 M18 18v-7 M12 2l9 5H3z",
+completeness:"M8 2h8a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 14l2 2 4-4",
+wf:"M5 3h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M7 11v4a2 2 0 0 0 2 2h4 M15 13h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z",
+notif:"M10.268 21a2 2 0 0 0 3.464 0 M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
+users:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
+perms:"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z M16.5 7.5h.01",
+emp_access:"M16 10h2 M16 14h2 M6.17 15a3 3 0 0 1 5.66 0 M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4 M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",
+integ:"M12 22v-5 M9 8V2 M15 8V2 M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8z",
+auditlog:"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5 M12 7v5l4 2",
+company:"M10 12h4 M10 8h4 M14 21v-3a2 2 0 0 0-4 0v3 M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2 M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16",
+mail_out:"M22 7l-8.991 5.727a2 2 0 0 1-2.009 0L2 7 M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+mail_set:"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915 M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6"
+};Object.assign(IC,S);IC.rep_dp=IC.rep_cx})();
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
