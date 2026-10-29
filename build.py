@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -35,7 +35,6 @@ R_('const apr=S?inL(X.approvals).concat(LR.filter(r=>r.mode===MODE&&r.status==="
  'const apr=apprItems().filter(i=>!i.fin&&i.type!=="Payroll finalization"&&(!i.no||nos.has(i.no))).map(i=>({type:i.type,no:i.no,detail:i.detail,due:i.due})),ot=apprItems().filter(i=>!i.fin&&i.type==="Overtime"&&nos.has(i.no)).map(i=>({no:i.no,detail:i.detail.replace("Overtime: ","")})),exc=excOpen().filter(x=>nos.has(x.no)),docs=docsMissing().filter(x=>nos.has(x.no)),onb=now.filter(e=>e.hire>=iso(addD(T0,-60))).map(e=>({no:e.no,n:OBT.filter(t=>!db("onbt",{})[e.no+"|"+t])})).filter(x=>x.n.length).map(x=>({no:x.no,detail:x.n.join(", ")})),RUN_=RUNS().filter(r=>r.results.length).sort((a,b)=>a.period<b.period?1:-1)[0],ano=RUN_?varRows(RUN_).map(v=>({no:v.no,detail:v.why,reason:v.reason?"Explained: "+v.reason:"Needs reason"})):[];')
 R_('isWk=d=>d.getDay()===5||d.getDay()===6;','isWk=d=>{try{return WKD().includes(d.getDay())||HOLS().some(h=>h.d===iso(d))}catch(e){return d.getDay()===5||d.getDay()===6}};')
 R_('return`${form}<div class="bar"><input id="q" type="search"','return`${S?form:""}<div class="bar"><input id="q" type="search"')
-R_('GOPEN[g]!==undefined?GOPEN[g]:g==="Overview"','GOPEN[g]!==undefined?GOPEN[g]:(DAILY[role]?g!=="More":g==="Overview")')
 R_('const dshort=s=>new Date(s+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});','const dshort=s=>{const d=new Date(s+"T00:00:00");return d.toLocaleDateString("en-GB",{weekday:"short"})+" "+d.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"})};')
 R_('vac=S?X.vacancies.filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc)):[];','vac=VACS().filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc));')
 js=re.sub(r'DR\.(apr|vac|a_anom|a_exc|a_ot|a_docs|a_onb|a_leave)=S\?',r'DR.\1=1?',js)

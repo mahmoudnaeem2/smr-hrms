@@ -589,6 +589,16 @@ body:has(.zh) .ph,body:has(.zh) .backl{display:none!important}
 @media (max-width:600px){.zbal{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none}.zbal::-webkit-scrollbar{display:none}.zb{flex:0 0 76%;scroll-snap-align:start}}
 #bst{font-size:10.5px;color:var(--side-mu,#b9d6f2);opacity:.8;text-align:center;padding:2px 0 8px;letter-spacing:.02em}
 body.rail #bst{display:none}
+/* Reports hub */
+.rps{margin:22px 0}.rps h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 12px}.rps h2 span{font-size:12px;font-weight:700;background:var(--soft);color:var(--mu);border-radius:99px;padding:2px 9px}
+.rpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.rpc{display:flex;align-items:center;gap:14px;text-align:left;background:var(--surf);border:1px solid color-mix(in srgb,var(--bd) 55%,transparent);border-radius:18px;padding:16px 16px;box-shadow:0 8px 22px rgba(31,45,90,.06);cursor:pointer;color:var(--tx);transition:transform .15s,box-shadow .15s}
+.rpc:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(31,45,90,.12)}
+.rpi{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--rb)}.rpi svg{width:24px;height:24px}
+.rpt{display:grid;gap:3px;min-width:0;flex:1}.rpt b{font-size:15px;font-weight:700}.rpt small{color:var(--mu);font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rpa{flex:none;width:18px;height:18px;color:var(--mu)}
+.rpr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 6px}
+#nav .grp2.one{margin-top:6px}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -918,13 +928,13 @@ const IC={"my_req":"M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20","hr_r
 const ic=k=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]||IC.dash}"/></svg>`;
 const ini=n=>String(n||"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 let FM=false;
-const GIC={Overview:"dash",People:"emp","Time & Attendance":"timesheets",Leave:"leave_cal",Payroll:"paydash",Talent:"perf",Reports:"rep_hr",Administration:"perms"};
+const GIC={Home:"dash","Time & Leave":"timesheets",Settings:"perms",Overview:"dash",People:"emp","Time & Attendance":"timesheets",Leave:"leave_cal",Payroll:"paydash",Talent:"perf",Reports:"rep_hr",Administration:"perms"};
 let GOPEN={},LASTPG="";try{GOPEN=JSON.parse(localStorage.getItem("smr_gopen")||"{}")}catch(e){}
 const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
-function nav(){const AC=canSee("appr")?apprItems().filter(canAct).length:0;if(LASTPG!==page){GOPEN[groupOf(page)]=true;LASTPG=page;try{localStorage.setItem("smr_gopen",JSON.stringify(GOPEN))}catch(e){}}
- $("#nav").innerHTML=NAVV().filter(([g,items])=>items.some(i=>canSee(i[1]))).map(([g,items])=>{const open=GOPEN[g]!==undefined?GOPEN[g]:(DAILY[role]?g!=="More":g==="Overview");return`<div class="grp2 ${open?"open":""}"><button class="gh" data-grp="${g}" aria-expanded="${open}">${ic(GIC[g])}<span class="lb">${g}</span>${CHEV}</button><div class="gl">`+items.filter(([n,k])=>canSee(k)).map(([n,k])=>`<button class="nav ${k===page?"on":""}" data-k="${k}" title="${n}">${ic(k)}<span class="lb">${n}</span>${k==="appr"&&AC?`<span class="cnt">${AC}</span>`:""}</button>`).join("")+`</div></div>`}).join("");
+function nav(){const AC=canSee("appr")?apprItems().filter(canAct).length:0;if(LASTPG!==page){Object.keys(GOPEN).forEach(x=>GOPEN[x]=false);GOPEN[NAVGRP(page)]=true;LASTPG=page;try{localStorage.setItem("smr_gopen",JSON.stringify(GOPEN))}catch(e){}}
+ $("#nav").innerHTML=NAVV().filter(([g,items])=>items.some(i=>canSee(i[1]))).map(([g,items])=>{if(g==="Reports"){const k0=items.find(i=>canSee(i[1]));return k0?`<div class="grp2 one"><button class="nav ${NAVACT(k0[1])?"on":""}" data-k="${k0[1]}" title="Reports">${ic(k0[1])}<span class="lb">Reports</span></button></div>`:""}const open=GOPEN[g]!==undefined?GOPEN[g]:g==="Home";return`<div class="grp2 ${open?"open":""}"><button class="gh" data-grp="${g}" aria-expanded="${open}">${ic(GIC[g])}<span class="lb">${g}</span>${CHEV}</button><div class="gl">`+items.filter(([n,k])=>canSee(k)).map(([n,k])=>`<button class="nav ${NAVACT(k)?"on":""}" data-k="${k}" title="${n}">${ic(k)}<span class="lb">${n}</span>${k==="appr"&&AC?`<span class="cnt">${AC}</span>`:""}</button>`).join("")+`</div></div>`}).join("");
  document.querySelectorAll(".nav[data-k]").forEach(b=>b.onclick=()=>{page=b.dataset.k;PG=0;$("#side").classList.remove("open");closeDr();draw();window.scrollTo(0,0)});
- document.querySelectorAll(".gh").forEach(b=>b.onclick=()=>{const g=b.dataset.grp,o=b.parentElement.classList.toggle("open");GOPEN[g]=o;b.setAttribute("aria-expanded",o);try{localStorage.setItem("smr_gopen",JSON.stringify(GOPEN))}catch(e){}})}
+ document.querySelectorAll(".gh").forEach(b=>b.onclick=()=>{const g=b.dataset.grp,o=!b.parentElement.classList.contains("open");Object.keys(GOPEN).forEach(x=>GOPEN[x]=false);GOPEN[g]=o;document.querySelectorAll(".grp2").forEach(x=>{const on=x.contains(b)&&o;x.classList.toggle("open",on);x.firstElementChild.setAttribute("aria-expanded",on)});try{localStorage.setItem("smr_gopen",JSON.stringify(GOPEN))}catch(e){}})}
 function go(k){if(canSee(k)){page=k;PG=0;closeDr();draw();window.scrollTo(0,0)}}
 function updBell(){const b=$("#bdg");if(!canSee("dash")){b.hidden=true;return}const m=page==="dash"?M:build(),n=m.alerts.filter(a=>a[0]!=="low"&&a[3]).length;b.textContent=n;b.hidden=!n}
 function openNotif(){if(!canSee("dash"))return;const m=build(),order={high:0,med:1,low:2};LASTDRILL=null;$("#dt").textContent="Notifications";$("#dd").textContent="Items that need attention, most urgent first. Select one to see the records.";
@@ -2890,7 +2900,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 78";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 79";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -2927,6 +2937,33 @@ document.addEventListener("change",ev=>{const s=ev.target.closest&&ev.target.clo
   const er=FORMS.mv({no:e.no,eff:iso(T0),type:"Change of manager",pos:e.pos||"",dept:e.dept||"",project:e.project||"",loc:e.loc||"",mgr:v,reason:"Updated in Reporting Lines"});if(er){toast(er);draw()}else toast("Manager updated");return}
  if(ev.target.id==="rld"){TAB.rl_d=ev.target.value;draw()}});
 document.addEventListener("input",ev=>{if(ev.target.id==="rlq"){TAB.rl_q=ev.target.value;const p=ev.target.selectionStart;draw();const n=$("#rlq");if(n){n.focus();n.setSelectionRange(p,p)}}});
+
+/* Information architecture: a short, friendly menu and one Reports hub */
+const REPKEYS=["rep_hr","rep_head","rep_dp","rep_cx","completeness","reporting","rep_att","rep_leave","leave_bal","rep_pay","rep_cost","pay_reg","pay_var","pay_rec","pay_je","pay_fs","auditlog"];
+NAV.splice(0,NAV.length,
+ ["Home",[["Dashboard","dash"],["Payroll Dashboard","paydash"],["Approvals","appr"],["My Portal","work"],["My Profile","myprofile"],["HR Requests","hr_req"],["Notifications","notif"]]],
+ ["People",[["Employee Directory","emp"],["Organization Chart","org"],["Reporting Lines","reporting"],["Departments","depts"],["Job Positions","positions"],["Contracts","contracts"],["Probation Tracker","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]],
+ ["Time & Leave",[["Daily Attendance","att_d"],["Monthly Attendance","att_m"],["Timesheets","timesheets"],["Shifts & Scheduling","shifts"],["Overtime","overtime"],["Exceptions","exceptions"],["Leave Requests","leave_req"],["Leave Balances","leave_bal"],["Leave Calendar","leave_cal"]]],
+ ["Payroll",[["Payroll Processing","pay_proc"],["Payroll Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Final Settlements","settle"]]],
+ ["Reports",[["All Reports","reports"]]],
+ ["Settings",[["Company","company"],["Users","users"],["Roles & Permissions","perms"],["Employee Access","emp_access"],["Approval Workflows","wf"],["Cost Centers & Projects","cost_centers"],["Payroll Periods","pay_periods"],["Salary Components","pay_comp"],["Tax & Insurance","comp"],["Public Holidays","holidays"],["Leave Policies","leave_pol"],["Email Settings","mail_set"],["Email Outbox","mail_out"],["Integrations","integ"],["Audit Logs","auditlog"]]]);
+IC.reports=IC.rep_hr;IC.reporting=IC.org;
+GIC.Reports="rep_hr";GIC.Payroll="paydash";
+function NAVV(){if(role===R.EMP){const pick=(g,ks)=>{const it=[];NAV.forEach(([,l])=>l.forEach(i=>{if(ks.includes(i[1])&&canSee(i[1]))it.push(i)}));return[g,ks.map(k=>it.find(i=>i[1]===k)).filter(Boolean)]};return[pick("Home",["work","myprofile","hr_req","notif"]),pick("Time & Leave",["leave_req","leave_bal","leave_cal","leave_pol"]),pick("Payroll",["payslips"])].filter(([g,it])=>it.length)}
+ return NAV.map(([g,items])=>[g,items.filter(i=>canSee(i[1]))]).filter(([g,it])=>it.length)}
+function NAVGRP(k){if(REPKEYS.includes(k)&&k!=="auditlog"&&k!=="reporting"&&k!=="leave_bal"&&k!=="pay_fs")return"Reports";if(k==="profile")return"People";const x=NAV.find(n=>n[1].some(i=>i[1]===k));return x?x[0]:""}
+function NAVACT(k){return k===page||(k==="emp"&&page==="profile")||(k==="reports"&&["rep_hr","rep_head","rep_dp","rep_cx","completeness","rep_att","rep_leave","rep_pay","rep_cost","pay_reg","pay_var","pay_rec","pay_je"].includes(page))}
+const RCATS=[["People & headcount","#14a39a","#dff5f2",["rep_hr","rep_head","rep_dp","rep_cx","completeness","reporting"]],
+ ["Attendance & leave","#2f80ed","#e2eefd",["rep_att","rep_leave","leave_bal"]],
+ ["Payroll & finance","#8a5cd1","#efe6fb",["rep_pay","rep_cost","pay_reg","pay_var","pay_rec","pay_je","pay_fs"]],
+ ["Control & audit","#e5484d","#fde8e8",["auditlog"]]];
+function reports(){const q=(TAB.rp_q||"").trim().toLowerCase(),vis=k=>PAGES[k]&&canSee(k),match=k=>!q||(PAGES[k].title+" "+PAGES[k].desc).toLowerCase().includes(q);
+ const rec=[];const seen=new Set();HIST.slice().reverse().forEach(h=>{if(REPKEYS.includes(h.page)&&vis(h.page)&&!seen.has(h.page)&&rec.length<4){seen.add(h.page);rec.push(h.page)}});
+ const card=(k,c,bg)=>`<button class="rpc" data-go="${k}" style="--rc:${c};--rb:${bg}"><span class="rpi"><svg viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[k]||IC.rep_hr}"/></svg></span><span class="rpt"><b>${esc(PAGES[k].title)}</b><small>${esc(PAGES[k].desc)}</small></span><svg class="rpa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
+ const secs=RCATS.map(([t,c,bg,ks])=>{const L=ks.filter(k=>vis(k)&&match(k));return L.length?`<section class="rps"><h2>${t}<span>${L.length}</span></h2><div class="rpg">${L.map(k=>card(k,c,bg)).join("")}</div></section>`:""}).join("");
+ return`<div class="bar"><input id="rpq" type="search" placeholder="Search reports" value="${esc(TAB.rp_q||"")}" style="flex:1 1 280px"></div>${!q&&rec.length?`<div class="rpr"><span class="mu">Recent:</span>${rec.map(k=>`<button class="chip2" data-go="${k}">${esc(PAGES[k].title)}</button>`).join("")}</div>`:""}${secs||`<div class="card"><div class="empty">No report matches "${esc(q)}".</div></div>`}<div class="cs">Every report can be exported to Excel from its own page. You only see the reports your role is allowed to open.</div>`}
+reg("reports","Reports","Every report in one place. Pick one, or search by name.",A("HRD","HRS","DM","FIN","PAY"),reports);
+document.addEventListener("input",ev=>{if(ev.target.id==="rpq"){TAB.rp_q=ev.target.value;const p=ev.target.selectionStart;draw();const n=$("#rpq");if(n){n.focus();n.setSelectionRange(p,p)}}});
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);

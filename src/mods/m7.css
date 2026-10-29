@@ -401,3 +401,13 @@ body:has(.zh) .ph,body:has(.zh) .backl{display:none!important}
 @media (max-width:600px){.zbal{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none}.zbal::-webkit-scrollbar{display:none}.zb{flex:0 0 76%;scroll-snap-align:start}}
 #bst{font-size:10.5px;color:var(--side-mu,#b9d6f2);opacity:.8;text-align:center;padding:2px 0 8px;letter-spacing:.02em}
 body.rail #bst{display:none}
+/* Reports hub */
+.rps{margin:22px 0}.rps h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 12px}.rps h2 span{font-size:12px;font-weight:700;background:var(--soft);color:var(--mu);border-radius:99px;padding:2px 9px}
+.rpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.rpc{display:flex;align-items:center;gap:14px;text-align:left;background:var(--surf);border:1px solid color-mix(in srgb,var(--bd) 55%,transparent);border-radius:18px;padding:16px 16px;box-shadow:0 8px 22px rgba(31,45,90,.06);cursor:pointer;color:var(--tx);transition:transform .15s,box-shadow .15s}
+.rpc:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(31,45,90,.12)}
+.rpi{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--rb)}.rpi svg{width:24px;height:24px}
+.rpt{display:grid;gap:3px;min-width:0;flex:1}.rpt b{font-size:15px;font-weight:700}.rpt small{color:var(--mu);font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rpa{flex:none;width:18px;height:18px;color:var(--mu)}
+.rpr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 6px}
+#nav .grp2.one{margin-top:6px}
