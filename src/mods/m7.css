@@ -288,3 +288,8 @@ form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 #pal2 .pi small{color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 #pal2 .pi:hover,#pal2 .pi.on{background:var(--soft)}
 body.rail .sps{display:none}
+
+.sps kbd{font:600 10px/1 Inter,system-ui,sans-serif!important;letter-spacing:.02em}
+.qa{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}
+#q{min-width:0!important;flex:1 1 260px}
+@media (min-width:900px){.topbar .search{display:none}.topbar .crumb{flex:1}}

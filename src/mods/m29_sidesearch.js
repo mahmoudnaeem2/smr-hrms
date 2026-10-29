@@ -1,7 +1,7 @@
 /* Sidebar search: pages, people, projects (uses palResults) */
 let SPI=-1,SPR=[];
 function spInit(){const side=$("#side");if(!side||$("#sps"))return;const br=side.querySelector(".brand");if(!br)return;
- br.insertAdjacentHTML("afterend",'<div class="sps" id="sps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs2" type="search" placeholder="Search pages, people…" autocomplete="off" aria-label="Search pages, people, projects"><kbd>Ctrl K</kbd><div id="pal2" role="listbox" hidden></div></div>');
+ br.insertAdjacentHTML("afterend",'<div class="sps" id="sps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs2" type="search" placeholder="Search…" autocomplete="off" aria-label="Search pages, people, projects"><kbd>Ctrl K</kbd><div id="pal2" role="listbox" hidden></div></div>');
  const g=$("#gs2");
  g.addEventListener("input",()=>{SPI=-1;spDraw()});g.addEventListener("focus",()=>{SPI=-1;spDraw()});
  g.addEventListener("blur",()=>setTimeout(()=>{const b=$("#pal2");if(b)b.hidden=true},180));
