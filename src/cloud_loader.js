@@ -252,7 +252,7 @@
       fn: function (name, body) {
         return token().then(function (t) {
           return fetch(URL_ + "/functions/v1/" + name, { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify(body) })
-            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || (r.status === 404 ? "The account service is not set up yet. Deploy the admin-users function in Supabase." : "Request failed")); return j; }); });
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || (r.status === 404 ? "The account service is not set up yet. Deploy the admin-users function in Supabase." : "Request failed")); return j; }); }).catch(function (e) { if (e instanceof TypeError || /failed to fetch|network/i.test(e.message)) throw new Error("Cannot reach the account service. In Supabase, deploy the function named admin-users (Edge Functions), then try again."); throw e; });
         });
       },
       status: function () { return status; }, reload: function () { location.reload(); }
