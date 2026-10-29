@@ -357,3 +357,34 @@ table tr:hover>td:first-child{border-radius:12px 0 0 12px}table tr:hover>td:last
 td .av{width:38px!important;height:38px!important;font-size:12.5px!important;font-weight:700;box-shadow:0 2px 6px rgba(31,45,90,.12)}
 html[data-comfort=dark] .crumb b,html[data-comfort=dark] td .av{color:#dbe9f8!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-comfort]) .crumb b{color:#dbe9f8}}
+/* ===== Employee home (ZenHR-style) ===== */
+.zh{max-width:760px;margin:0 auto;padding-bottom:30px}
+.zw{font-size:34px!important;font-weight:800!important;letter-spacing:-.03em;margin:6px 0 2px;color:var(--tx)!important}
+.zsub{color:var(--mu);font-size:15px;margin-bottom:6px}
+.zrow{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;color:var(--mu);font-size:15px}
+.zlink{background:none;border:0;color:#14a39a;font-weight:700;cursor:pointer;font-size:14px}
+.zbal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.zb{display:grid;gap:2px;text-align:left;background:var(--surf);border:0;border-radius:22px;padding:16px 18px;box-shadow:0 12px 28px rgba(31,45,90,.08),inset 0 1px 0 rgba(255,255,255,.7);cursor:pointer;color:var(--tx);transition:transform .15s}
+.zb:hover{transform:translateY(-2px)}
+.zb span{color:var(--mu);font-size:12.5px}.zb b{font-size:30px;font-weight:800;letter-spacing:-.02em}.zb b small{font-size:15px;font-weight:500;color:var(--mu)}.zb i{font-style:normal;color:var(--mu);font-size:11px}
+.zq{margin:26px 0 12px;color:var(--mu);font-size:16px}
+.zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.zt{position:relative;display:grid;place-items:center;align-content:center;gap:10px;aspect-ratio:1/.92;background:var(--surf);border:0;border-radius:26px;box-shadow:0 14px 30px rgba(31,45,90,.09),inset 0 1px 0 rgba(255,255,255,.8);cursor:pointer;color:var(--tx);transition:transform .15s,box-shadow .15s}
+.zt:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(31,45,90,.14)}
+.zi{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--zbg)}.zi svg{width:28px;height:28px}
+.zl{font-size:13px;font-weight:600}
+.zdot{position:absolute;top:10px;right:12px;background:#e5484d;color:#fff;border-radius:99px;font-style:normal;font-size:11px;font-weight:700;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+.zpl{display:grid;gap:12px}
+.zp{display:block;width:100%;text-align:left;background:var(--surf);border:0;border-radius:22px;padding:18px 20px;box-shadow:0 12px 28px rgba(31,45,90,.08);cursor:pointer;color:var(--tx)}
+.zp div{display:grid;gap:3px}.zp b{font-size:16px;font-weight:700}.zp span{color:var(--mu);font-size:14px}
+.zp em{font-style:normal;font-weight:700;font-size:13px;display:flex;gap:10px;align-items:center;margin-top:6px}
+.zp em i{font-style:normal;font-weight:600;font-size:11px;background:#fff1c9;color:#8f5f00;border-radius:99px;padding:3px 10px}
+.zp0{cursor:default;color:var(--mu);text-align:center;font-size:14px}
+html[data-comfort=dark] .zb,html[data-comfort=dark] .zt,html[data-comfort=dark] .zp{box-shadow:0 10px 24px rgba(0,0,0,.35)}
+@media (max-width:520px){.zw{font-size:30px!important}.zgrid{gap:12px}.zt{border-radius:22px}.zi{width:46px;height:46px}}
+/* colourful quick actions on the HR dashboard */
+.qa .qt:nth-child(6n+1) svg{color:#14a39a;background:#dff5f2}.qa .qt:nth-child(6n+2) svg{color:#2f80ed;background:#e2eefd}.qa .qt:nth-child(6n+3) svg{color:#ee6c3a;background:#ffe9df}.qa .qt:nth-child(6n+4) svg{color:#8a5cd1;background:#efe6fb}.qa .qt:nth-child(6n+5) svg{color:#e5484d;background:#fde8e8}.qa .qt:nth-child(6n+6) svg{color:#f0a020;background:#fff1d6}
+body:has(.zh) .ph,body:has(.zh) .backl{display:none!important}
+.zb:nth-child(3):last-child{grid-column:1/-1}
+@media (min-width:600px){.zb:nth-child(3):last-child{grid-column:auto}}
+@media (min-width:700px){.zt{aspect-ratio:auto;height:124px}.zh{max-width:820px}}

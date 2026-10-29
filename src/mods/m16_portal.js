@@ -64,7 +64,7 @@ function pt_ct(e){const s=salAt(e,iso(T0)),w=alwOf(e,s),rn=db("renew",{})[e.no],
 function pt_to(e){const p=wparts();return`<div class="grid ws" style="grid-template-columns:minmax(0,520px)">${p.leave}</div>${p.tail}`}
 function pt_at(e){const p=wparts(),pre=iso(T0).slice(0,7),rows=Object.keys(PUNCH).filter(k=>k.startsWith(e.no+"|"+pre)).sort().reverse().map(k=>{const pu=PUNCH[k],f=t=>new Date(t).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});let m=0;for(let i=0;i<pu.length;i+=2)if(pu[i+1])m+=Math.max(0,(new Date(pu[i+1])-new Date(pu[i]))/6e4);return[k.split("|")[1],f(pu[0]),pu.length%2?"Still in":f(pu[pu.length-1]),hh(m)]});
  return`<div class="grid ws" style="grid-template-columns:minmax(0,520px)">${p.att}</div>${secH("This month")}${ptbl("pat",["Date","First in","Last out","Worked"],rows,{empty:"No punches recorded this month.",csv:"mypunch"})}<div class="kt" style="margin-top:10px">Total this month: <b>${hh(mins(e.no,pre))}</b></div>`}
-function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
+function portalBase(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
  if(!e)return`<div class="card"><div class="empty">No employees yet. Add employees in the directory, or switch to Sample data.</div></div>`;
  if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}const cur=TAB.pt||"ov";
  const body=({ov:pt_ov,ps:pt_ps,dc:pt_dc,wn:pt_wn,ln:pt_ln,ct:pt_ct,to:pt_to,at:pt_at,rq:()=>my_req(),pf:()=>profile()}[cur]||pt_ov)(e);
