@@ -8,3 +8,9 @@ function rmToggle(b){if(RMO){rmClose();return}const sel=document.getElementById(
 document.addEventListener("click",ev=>{if(!RMO)return;const i=ev.target.closest(".rmi");if(i){const sel=document.getElementById("role");sel.value=i.dataset.v;sel.dispatchEvent(new Event("change",{bubbles:true}));rmClose();rmSync();return}if(!ev.target.closest(".rmo"))rmClose()},true);
 document.addEventListener("keydown",ev=>{if(ev.key==="Escape")rmClose()});
 setInterval(()=>{rmBuild();rmSync()},400);
+/* Remove duplicated Export / Copy buttons on a page (keep the first of each) */
+function dedupeExports(){const v=document.getElementById("view");if(!v)return;const seen=new Set();v.querySelectorAll('[data-act^="xlsx:"],[data-act^="csv:"],[data-act^="cpx:"]').forEach(b=>{const key=b.dataset.act;if(seen.has(key)){b.remove();return}seen.add(key)});
+ v.querySelectorAll(".bar").forEach(r=>{if(!r.children.length&&!r.textContent.trim())r.remove()})}
+try{new MutationObserver(()=>{if(!window.__dd){window.__dd=1;setTimeout(()=>{window.__dd=0;dedupeExports()},60)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
+function dedupeExcel(){const v=document.getElementById("view");if(!v)return;const L=[...v.querySelectorAll("button")].filter(b=>b.textContent.trim()==="Export Excel");if(L.length<2)return;L.forEach(b=>{const sib=[...b.parentNode.children].some(x=>x!==b&&/^Copy/.test(x.textContent.trim()));if(!sib&&L.some(o=>o!==b&&[...o.parentNode.children].some(x=>/^Copy/.test(x.textContent.trim()))))b.remove()})}
+try{new MutationObserver(()=>{if(!window.__d2){window.__d2=1;setTimeout(()=>{window.__d2=0;dedupeExcel()},80)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
