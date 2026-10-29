@@ -362,6 +362,8 @@ html[data-comfort=dark] .b.p{background:#2a7bd1;color:#fff}
 .orgb{display:inline-flex;gap:6px;align-items:center;margin-left:10px;flex-wrap:wrap}.orgb .b.s{padding:3px 9px;font-size:12px}
 
 :focus-visible{outline:2px solid var(--blue,#0460B5);outline-offset:2px}button:focus-visible,.b:focus-visible,.nav:focus-visible{outline:2px solid #0460B5;outline-offset:2px;box-shadow:0 0 0 4px rgba(4,96,181,.25)}.skip{position:absolute;left:-999px;top:8px;background:#0460B5;color:#fff;padding:8px 14px;border-radius:8px;z-index:100}.skip:focus{left:8px}
+
+:root{--side-mu:#d6e8f8}.nav .grp,.navgrp{color:#e3effb}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid #f5b700;outline-offset:2px}input[type=checkbox],input[type=radio]{min-width:18px;min-height:18px}.orgb .b.s{min-height:28px}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -854,7 +856,7 @@ const ATTB={1:"On time",2:"Late",3:"Absent",4:"On leave"};
 function org(){const L=ALLE().filter(e=>e.status!=="Terminated");if(!L.length)return forbid("No employees yet.");const names=new Set(L.map(e=>e.name)),seen=new Set();
  const kids=n=>L.filter(e=>e.mgr===n);const roots=L.filter(e=>!e.mgr||!names.has(e.mgr));
  const node=(e,dep)=>{if(seen.has(e.no)||dep>8)return"";seen.add(e.no);const k=kids(e.name);return`<li><details ${dep<2?"open":""}><summary><span class="who"><i class="av">${ini(e.name)}</i><span>${esc(e.name)}<small>${esc(e.pos||"–")} · ${esc(e.dept)}</small></span></span><span class="orgb">${k.length?`<span class="tag">${k.length} direct</span>`:""}${[R.HRD,R.HRS].includes(role)?`<button type="button" class="b s" data-act="mv:${esc(e.no)}">Change manager / move</button><button type="button" class="b s" data-act="eedit:${esc(e.no)}">Edit</button>`:""}</span></summary>${k.length?`<ul>${k.map(x=>node(x,dep+1)).join("")}</ul>`:""}</details></li>`};
- return`<div class="card"><ul class="tree"><li><details open><summary><span class="who"><i class="av">SMR</i><span>Executive team<small>${L.length} people in the structure</small></span></span></summary><ul>${roots.map(r=>node(r,1)).join("")}</ul></details></li></ul></div>`}
+ return`<div class="card"><ul class="tree"><li><details open><summary><span class="who"><i class="av">SMR</i><span>Executive team<small>${L.length} people in the structure</small></span></span></summary><ul>${roots.map(r=>node(r,1)).join("")}</ul></details></li></ul></div>${orgHealth()}`}
 reg("org","Organization Chart","Reporting lines from the executive team down. Expand a person to see their direct reports. HR can change a manager or edit a person right from the chart.",A("HRD","HRS","DM","FIN"),org);
 function depts(){const L=ALLE().filter(e=>empAt(e,iso(T0))),can=[R.HRD].includes(role);
  const rows=DEPTS.map(d=>{const x=L.filter(e=>e.dept===d),h=x.find(e=>e.mgr==="Executive team")||x[0],vac=MODE==="sample"?SAMPLE.vacancies.filter(v=>v.dept===d).length:db("vac",[]).filter(v=>v.dept===d).length;
@@ -2109,6 +2111,25 @@ ACTS.nrd=i=>{const x=NF[+i];if(x)markN(x);openNotif();updBell()};
 ACTS.nrdall=()=>{NF.forEach(markN);openNotif();updBell()};
 ACTS.ptg=k=>{page="work";TAB._pp="work";TAB.pt=k;closeDr();draw();window.scrollTo(0,0);if(typeof tabVis==="function")tabVis()};
 ACTS.nopen=i=>{const x=NF[+i];if(!x)return;markN(x);closeDr();if(x.act)ACTS.ptg(x.act);else{page=x.go;PG=0;draw()}};
+
+/* Payroll journal entry (finance review lens) */
+function jeLines(run){const by={};run.results.forEach(x=>{const d=x.dept||"Unassigned";const o=by[d]||(by[d]={gross:0,er:0});o.gross+=x.gross||0;o.er+=Math.max(0,(x.cost||0)-(x.gross||0))});
+ const T=k=>run.results.reduce((s,r)=>s+(r[k]||0),0),gross=T("gross"),net=T("net"),ins=T("empIns"),tax=T("tax"),cost=T("cost"),er=Math.max(0,cost-gross),oth=Math.round((gross-net-ins-tax)*100)/100;
+ const dr=[],cr=[];Object.keys(by).sort().forEach(d=>{dr.push(["Salaries and wages",d,by[d].gross]);if(by[d].er>0)dr.push(["Employer social insurance expense",d,by[d].er])});
+ cr.push(["Net salaries payable","",net],["Employee social insurance payable","",ins],["Income tax payable","",tax]);if(Math.abs(oth)>=.01)cr.push(["Loan, advance and other deductions (recoverable or payable)","",oth]);if(er>0)cr.push(["Employer social insurance payable","",er]);
+ return{dr,cr}}
+function pay_je(){if(!canSalV())return forbid("Salary data is restricted for your role.");const rs=rpRuns().sort((a,b)=>a.period<b.period?1:-1);if(!rs.length)return`<div class="card"><p class="mu">No calculated payroll yet. Calculate a payroll run first.</p></div>`;
+ const id=TAB.jeRun||rs[0].id,run=rs.find(r=>String(r.id)===String(id))||rs[0],L=jeLines(run),sd=L.dr.reduce((s,x)=>s+x[2],0),sc=L.cr.reduce((s,x)=>s+x[2],0),ok=Math.abs(sd-sc)<.01;
+ const rows=[...L.dr.map(x=>[esc(x[0]),esc(x[1]),fmtC(x[2]),""]),...L.cr.map(x=>[esc(x[0]),esc(x[1]),"",fmtC(x[2])]),["<b>Total</b>","","<b>"+fmtC(sd)+"</b>","<b>"+fmtC(sc)+"</b>"]];
+ return`<div class="bar"><label>Payroll run<select data-je>${rs.map(r=>`<option value="${esc(String(r.id))}" ${r===run?"selected":""}>${esc(runLabel(r))}</option>`).join("")}</select></label></div>${tbl(["Account","Department","Debit","Credit"],rows)}<div class="card" style="margin-top:12px"><b>Review checklist</b><ul><li>Debits equal credits: ${ok?"<b>Yes</b>":"<b style='color:#b00020'>No, check the run</b>"}</li><li>Status of the run: ${esc(RS[run.status]||run.status)}${FINAL.includes(run.status)?"":" (not final yet, this entry is a draft)"}</li><li>${run.test?"This run used trial or test rules, do not post it.":"Rules used are approved for this period."}</li><li>Account codes: map each line to your chart of accounts before posting. They are not set here.</li></ul><div class="err"></div><button class="b p" data-act="je_csv:${esc(String(run.id))}">Download CSV</button></div>`}
+ACTS.je_csv=id=>{const run=rpRuns().find(r=>String(r.id)===String(id));if(!run)return;const L=jeLines(run),q=v=>'"'+String(v).replace(/"/g,'""')+'"',lines=[["Account","Department","Debit","Credit","Memo"],...L.dr.map(x=>[x[0],x[1],x[2].toFixed(2),"","Payroll "+run.period]),...L.cr.map(x=>[x[0],x[1],"",x[2].toFixed(2),"Payroll "+run.period])].map(r=>r.map(q).join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+lines],{type:"text/csv"}));a.download="payroll-journal-"+run.period+".csv";document.body.appendChild(a);a.click();a.remove();audit("Payroll journal exported",run.period);toast("Journal entry exported")};
+document.addEventListener("change",ev=>{const s=ev.target.closest("[data-je]");if(s){TAB.jeRun=s.value;draw()}});
+reg("pay_je","Payroll Journal Entry","Accounting entry for a payroll run: expense by department against payables. Draft for Finance review.",A("PAY","FIN","HRD"),pay_je);
+NAV.forEach(g=>{if(g[0]==="Payroll"){const i=g[1].findIndex(x=>x[1]==="pay_rec");g[1].splice(i<0?g[1].length:i+1,0,["Payroll Journal Entry","pay_je"])}});
+/* Org health metrics (people analytics lens) */
+function orgHealth(){const L=ALLE().filter(e=>e.status!=="Terminated");if(L.length<2)return"";const names=new Set(L.map(e=>e.name)),sp=L.map(m=>({n:m.name,k:L.filter(e=>e.mgr===m.name).length})).filter(x=>x.k>0),avg=sp.length?(sp.reduce((s,x)=>s+x.k,0)/sp.length).toFixed(1):"0",mx=sp.sort((a,b)=>b.k-a.k)[0],noMgr=L.filter(e=>!e.mgr||(!names.has(e.mgr)&&e.mgr!=="Executive team")).length,ten=L.filter(e=>e.hire).map(e=>(T0-new Date(e.hire+"T00:00:00"))/31557600000),at=ten.length?(ten.reduce((a,b)=>a+b,0)/ten.length).toFixed(1):"–",miss=L.filter(e=>!e.dob||!e.nid||!e.mobile||!e.ecn).length;
+ return`<div class="card" style="margin-top:14px"><h2>Organization health</h2>${tbl(["Measure","Value","What it tells you"],[["Average span of control",avg,"Direct reports per manager. 5 to 8 is a common healthy range."],["Widest span",mx?esc(mx.n)+" ("+mx.k+")":"–","A very wide span means one manager carries too much."],["People without a valid manager",noMgr,"They are missing from reporting lines and approval routing."],["Average tenure (years)",at,"Low tenure with growth is normal; a sudden drop signals attrition."],["Records with missing personal data",miss,"Date of birth, ID, mobile or emergency contact is empty."]])}</div>`}
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
