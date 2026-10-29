@@ -3,6 +3,7 @@ from playwright.sync_api import sync_playwright
 STORE={}   # k -> {v,ver}
 USERS={'admin@x.com':{'id':'u-admin','pw':'Passw0rd1','role':'System Administrator','name':'Admin One','active':True},
        'hr@x.com':{'id':'u-hr','pw':'Passw0rd1','role':'HR Specialist','name':'Hala HR','active':True},
+       'hd@x.com':{'id':'u-hd','pw':'Passw0rd1','role':'HR Director','name':'Hana Director','active':True},
        'new@x.com':{'id':'u-new','pw':'Passw0rd1','role':'Pending','name':'New','active':True}}
 TOK={}
 LOG=[]
@@ -80,4 +81,11 @@ with sync_playwright() as p:
     # 8 sign out
     pg.evaluate("ACTS.esout()");pg.wait_for_timeout(300)
     pg.click('#cy');pg.wait_for_selector('#cgf',timeout=4000);ok(pg.evaluate("localStorage.getItem('smr_sb')")is None,'sign out clears session')
-    print('errors',errs,e2,e3)
+    c4,pg4,e4=ctx();pg4.goto('file:///tmp/full_cloud.html');pg4.wait_for_selector('#cgf');login(pg4,'hd@x.com','Passw0rd1')
+    pg4.wait_for_function("typeof E!=='undefined'&&document.querySelector('#cg')===null",timeout=6000)
+    pg4.evaluate("go('emp')");pg4.wait_for_timeout(500)
+    ok(pg4.evaluate("!!document.querySelector('[data-act=eadd]')"),'HR Director sees + Add employee')
+    pg4.evaluate("const s=document.getElementById('role');s.disabled=false;s.value='Finance Manager';s.dispatchEvent(new Event('change',{bubbles:true}))");pg4.wait_for_timeout(1200)
+    ok(pg4.evaluate("role")=='HR Director','role snaps back to the server role after tampering')
+    ok(pg4.evaluate("document.querySelector('.rmb b')?.textContent")=='HR Director','role card shows HR Director')
+    print('errors',errs,e2,e3,e4)

@@ -89,6 +89,7 @@ R_('<td>${esc(e.loc||"–")}</td>','<td>${esc(e.project||"–")}</td><td>${esc(e
 R_('<select data-k="status">${opts(STAT,F.status,"All statuses")}</select>','<select data-k="project">${opts(PROJL(),F.project,"All projects")}</select><select data-k="status">${opts(STAT,F.status,"All statuses")}</select>')
 
 R_('<div class="notice er" role="alert"><b>Before your first payroll run</b>','<div class="notice setup" role="status"><b>Before your first payroll run</b>')
+R_('No employees yet. Use the form above to add the first record.','No employees yet. Use Add employee or Import from Excel above.')
 # --- employees: manager filter/column, birthdays ---
 R_('emp:["Employee Directory","Search, filter and manage employee records."','emp:["Employees","All employees. Search, filter by department, project, direct manager or status, and see who has a birthday coming up."')
 R_('&&(!F.project||e.project===F.project)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos].join(" ")','&&(!F.project||e.project===F.project)&&(!F.mgr||e.mgr===F.mgr)&&(!F.loc||e.loc===F.loc)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos,e.mgr,e.loc].join(" ")')
@@ -159,6 +160,9 @@ R_('<button class="b" data-act="impemp">Import from Excel</button>','${[R.HRD,R.
 R_('cmfUI();wire();updBell()}','cmfUI();uxUI();wire();updBell()}')
 R_('const adj=ladjSum(e.no,t);r[t]={open,used','const adj=ladjSum(e.no,t);open=accOpen(e,t,open);r[t]={open,used')
 R_('${note("Entitlements are sample policy values.','${accrualCard()}${note("Entitlements are sample policy values.')
+APP='<script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
+frag=pre+APP+post
+open('dist/frag.html','w').write(frag)
 full='<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'+HEAD+'<style>'+CSS+'</style></head><body>'+BODY+APP+'</body></html>\n'
 open('index.html','w').write(full)
 open('dist/chk.js','w').write(js)
