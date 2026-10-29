@@ -489,3 +489,33 @@ table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}tabl
 .hqc:hover .hqi,.hqc.on .hqi{background:var(--ic,#0460B5)!important;color:#fff!important}
 .hqc{transition:transform .15s,box-shadow .15s}.hqc:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,35,70,.1)}
 @media (prefers-reduced-motion:reduce){.hqc:hover{transform:none}}
+/* REQUEST FORM: side panel */
+.hqm{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end}
+.hqm-scrim{position:absolute;inset:0;background:rgba(10,25,50,.45);backdrop-filter:blur(2px)}
+.hqm-panel{position:relative;width:min(520px,100%);height:100%;background:var(--surf);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(10,25,50,.25);animation:hqin .22s ease-out}
+@keyframes hqin{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.hqm-panel{animation:none}}
+.hqm-h{display:flex;gap:14px;align-items:center;padding:20px 22px;border-bottom:1px solid var(--bd)}
+.hqm-h .hqi{flex:none;margin:0!important}
+.hqm-h h2{margin:0;font-size:19px;color:var(--tx)}.hqm-h p{margin:3px 0 0;font-size:13.5px;color:var(--mu)}
+.hqm-h>div{flex:1;min-width:0}
+.hqm-x{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--surf);color:var(--mu);display:grid;place-items:center;cursor:pointer}
+.hqm-x:hover{background:var(--soft);color:var(--tx)}
+.hqm-form{display:flex;flex-direction:column;flex:1;min-height:0}
+.hqm-body{flex:1;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+.hqm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hqm-grid label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--tx)}
+.hqm-grid label .mu{font-weight:400}
+.hqm-grid input,.hqm-grid select,.hqm-grid textarea{width:100%;height:42px;border-radius:10px;font-weight:400}
+.hqm-grid textarea{height:auto;min-height:96px;padding:10px 12px}
+.hqm-att{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.hqm-drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px;border:1.5px dashed var(--bd);border-radius:12px;color:var(--mu);cursor:pointer;margin-top:8px;text-align:center}
+.hqm-drop:hover{border-color:var(--btn);color:var(--btn);background:color-mix(in srgb,var(--btn) 5%,transparent)}
+.hqm-drop span{font-weight:600;color:var(--tx)}.hqm-drop small{font-size:12px}
+.hqm .err{color:#b42318;font-size:13px;min-height:0}
+.hqm .err:not(:empty){background:#fde8e8;border:1px solid #f5c2c0;padding:10px 12px;border-radius:10px}
+.hqm-f{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--bd);background:var(--surf);padding-bottom:max(14px,env(safe-area-inset-bottom,0px))}
+.hqm-f .b{height:42px;padding:0 20px}
+@media (max-width:600px){.hqm-grid{grid-template-columns:1fr}.hqm-panel{width:100%}.hqm-f .b{flex:1}}
+.pbody{animation-fill-mode:none!important}.hqm{z-index:200}
+.hqm .card{box-shadow:none;border:0;background:transparent;padding:0}.hqm .empty{padding:10px;font-size:13px}.hqm [data-attbox] .card .empty svg{display:none}

@@ -677,6 +677,36 @@ table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}tabl
 .hqc:hover .hqi,.hqc.on .hqi{background:var(--ic,#0460B5)!important;color:#fff!important}
 .hqc{transition:transform .15s,box-shadow .15s}.hqc:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,35,70,.1)}
 @media (prefers-reduced-motion:reduce){.hqc:hover{transform:none}}
+/* REQUEST FORM: side panel */
+.hqm{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end}
+.hqm-scrim{position:absolute;inset:0;background:rgba(10,25,50,.45);backdrop-filter:blur(2px)}
+.hqm-panel{position:relative;width:min(520px,100%);height:100%;background:var(--surf);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(10,25,50,.25);animation:hqin .22s ease-out}
+@keyframes hqin{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.hqm-panel{animation:none}}
+.hqm-h{display:flex;gap:14px;align-items:center;padding:20px 22px;border-bottom:1px solid var(--bd)}
+.hqm-h .hqi{flex:none;margin:0!important}
+.hqm-h h2{margin:0;font-size:19px;color:var(--tx)}.hqm-h p{margin:3px 0 0;font-size:13.5px;color:var(--mu)}
+.hqm-h>div{flex:1;min-width:0}
+.hqm-x{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--surf);color:var(--mu);display:grid;place-items:center;cursor:pointer}
+.hqm-x:hover{background:var(--soft);color:var(--tx)}
+.hqm-form{display:flex;flex-direction:column;flex:1;min-height:0}
+.hqm-body{flex:1;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+.hqm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hqm-grid label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--tx)}
+.hqm-grid label .mu{font-weight:400}
+.hqm-grid input,.hqm-grid select,.hqm-grid textarea{width:100%;height:42px;border-radius:10px;font-weight:400}
+.hqm-grid textarea{height:auto;min-height:96px;padding:10px 12px}
+.hqm-att{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.hqm-drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px;border:1.5px dashed var(--bd);border-radius:12px;color:var(--mu);cursor:pointer;margin-top:8px;text-align:center}
+.hqm-drop:hover{border-color:var(--btn);color:var(--btn);background:color-mix(in srgb,var(--btn) 5%,transparent)}
+.hqm-drop span{font-weight:600;color:var(--tx)}.hqm-drop small{font-size:12px}
+.hqm .err{color:#b42318;font-size:13px;min-height:0}
+.hqm .err:not(:empty){background:#fde8e8;border:1px solid #f5c2c0;padding:10px 12px;border-radius:10px}
+.hqm-f{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--bd);background:var(--surf);padding-bottom:max(14px,env(safe-area-inset-bottom,0px))}
+.hqm-f .b{height:42px;padding:0 20px}
+@media (max-width:600px){.hqm-grid{grid-template-columns:1fr}.hqm-panel{width:100%}.hqm-f .b{flex:1}}
+.pbody{animation-fill-mode:none!important}.hqm{z-index:200}
+.hqm .card{box-shadow:none;border:0;background:transparent;padding:0}.hqm .empty{padding:10px;font-size:13px}.hqm [data-attbox] .card .empty svg{display:none}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2234,7 +2264,7 @@ function my_req(){const e=allEmps().find(x=>x.no===WSNO);if(!e)return forbid("No
  const D=(ti,f)=>()=>({title:ti,desc:"Your requests to HR.",cols:["Request","Details","Status","Sent"],rows:mine.filter(f).map(r=>[(HQT(r.type)||{}).t,hqSummary(r),(HQS[r.status]||[r.status])[0],r.t])});
  return`<div class="grid kpis">${stat("Waiting for HR",mine.filter(r=>r.status==="Pending").length,"",D("Waiting for HR",r=>r.status==="Pending"))}${stat("Done",mine.filter(r=>["Approved","Completed"].includes(r.status)).length,"",D("Done",r=>["Approved","Completed"].includes(r.status)))}${stat("Rejected",mine.filter(r=>r.status==="Rejected").length,"",D("Rejected",r=>r.status==="Rejected"))}</div>
  ${secH("New request")}<div class="grid hqg"><button class="card hqc" data-act="pt:to"><i class="hqi" style="${ipc("leave")}">${ipath("leave")}</i><b>Leaves</b><span class="mu">Submit a leave request.</span></button>${HRQ.map(x=>`<button class="card hqc ${sel===x.k?"on":""}" data-act="hqt:${x.k}"><i class="hqi" style="${ipc(x.k)}">${ipath(x.k)}</i><b>${esc(x.t)}</b><span class="mu">${esc(x.d)}</span></button>`).join("")}</div>
- ${t?`<div class="card" style="margin-top:14px"><h2>${esc(t.t)}</h2><form class="g" data-form="hrqnew"><input type="hidden" name="type" value="${t.k}">${t.f.map(f=>hqField(f)).join("")}<label style="grid-column:1/-1">Note to HR (optional)<input name="note"></label><div style="grid-column:1/-1" class="fl">Supporting document${t.proof||t.proofAlways?" (required, for example a bank letter or an ID copy)":" (optional)"}<div data-attbox="hrqform|${e.no}">${attList("hrqform|"+e.no,true)}<div class="bar" style="margin-top:8px"><label class="b" style="cursor:pointer">Attach file<input type="file" data-att="hrqform|${e.no}" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.csv,.txt" style="display:none"></label></div></div></div><button class="b p" type="submit">Send to HR</button></form><div class="err"></div></div>`:""}
+ ${t?`<div class="hqm" role="dialog" aria-modal="true" aria-labelledby="hqmt"><div class="hqm-scrim" data-act="hqt:${t.k}"></div><section class="hqm-panel"><header class="hqm-h"><i class="hqi" style="${ipc(t.k)}">${ipath(t.k)}</i><div><h2 id="hqmt">${esc(t.t)}</h2><p>${esc(t.d)}</p></div><button type="button" class="hqm-x" data-act="hqt:${t.k}" aria-label="Close">${"<svg viewBox='0 0 24 24' width='20' height='20' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><path d='M6 6l12 12M18 6 6 18'/></svg>"}</button></header><form class="hqm-form" data-form="hrqnew"><input type="hidden" name="type" value="${t.k}"><div class="hqm-body"><div class="hqm-grid">${t.f.map(f=>hqField(f)).join("")}<label style="grid-column:1/-1"><span>Note to HR <span class="mu">(optional)</span></span><input name="note" placeholder="Anything HR should know"></label></div><div class="hqm-att"><b>Supporting document</b><span class="mu">${t.proof||t.proofAlways?"Required, for example a bank letter or an ID copy.":"Optional."}</span><div data-attbox="hrqform|${e.no}">${attList("hrqform|"+e.no,true)}<label class="hqm-drop"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span>Attach files</span><small>PDF, image, Word or Excel</small><input type="file" data-att="hrqform|${e.no}" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.csv,.txt" style="display:none"></label></div></div><div class="err" role="alert"></div></div><footer class="hqm-f"><button type="button" class="b" data-act="hqt:${t.k}">Cancel</button><button class="b p" type="submit">Send request</button></footer></form></section></div>`:""}
  ${secH("My requests")}${ptbl("mq",["Request","Details","Status","Sent","HR response","Files"],mine.map(r=>[esc((HQT(r.type)||{}).t||r.type),esc(hqSummary(r)),bd(...(HQS[r.status]||[r.status,"s-mu"])),r.t,esc(r.resp||"–"),attBtn("hrq|"+r.id,"Request files","Mine")+" "+attBtn("hrqr|"+r.id,"Answer from HR","From HR")]),{empty:"You have not sent any request yet. Choose one above.",csv:"mq"})}`}
 reg("my_req","My Requests","Send requests to HR and follow their status.",A("EMP"),my_req);
 ACTS.hqt=k=>{TAB.hq=TAB.hq===k?"":k;draw()};
@@ -2995,7 +3025,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 88";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 90";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -3144,6 +3174,8 @@ reg("reports","Reports","Every report in one place. Pick one, or search by name.
 /* ===== m37: accessibility upgrades (WCAG 2.2 AA) ===== */
 (function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".card.wrap table").forEach(t=>{const r=t.rows[1];if(r&&r.cells.length>3&&r.cells[r.cells.length-1].querySelector("button.b,form"))t.classList.add("stk")});document.querySelectorAll(".xlbar").forEach(x=>{const hasX=el=>el&&el.querySelector&&(el.matches("[data-act^=\"xlsx:\"]")||el.querySelector("[data-act^=\"xlsx:\"]")),c=x.nextElementSibling;x.hidden=!!(hasX(x.previousElementSibling)||(c&&hasX(c.nextElementSibling)))});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
  new MutationObserver(()=>{if(!t)t=setTimeout(fix,60)}).observe(document.body,{childList:true,subtree:true});fix()})();
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"){const x=document.querySelector(".hqm .hqm-x");if(x&&!document.querySelector("#drawer.open,#confirm:not([hidden])")){x.click();ev.stopPropagation()}}},true);
+new MutationObserver(()=>{const m=document.querySelector(".hqm:not([data-f])");if(m){m.dataset.f="1";const f=m.querySelector("input:not([type=hidden]):not([type=file]),select,textarea");if(f)setTimeout(()=>f.focus(),60)}}).observe(document.body,{childList:true,subtree:true});
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
