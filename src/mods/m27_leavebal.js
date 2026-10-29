@@ -20,3 +20,23 @@ FORMS.lcfbulk=(o,f)=>{if(role!==R.HRD)return"Only the HR Director can set carry-
   if(c>0){L.push({kind:"cf",from:y,days:c,exp:ex,reason:"Carried forward from "+y,by:role,t:iso(T0)});n++}if(u>0){L.push({kind:"open",days:-u,reason:"Days already used before this system",by:role,t:iso(T0)});n++}}
  sv("ladj");audit("Carry-forward saved",t+" from "+y+(ex?" expiring "+ex:"")+", "+n+" entr"+(n===1?"y":"ies"));toast("Saved "+n+" entr"+(n===1?"y":"ies"));draw()};
 ACTS.ladj_x=a=>{if(role!==R.HRD)return;const[no,t,i]=a.split("|"),L=db("ladj",{})[no+"|"+t];if(!L||!L[+i])return;ask("Remove this entry? The balance changes immediately and the removal is logged.","Remove",()=>{const r=L.splice(+i,1)[0];sv("ladj");audit("Leave entry removed",no+" "+t+" "+(r.days>0?"+":"")+r.days);draw()})};
+/* Edit one employee's balance: add/remove, set exact, or carry forward */
+ACTS.lvedit=no=>{if(role!==R.HRD)return toast("Only the HR Director can edit leave balances.");const e=empBy(no);if(!e)return;const lim=LTYPES.filter(l=>l[1]!=null).map(l=>l[0]);
+ openDr2("Leave balance: "+e.name,e.no+" · "+e.dept,`<form class="nf" data-form="lvedit"><input type="hidden" name="no" value="${esc(e.no)}">
+ <div class="nsec">What do you want to do?</div>
+ <label style="grid-column:1/-1">Action<select name="act" data-lve="1"><option value="add">Add or remove days</option><option value="set">Set the balance to an exact number</option><option value="cf">Carry forward days from a previous year</option></select></label>
+ <label>Leave type<select name="t" data-lve="1">${lim.map(t=>`<option>${t}</option>`).join("")}</select></label>
+ <label><span data-lvl>Days (+ adds, - removes)</span><input name="v" type="number" step="0.5" required placeholder="e.g. 5 or -2"></label>
+ <label data-lvy hidden>Carried from year<input name="y" type="number" min="2000" max="${T0.getFullYear()-1}" value="${T0.getFullYear()-1}"></label>
+ <label data-lvy hidden>Carried days expire on (optional)<input name="x" type="date"></label>
+ <label style="grid-column:1/-1">Reason<input name="reason" required placeholder="Shown in the ledger and the audit log"></label>
+ <div class="lnprev" data-lvp style="grid-column:1/-1"></div>
+ <button class="b p nsub" type="submit">Save</button></form><div class="err"></div>`);setTimeout(()=>lvePrev(document.querySelector('form[data-form=lvedit]')),50)};
+function lvePrev(f){if(!f)return;const g=n=>f.querySelector('[name="'+n+'"]').value,e=empBy(g("no")),t=g("t"),act=g("act"),v=+g("v"),b=balances(e)[t],cur=b.avail;f.querySelectorAll("[data-lvy]").forEach(x=>x.hidden=act!=="cf");const L=f.querySelector("[data-lvl]");L.textContent=act==="set"?"New available balance (days)":act==="cf"?"Days to carry forward":"Days (+ adds, - removes)";
+ const p=f.querySelector("[data-lvp]");if(!(g("v")!==""&&!isNaN(v))){p.innerHTML='<span class="cs">Available now: <b>'+cur+'</b> day(s).</span>';return}const nv=act==="set"?v:cur+v;p.innerHTML='Available now <b>'+cur+'</b> → after saving <b>'+nv+'</b>'+(nv<0?'<div class="lnw">The balance would be negative.</div>':"")}
+document.addEventListener("input",ev=>{const f=ev.target.closest&&ev.target.closest("form[data-form=lvedit]");if(f)lvePrev(f)});
+document.addEventListener("change",ev=>{const f=ev.target.closest&&ev.target.closest("form[data-form=lvedit]");if(f)lvePrev(f)});
+FORMS.lvedit=o=>{if(role!==R.HRD)return"Only the HR Director can edit leave balances.";const e=empBy(o.no);if(!e)return"Employee not found.";const t=o.t,v=+o.v,reason=(o.reason||"").trim();if(isNaN(v)||o.v==="")return"Enter the number of days.";if(!reason)return"Enter a reason.";const m=db("ladj",{}),k=e.no+"|"+t,L=(m[k]=m[k]||[]),cur=balances(e)[t].avail;
+ if(o.act==="cf"){if(!(v>0&&v<=365))return"Carry-forward days must be between 0.5 and 365.";const y=String(o.y||"");if(!/^\d{4}$/.test(y)||+y>=T0.getFullYear())return"Carried-from year must be before "+T0.getFullYear()+".";if(o.x&&o.x<=iso(T0))return"The expiry date must be in the future, or leave it empty.";for(let i=L.length-1;i>=0;i--)if(L[i].kind==="cf"&&L[i].from===y)L.splice(i,1);L.push({kind:"cf",from:y,days:v,exp:o.x||"",reason,by:role,t:iso(T0)})}
+ else{const d=o.act==="set"?v-cur:v;if(!d)return"That does not change the balance.";if(cur+d<0)return"The balance cannot go below zero. Available now: "+cur+".";L.push({days:d,reason:o.act==="set"?reason+" (balance set to "+v+")":reason,by:role,t:iso(T0)})}
+ sv("ladj");audit("Leave balance edited",e.no+" "+t+": "+o.act+" "+v+". "+reason);closeDr();toast("Balance updated");draw()};
