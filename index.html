@@ -402,6 +402,11 @@ form input[type=date]{padding-right:12px}
 form label{display:flex;flex-direction:column;gap:6px}
 
 .vpanel{margin-top:12px;border-left:4px solid #c0392b}.vrow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--bd)}.vrow:first-of-type{border-top:0}.vact{display:flex;gap:8px;flex-wrap:wrap}
+.rq{color:#c0392b;font-weight:700}input.reqf,select.reqf{border-color:#e6a39b!important}input.reqf:invalid,select.reqf:invalid{box-shadow:0 0 0 2px rgba(192,57,43,.12)}
+.cxc{margin-top:14px}.cxh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.cxh h2{margin:0}.attb{background:#c40000;color:#fff;font-weight:700;font-size:13px;padding:5px 12px;border-radius:99px}.okb{background:#e3f6ea;color:#17703a;font-weight:700;font-size:13px;padding:5px 12px;border-radius:99px}
+.cxg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}@media(max-width:760px){.cxg{grid-template-columns:1fr 1fr}}@media(max-width:480px){.cxg{grid-template-columns:1fr}}
+.cxt{display:flex;flex-direction:column;gap:8px;text-align:left;background:#f7f9fc;border:1px solid #e3e9f1;border-radius:14px;padding:16px 18px;cursor:pointer;font:inherit;color:var(--tx);transition:transform .12s,box-shadow .12s,border-color .12s}.cxt:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(16,40,80,.1);border-color:#0460B5}
+.cxl{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600}.cxl i{width:9px;height:9px;border-radius:50%;display:inline-block}.cxv{font-size:34px;font-weight:800;color:#0b2a4a;line-height:1}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -602,7 +607,7 @@ function dash(){
  const run=RUNS().filter(r=>r.results.length||r.status!=="draft").sort((a,b)=>a.period<b.period?1:-1)[0],ST=["draft","under_review","pending_approval","approved","finalized","paid","reconciled"],ix=run?ST.indexOf(run.status==="validation_required"?"draft":run.status==="reconciliation_required"?"paid":run.status):-1;
  const pipe=!canSee("pay_proc")?"":`<div class="card"><h2>Payroll status</h2>${run?`<div class="mu" style="margin-bottom:10px">${esc(runLabel(run))} · ${rsb(run.status)}</div><div class="pipe">${ST.map((s,i)=>`<span class="ps ${i<ix?"done":i===ix?"cur":""}" data-go="pay_proc" style="cursor:pointer" title="Open Payroll Processing">${RS[s]}</span>`).join("")}</div><div class="bar" style="margin-top:12px"><button class="b p" data-go="pay_proc">Open Payroll Processing</button></div>`:`<div class="empty">No payroll run yet.</div><div class="bar"><button class="b p" data-go="pay_proc">Start a payroll run</button></div>`}</div>`;
  const lg=db("audit",[],false).slice(0,7),rec=canSee("auditlog")?`<div class="card"><h2>Recent activity</h2>${lg.length?`<ul class="act">${lg.map(x=>`<li data-go="auditlog" style="cursor:pointer"><b>${esc(x.a)}</b><span class="mu">${esc(x.role)} · ${x.t.slice(5,16).replace("T"," ")}</span></li>`).join("")}</ul>`:E0("Actions you take appear here.")}<div class="bar" style="margin-top:8px"><button class="b" data-go="auditlog">Open audit log</button></div></div>`:"";
- return`${head}${scope}${kpis}<div class="dg2">${trend}${act}</div><div class="dg3">${attC}${deptC}${cxC}</div><div class="dg2b">${pipe}${rec}</div>`}
+ return`${head}${scope}${kpis}<div class="dg2">${trend}${act}</div><div class="dg3">${attC}${deptC}${cxC}</div>${cxTiles()}<div class="dg2b">${pipe}${rec}</div>`}
 
 function emp(){const S=MODE==="sample",base=allEmps().filter(inScope).filter(e=>(!F.dept||e.dept===F.dept)&&(!F.status||e.status===F.status)&&(!F.project||e.project===F.project)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos].join(" ").toLowerCase().includes(Q.toLowerCase()));
  const PS=15,pages=Math.max(1,Math.ceil(base.length/PS));if(PG>=pages)PG=pages-1;const L=base.slice(PG*PS,PG*PS+PS);
@@ -718,7 +723,7 @@ document.addEventListener("click",ev=>{const t=ev.target.closest("[data-act],[da
  if(t.dataset.pgk){const[k,d]=t.dataset.pgk.split(":");PGS[k]=(PGS[k]||0)+ +d;draw();return}
  const i=t.dataset.act.indexOf(":"),a=i<0?t.dataset.act:t.dataset.act.slice(0,i),r=i<0?"":t.dataset.act.slice(i+1);if(ACTS[a])ACTS[a](r,t)});
 document.addEventListener("submit",ev=>{const f=ev.target.closest("[data-form]");if(!f)return;ev.preventDefault();const fn=FORMS[f.dataset.form];if(!fn)return;
- const er=fn(Object.fromEntries(new FormData(f)),f),box=f.querySelector(".err")||(f.parentElement&&f.parentElement.querySelector(".err"));if(box)box.textContent=er||""});
+ const er=fn(Object.fromEntries(new FormData(f)),f),box=f.querySelector(".err")||(f.parentElement&&f.parentElement.querySelector(".err"));if(box)box.textContent=er||"";if(er&&typeof er==="string"&&typeof learnReq==="function")learnReq(f,er)});
 ACTS.csv=n=>{const c=CSVS[n];if(!c)return;const q=v=>'"'+plain(v).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"',t=[c.cols,...c.rows].map(r=>r.map(q).join(",")).join("\n");
  const done=()=>toast("Copied "+c.rows.length+" rows as CSV"),fb=()=>{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()};
  try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}};
@@ -2314,6 +2319,23 @@ document.addEventListener("change",ev=>{const i=ev.target;if(!i||!i.name||i.name
 
 function monthsBetween(a,b){const[y1,m1,d1]=a.split("-").map(Number),[y2,m2,d2]=b.split("-").map(Number);const e=new Date(y2,m2-1,d2+1);let n=(e.getFullYear()-y1)*12+e.getMonth()-(m1-1);if(e.getDate()<d1)n--;return n}
 document.addEventListener("change",ev=>{const i=ev.target;if(!i||i.name!=="end")return;const f=i.closest("form");if(!f)return;const d=f.querySelector("input[data-dur]"),st=d&&f.querySelector(d.dataset.startsel);if(!d||!st||!st.value||!i.value||document.activeElement===d)return;const n=monthsBetween(st.value,i.value);if(n>0&&addMonthsISO(st.value,n)===i.value)d.value=n;else if(n>0)d.value=""});
+
+/* Fields that cause a save error become mandatory automatically (and stay so) */
+const SW_=new Set("the a an of to for and or in on is be must this that with your enter choose select add please first fill".split(" "));
+function reqStore(){try{return JSON.parse(localStorage.getItem("smr_req")||"{}")}catch(e){return{}}}
+function reqSave(o){try{localStorage.setItem("smr_req",JSON.stringify(o))}catch(e){}}
+function reqMark(f,names,focus){let first=null;names.forEach(n=>{const i=f.querySelector('[name="'+n+'"]');if(!i)return;i.required=true;i.classList.add("reqf");const l=i.closest("label");if(l&&!l.querySelector(".rq")){const sp=document.createElement("span");sp.className="rq";sp.textContent=" *";l.insertBefore(sp,i)}if(!first&&!i.value)first=i});if(focus&&first){first.focus();try{first.scrollIntoView({block:"center"})}catch(e){}}}
+function learnReq(f,msg){const tk=t=>t.toLowerCase().replace(/\([^)]*\)/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>2&&!SW_.has(w));const mt=new Set(tk(msg)),hit=[];
+ f.querySelectorAll("label").forEach(l=>{const i=l.querySelector("input,select,textarea");if(!i||!i.name||i.name.startsWith("_")||i.type==="hidden"||i.type==="checkbox"||i.value)return;const lt=tk([...l.childNodes].filter(n=>n.nodeType===3||n.className==="rq").map(n=>n.textContent).join(" "));if(lt.length&&lt.every(w=>mt.has(w)))hit.push(i.name)});
+ if(!hit.length)return;const st=reqStore(),k=f.dataset.form||"";st[k]=[...new Set([...(st[k]||[]),...hit])];reqSave(st);reqMark(f,hit,true)}
+function reqApply(root){(root||document).querySelectorAll("form[data-form]").forEach(f=>{const n=reqStore()[f.dataset.form];if(n&&!f.dataset.rqd){f.dataset.rqd="1";reqMark(f,n,false)}})}
+new MutationObserver(()=>reqApply()).observe(document.body,{childList:true,subtree:true});
+
+ACTS.cxgo=k=>{TAB.cx=k;go("contracts")};
+function cxTiles(){if(!canSee("contracts"))return"";const L=ALLE().filter(e=>e.status!=="Terminated"),n=k=>L.filter(e=>cxCat(e)===k).length,mo=iso(T0).slice(0,7),thisM=L.filter(e=>cxCat(e)!=="renewed"&&e.end&&e.end.slice(0,7)===mo&&e.end>=iso(T0)).length,
+ T=[["Ending this month",thisM,"#c40000","d30"],["Within 60 days",n("d30")+n("d60"),"#f59e0b","d60"],["Expired, no renewal",n("expired"),"#8b1a1a","expired"],["Within 90 days",n("d90"),"#64748b","d90"],["Renewed",n("renewed"),"#1d4ed8","renewed"],["No end date recorded",n("none"),"#f59e0b","none"]],att=n("expired")+n("d30");
+ return`<div class="card cxc"><div class="cxh"><h2>Contract expiry</h2>${att?`<span class="attb">${att} need attention</span>`:`<span class="okb">All clear</span>`}</div><div class="cxg">${T.map(t=>`<button class="cxt" data-act="cxgo:${t[3]}"><span class="cxl"><i style="background:${t[2]}"></i>${t[0]}</span><span class="cxv">${t[1]}</span></button>`).join("")}</div></div>`}
+document.addEventListener("change",ev=>{const i=ev.target;if(!i||i.name!=="type")return;const f=i.closest("form"),en=f&&f.querySelector('[name="end"]');if(!en)return;const need=["Fixed-term","Contractor"].includes(i.value);en.required=need;const l=en.closest("label");if(l){const q=l.querySelector(".rq");if(need&&!q){const sp=document.createElement("span");sp.className="rq";sp.textContent=" *";l.insertBefore(sp,en)}else if(!need&&q)q.remove()}});
 
 /* ===== m21: email notifications through Outlook (compose links and outbox) ===== */
 const MCFG=()=>{const c=db("mailcfg",{},false);if(!c.client)Object.assign(c,{client:"web",on:1,ev:{ap:1,dec:1,hq:1,wn:1},cc:"",sig:"Savills Management Resources (SMR) HR",link:"https://mahmoudnaeem2.github.io/smr-hrms/",rm:{}});return c};

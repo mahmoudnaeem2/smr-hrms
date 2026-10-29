@@ -161,3 +161,20 @@ document.addEventListener("change",ev=>{const i=ev.target;if(!i||!i.name||i.name
 
 function monthsBetween(a,b){const[y1,m1,d1]=a.split("-").map(Number),[y2,m2,d2]=b.split("-").map(Number);const e=new Date(y2,m2-1,d2+1);let n=(e.getFullYear()-y1)*12+e.getMonth()-(m1-1);if(e.getDate()<d1)n--;return n}
 document.addEventListener("change",ev=>{const i=ev.target;if(!i||i.name!=="end")return;const f=i.closest("form");if(!f)return;const d=f.querySelector("input[data-dur]"),st=d&&f.querySelector(d.dataset.startsel);if(!d||!st||!st.value||!i.value||document.activeElement===d)return;const n=monthsBetween(st.value,i.value);if(n>0&&addMonthsISO(st.value,n)===i.value)d.value=n;else if(n>0)d.value=""});
+
+/* Fields that cause a save error become mandatory automatically (and stay so) */
+const SW_=new Set("the a an of to for and or in on is be must this that with your enter choose select add please first fill".split(" "));
+function reqStore(){try{return JSON.parse(localStorage.getItem("smr_req")||"{}")}catch(e){return{}}}
+function reqSave(o){try{localStorage.setItem("smr_req",JSON.stringify(o))}catch(e){}}
+function reqMark(f,names,focus){let first=null;names.forEach(n=>{const i=f.querySelector('[name="'+n+'"]');if(!i)return;i.required=true;i.classList.add("reqf");const l=i.closest("label");if(l&&!l.querySelector(".rq")){const sp=document.createElement("span");sp.className="rq";sp.textContent=" *";l.insertBefore(sp,i)}if(!first&&!i.value)first=i});if(focus&&first){first.focus();try{first.scrollIntoView({block:"center"})}catch(e){}}}
+function learnReq(f,msg){const tk=t=>t.toLowerCase().replace(/\([^)]*\)/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>2&&!SW_.has(w));const mt=new Set(tk(msg)),hit=[];
+ f.querySelectorAll("label").forEach(l=>{const i=l.querySelector("input,select,textarea");if(!i||!i.name||i.name.startsWith("_")||i.type==="hidden"||i.type==="checkbox"||i.value)return;const lt=tk([...l.childNodes].filter(n=>n.nodeType===3||n.className==="rq").map(n=>n.textContent).join(" "));if(lt.length&&lt.every(w=>mt.has(w)))hit.push(i.name)});
+ if(!hit.length)return;const st=reqStore(),k=f.dataset.form||"";st[k]=[...new Set([...(st[k]||[]),...hit])];reqSave(st);reqMark(f,hit,true)}
+function reqApply(root){(root||document).querySelectorAll("form[data-form]").forEach(f=>{const n=reqStore()[f.dataset.form];if(n&&!f.dataset.rqd){f.dataset.rqd="1";reqMark(f,n,false)}})}
+new MutationObserver(()=>reqApply()).observe(document.body,{childList:true,subtree:true});
+
+ACTS.cxgo=k=>{TAB.cx=k;go("contracts")};
+function cxTiles(){if(!canSee("contracts"))return"";const L=ALLE().filter(e=>e.status!=="Terminated"),n=k=>L.filter(e=>cxCat(e)===k).length,mo=iso(T0).slice(0,7),thisM=L.filter(e=>cxCat(e)!=="renewed"&&e.end&&e.end.slice(0,7)===mo&&e.end>=iso(T0)).length,
+ T=[["Ending this month",thisM,"#c40000","d30"],["Within 60 days",n("d30")+n("d60"),"#f59e0b","d60"],["Expired, no renewal",n("expired"),"#8b1a1a","expired"],["Within 90 days",n("d90"),"#64748b","d90"],["Renewed",n("renewed"),"#1d4ed8","renewed"],["No end date recorded",n("none"),"#f59e0b","none"]],att=n("expired")+n("d30");
+ return`<div class="card cxc"><div class="cxh"><h2>Contract expiry</h2>${att?`<span class="attb">${att} need attention</span>`:`<span class="okb">All clear</span>`}</div><div class="cxg">${T.map(t=>`<button class="cxt" data-act="cxgo:${t[3]}"><span class="cxl"><i style="background:${t[2]}"></i>${t[0]}</span><span class="cxv">${t[1]}</span></button>`).join("")}</div></div>`}
+document.addEventListener("change",ev=>{const i=ev.target;if(!i||i.name!=="type")return;const f=i.closest("form"),en=f&&f.querySelector('[name="end"]');if(!en)return;const need=["Fixed-term","Contractor"].includes(i.value);en.required=need;const l=en.closest("label");if(l){const q=l.querySelector(".rq");if(need&&!q){const sp=document.createElement("span");sp.className="rq";sp.textContent=" *";l.insertBefore(sp,en)}else if(!need&&q)q.remove()}});

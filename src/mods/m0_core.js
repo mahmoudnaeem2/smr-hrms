@@ -57,7 +57,7 @@ document.addEventListener("click",ev=>{const t=ev.target.closest("[data-act],[da
  if(t.dataset.pgk){const[k,d]=t.dataset.pgk.split(":");PGS[k]=(PGS[k]||0)+ +d;draw();return}
  const i=t.dataset.act.indexOf(":"),a=i<0?t.dataset.act:t.dataset.act.slice(0,i),r=i<0?"":t.dataset.act.slice(i+1);if(ACTS[a])ACTS[a](r,t)});
 document.addEventListener("submit",ev=>{const f=ev.target.closest("[data-form]");if(!f)return;ev.preventDefault();const fn=FORMS[f.dataset.form];if(!fn)return;
- const er=fn(Object.fromEntries(new FormData(f)),f),box=f.querySelector(".err")||(f.parentElement&&f.parentElement.querySelector(".err"));if(box)box.textContent=er||""});
+ const er=fn(Object.fromEntries(new FormData(f)),f),box=f.querySelector(".err")||(f.parentElement&&f.parentElement.querySelector(".err"));if(box)box.textContent=er||"";if(er&&typeof er==="string"&&typeof learnReq==="function")learnReq(f,er)});
 ACTS.csv=n=>{const c=CSVS[n];if(!c)return;const q=v=>'"'+plain(v).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"',t=[c.cols,...c.rows].map(r=>r.map(q).join(",")).join("\n");
  const done=()=>toast("Copied "+c.rows.length+" rows as CSV"),fb=()=>{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()};
  try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}};
