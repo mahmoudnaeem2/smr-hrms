@@ -552,9 +552,6 @@ html[data-comfort=dark] .crumb b,html[data-comfort=dark] td .av{color:#dbe9f8!im
 .zrow{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;color:var(--mu);font-size:15px}
 .zlink{background:none;border:0;color:#14a39a;font-weight:700;cursor:pointer;font-size:14px}
 .zbal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
-.zb{display:grid;gap:2px;text-align:left;background:var(--surf);border:0;border-radius:22px;padding:16px 18px;box-shadow:0 12px 28px rgba(31,45,90,.08),inset 0 1px 0 rgba(255,255,255,.7);cursor:pointer;color:var(--tx);transition:transform .15s}
-.zb:hover{transform:translateY(-2px)}
-.zb span{color:var(--mu);font-size:12.5px}.zb b{font-size:30px;font-weight:800;letter-spacing:-.02em}.zb b small{font-size:15px;font-weight:500;color:var(--mu)}.zb i{font-style:normal;color:var(--mu);font-size:11px}
 .zq{margin:26px 0 12px;color:var(--mu);font-size:16px}
 .zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .zt{position:relative;display:grid;place-items:center;align-content:center;gap:10px;aspect-ratio:1/.92;background:var(--surf);border:0;border-radius:26px;box-shadow:0 14px 30px rgba(31,45,90,.09),inset 0 1px 0 rgba(255,255,255,.8);cursor:pointer;color:var(--tx);transition:transform .15s,box-shadow .15s}
@@ -579,6 +576,17 @@ body:has(.zh) .ph,body:has(.zh) .backl{display:none!important}
 .zback{display:inline-flex;align-items:center;gap:6px;background:var(--surf);border:0;border-radius:99px;padding:8px 16px 8px 10px;font-weight:600;color:var(--btn);cursor:pointer;box-shadow:0 4px 14px rgba(31,45,90,.08);margin:0 0 14px}
 .ptabs{display:none!important}
 .pbn,.pstats{display:none!important}
+
+.zbal{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}
+.zb{display:flex;flex-direction:column;gap:12px;text-align:left;background:var(--surf);border:1px solid color-mix(in srgb,var(--bd) 55%,transparent);border-radius:20px;padding:16px 18px 14px;box-shadow:0 10px 26px rgba(31,45,90,.07);cursor:pointer;color:var(--tx);transition:transform .15s,box-shadow .15s}
+.zb:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(31,45,90,.12)}
+.zbh{display:flex;align-items:center;gap:10px}.zbi{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--zbg)}.zbi svg{width:19px;height:19px}
+.zbl{font-size:14px;font-weight:650;color:var(--tx)}
+.zbn{display:flex;align-items:baseline;gap:8px}.zbn b{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--tx)}.zbn small{font-size:13px;color:var(--mu);font-weight:500}
+.zbar{height:7px;border-radius:99px;background:color-mix(in srgb,var(--zc) 14%,var(--soft));overflow:hidden}.zbar i{display:block;height:100%;border-radius:99px;background:var(--zc);transition:width .4s}
+.zbf{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mu)}.zbf b{color:var(--tx);font-weight:700}
+.zb:nth-child(3):last-child{grid-column:auto!important}
+@media (max-width:600px){.zbal{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none}.zbal::-webkit-scrollbar{display:none}.zb{flex:0 0 76%;scroll-snap-align:start}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2071,7 +2079,7 @@ document.addEventListener("mousedown",e=>{const b=e.target.closest("[data-pi]");
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const g=$("#gs");if(g){g.focus();g.select()}}else if(e.key==="/"&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||"")){e.preventDefault();const g=$("#gs");if(g)g.focus()}else if(e.altKey&&e.key==="ArrowLeft"){e.preventDefault();goBack()}});
 /* comfort theme */
 const CMF=["light","soft","dark"];let CMFV="light";try{CMFV=localStorage.getItem("smr_comfort")||"light"}catch(e){}
-function cmfApply(){document.documentElement.setAttribute("data-comfort",CMFV)}
+function cmfApply(){const r=document.documentElement;r.setAttribute("data-comfort",CMFV);r.setAttribute("data-theme",CMFV==="dark"?"dark":"light")}
 cmfApply();
 function cmfUI(){let b=$("#thm");if(!b){const t=document.querySelector(".topbar");if(!t)return;t.insertAdjacentHTML("beforeend",'<button id="thm" type="button" data-act="thm"></button>');b=$("#thm")}b.textContent=({light:"Light",soft:"Soft",dark:"Dark"})[CMFV];b.title="Change screen colors to be easier on the eyes";b.setAttribute("aria-label","Screen colors: "+CMFV)}
 ACTS.thm=()=>{CMFV=CMF[(CMF.indexOf(CMFV)+1)%3];try{localStorage.setItem("smr_comfort",CMFV)}catch(e){}cmfApply();cmfUI()};
@@ -2846,7 +2854,8 @@ const zIc=(k,c)=>`<svg viewBox="0 0 24 24" fill="${c}" fill-opacity=".13" stroke
 function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
  if(!e)return portalBase(initial);if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}if((TAB.pt||"ov")!=="ov")return portalBase(initial);
  const b=balances(e),fx=v=>(+v).toFixed(2),first=esc((e.name||"").split(" ")[0]),nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length,
- bal=["Annual leave","Sick leave","Emergency leave"].filter(t=>b[t]&&b[t].open!=null).map(t=>{const x=b[t],tot=Math.max(0,x.open+x.adj);return`<button class="zb" data-act="pt:to"><span>${t.replace(" leave","")}${t==="Annual leave"?" vacation":" days"}</span><b>${fx(x.avail)}<small>/${fx(tot)}</small></b><i>Days</i></button>`}).join(""),
+ ZB={"Annual leave":["Annual leave","#2f80ed","#e2eefd",IC.leave_cal],"Sick leave":["Sick leave","#ee6c3a","#ffe9df","M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"],"Emergency leave":["Emergency leave","#8a5cd1","#efe6fb",IC.exceptions]},
+ bal=["Annual leave","Sick leave","Emergency leave"].filter(t=>b[t]&&b[t].open!=null).map(t=>{const x=b[t],tot=Math.max(0,x.open+x.adj),z=ZB[t],pc=tot?Math.max(0,Math.min(100,x.avail/tot*100)):0,fmt=v=>Number.isInteger(+v)?String(+v):(+v).toFixed(2);return`<button class="zb" data-act="pt:to" style="--zc:${z[1]};--zbg:${z[2]}"><div class="zbh"><span class="zbi"><svg viewBox="0 0 24 24" fill="none" stroke="${z[1]}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${z[3]}"/></svg></span><span class="zbl">${t}</span></div><div class="zbn"><b>${fmt(x.avail)}</b><small>of ${fmt(tot)} days left</small></div><div class="zbar"><i style="width:${pc}%"></i></div><div class="zbf"><span>Used <b>${fmt(x.used)}</b></span><span>Pending <b>${fmt(x.pend)}</b></span></div></button>`}).join(""),
  tiles=ZT.map(([k,l,ic,c,bg])=>`<button class="zt" data-act="pt:${k}" style="--zc:${c};--zbg:${bg}"><span class="zi">${zIc(ic,c)}</span><span class="zl">${l}</span>${k==="wn"&&nWn?`<i class="zdot">${nWn}</i>`:""}</button>`).join(""),
  lv=LR.filter(r=>r.mode===MODE&&r.no===e.no&&r.status==="Pending").map(r=>({t:r.id,a:dmyS(r.start)+(r.end!==r.start?" - "+dmyS(r.end):""),b:r.note?r.note.replace(/ \(entered by .*\)$/,""):r.days+" working day(s)",c:r.type,s:"Pending",go:"to"})),
  hq=HQL().filter(r=>r.no===e.no&&!/closed|done|rejected|approved|complete/i.test(r.status||"")).map(r=>({t:+String(r.id).replace(/\D/g,"")||0,a:(HQT(r.type)||{}).t||r.type,b:r.note||"Sent to HR",c:"HR request",s:r.status||"Pending",go:"rq"})),
@@ -2858,6 +2867,24 @@ function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if
  <div class="zrow"><span>Your remaining balance</span><button class="zlink" data-act="pt:to">Full Details</button></div><div class="zbal">${bal}</div>
  <div class="zq">What would you like to do?</div><div class="zgrid">${tiles}</div>
  <div class="zq">Pending requests</div><div class="zpl">${pend}</div></div>`}
+
+/* Job positions: a managed list. Add, rename, remove. Employee forms pick from it (or type a new one). */
+const POSS=()=>db("posl",[],false);
+const canPos=()=>MODE!=="sample"&&[R.HRD,R.HRS].includes(role);
+function jobTitles(){const used=ALLE().map(e=>e.pos).filter(Boolean);return[...new Set([...(MODE==="sample"?[]:POSS()),...used])].sort((a,b)=>a.localeCompare(b))}
+function positions(){const V=MODE==="sample"?SAMPLE.vacancies:db("vac",[]),can=canPos(),live=ALLE().filter(e=>e.status!=="Terminated");
+ const rows=jobTitles().map(t=>{const h=live.filter(e=>e.pos===t),ds=[...new Set(h.map(e=>e.dept))].join(", ")||"–";return[`<b>${esc(t)}</b>`,esc(ds),h.length,V.filter(v=>v.title===t).length,can?`<button class="b s" data-act="pos_ren:${esc(t)}">Rename</button> <button class="b s" data-act="pos_del:${esc(t)}">Remove</button>`:""]});
+ return`${MODE==="sample"?note("Sample data is read-only. Switch to <b>My records</b> to add or remove job positions.","sm"):""}${tbl(["Position","Departments","Employees","Open vacancies",""],rows,{empty:"No job positions yet. Add the first one below.",csv:"positions"})}${can?`<div class="card" style="margin-top:14px"><h2>Add a job position</h2><div class="cs">It then appears as a choice in every employee form. You can also type a new title directly in an employee form and it is added automatically.</div><form class="g" data-form="posadd">${fld("Position name","name","text",{req:1})}<button class="b p" type="submit">Add position</button></form><div class="err"></div></div>`:""}`}
+FORMS.posadd=o=>{if(!canPos())return"Only HR can change job positions.";const n=(o.name||"").trim();if(!n)return"Enter the position name.";if(jobTitles().some(t=>t.toLowerCase()===n.toLowerCase()))return"That position already exists.";POSS().push(n);sv("posl",false);audit("Job position added",n);toast("Position added");draw()};
+ACTS.pos_ren=t=>{if(!canPos())return;$("#dt").textContent="Rename job position";$("#dd").textContent=t;$("#db").innerHTML=`<form class="g1" data-form="posren"><input type="hidden" name="old" value="${esc(t)}">${fld("New name","nn","text",{req:1,val:t})}<button class="b p" type="submit">Rename</button></form><div class="err"></div><div class="cs">Everyone holding this position is updated too.</div>`;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
+FORMS.posren=o=>{if(!canPos())return"Only HR can change job positions.";const n=(o.nn||"").trim();if(!n)return"Enter a name.";if(n===o.old){closeDr();return""}if(jobTitles().some(t=>t.toLowerCase()===n.toLowerCase()))return"That position already exists.";
+ E.forEach(e=>{if(e.pos===o.old)e.pos=n});save();const L=POSS(),i=L.indexOf(o.old);if(i>=0)L[i]=n;else L.push(n);sv("posl",false);const V=db("vac",[]);V.forEach(v=>{if(v.title===o.old)v.title=n});try{sv("vac")}catch(e){}audit("Job position renamed",o.old+" to "+n);closeDr();toast("Renamed");draw()};
+ACTS.pos_del=t=>{if(!canPos())return;const n=ALLE().filter(e=>e.pos===t&&e.status!=="Terminated").length;if(n)return toast(n+" employee(s) hold "+t+". Change their position first.");ask("Remove the position "+t+"?","Remove",()=>{const L=POSS(),i=L.indexOf(t);if(i>=0)L.splice(i,1);sv("posl",false);audit("Job position removed",t);toast("Position removed");draw()})};
+/* typing a title in any employee form offers the list */
+document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INPUT"||i.name!=="pos")return;let dl=document.getElementById("posdl");if(!dl){dl=document.createElement("datalist");dl.id="posdl";document.body.appendChild(dl)}
+ dl.innerHTML=jobTitles().map(t=>`<option value="${esc(t)}">`).join("");i.setAttribute("list","posdl");i.setAttribute("autocomplete","off");if(!i.placeholder)i.placeholder="Choose from the list or type a new title"});
+/* a new title typed in a form joins the list */
+document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
