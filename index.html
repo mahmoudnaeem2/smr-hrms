@@ -2163,18 +2163,18 @@ const nextEmpNo=()=>{const n=allEmps().map(e=>+(String(e.no).match(/(\d+)$/)||[0
 ACTS.eadd=()=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist can add employees.");if(MODE==="sample")return toast("Sample data is read-only.");
  const e={no:nextEmpNo(),name:"",status:"Active",type:"Full-time",nat:"Egyptian",loc:"Head Office",hire:iso(T0),sched:SCHEDS[0],dept:DEPTS[0]||"",project:"",bank:false,basic:0,allow:0};
  $("#dt").textContent="Add employee";$("#dd").textContent="Employee number "+e.no+" is assigned automatically.";
- let h=empForm(e,"full");const sal=`<div class="cs" style="grid-column:1/-1"><b>Starting salary</b> (later changes are made as approved, dated revisions in Compensation)</div><label>Basic salary (EGP, monthly)<input name="n_basic" type="number" min="0" step="0.01" value="0" required></label><label>Fixed allowances (EGP, monthly)<input name="n_allow" type="number" min="0" step="0.01" value="0"></label>`;
+ let h=empForm(e,"full");const sal=`<div class="cs" style="grid-column:1/-1"><b>Starting salary</b> (later changes are made as approved, dated revisions in Compensation)</div><label>Basic salary (EGP, monthly)<input name="n_basic" type="number" placeholder="0" required></label>${ALWT.map(([k,l])=>`<label>${l} allowance (EGP)<input name="n_${k}" type="number" placeholder="0"></label>`).join("")}<div class="cs" style="grid-column:1/-1">Allowances are listed by type so the payslip and reports show what each one is. The total is added up for you.</div>`;
  h=h.replace('<input type="hidden" name="scope" value="full">','<input type="hidden" name="scope" value="full"><input type="hidden" name="isnew" value="1">'+'');
  h=h.replace(/(<button[^>]*type="submit"[^>]*>)/,sal+"$1");
  $("#db").innerHTML=h;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
 (()=>{const orig=FORMS.empEdit2;FORMS.empEdit2=o=>{if(!o.isnew)return orig(o);
  if(!canEditEmp())return"Only HR Director or HR Specialist can add employees.";
- const bs=+o.n_basic,al=+(o.n_allow||0);if(!(bs>=0)||o.n_basic===""||isNaN(bs))return"Enter the basic salary.";if(isNaN(al)||al<0)return"Allowances must be zero or more.";
+ const num=v=>+String(v==null||v===""?0:v).replace(/,/g,""),bs=num(o.n_basic),alw={};let al=0;if(!(bs>=0)||o.n_basic===""||isNaN(bs))return"Enter the basic salary.";for(const[k,l]of ALWT){const v=num(o["n_"+k]);if(isNaN(v)||v<0)return l+" allowance must be zero or more.";if(v>0){alw[k]=v;al+=v}}
  if(allEmps().some(x=>x.no===o.no))return"Employee number already used, close and try again.";
  if(allEmps().some(x=>x.nid&&o.nid&&String(x.nid)===String(o.nid).trim()))return"An employee with this National ID or passport number already exists.";
  const d={no:o.no,name:"",status:"Active",type:"Full-time",nat:"Egyptian",loc:"",hire:"",sched:SCHEDS[0],dept:"",project:"",bank:false,basic:0,allow:0,mgr:"",coach:"",lapp:"",tapp:""};E.push(d);
  const r=orig(o);if(typeof r==="string"&&r){E.splice(E.indexOf(d),1);return r}
- empSet(o.no,{basic:bs,allow:al});LOGC(o.no,"New joiner","Added to the system, start "+(o.hire||"")+", basic "+bs);audit("Employee added",o.no+" — "+o.name);save();return r}})();
+ empSet(o.no,{basic:bs,allow:al,alw});LOGC(o.no,"New joiner","Added to the system, start "+(o.hire||"")+", basic "+bs);audit("Employee added",o.no+" — "+o.name);save();return r}})();
 
 /* Public holidays and weekend (drive working-day counts everywhere) */
 function HOLS(){return db("hols",[],false)}
@@ -2254,6 +2254,16 @@ ACTS.nrq=a=>{const[k,no]=a.split("|"),e=allEmps().find(x=>x.no===no);if(!e)retur
  const t=HQT(k);if(!t)return;const pr=t.proof||t.proofAlways;
  openDr2(t.t+": "+e.name,"Created by HR for the employee. It opens in the HR inbox so you can decide.",`<form class="g1" data-form="hrqnew"><input type="hidden" name="type" value="${t.k}"><input type="hidden" name="on" value="${esc(no)}">${t.f.map(f=>hqField(f)).join("")}<label>Note<input name="note"></label><div class="fl">Supporting document${pr?" (required)":" (optional)"}${attBox("hrqform|"+no,true)}</div><button class="b p" type="submit">Create request</button></form><div class="err"></div>`)};
 ["wnnew","lnnew"].forEach(n=>{const f=FORMS[n];FORMS[n]=o=>{const r=f(o);if(!r&&o._dr)closeDr();return r}});
+
+/* Money fields show thousands separators (8,000) and are read back as plain numbers */
+const MNAME=/^(amount|basic|bank|allow|n_basic|n_housing|n_transport|n_meal|n_other|n_allow|alw_.*|a_.*)$/;
+const fmtMoney=i=>{let v=i.value.replace(/[^0-9.]/g,"");const p=v.split(".");v=p[0].replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,",")+(p.length>1?"."+p.slice(1).join("").slice(0,2):"");i.value=v};
+function moneyize(){document.querySelectorAll("input[type=number]").forEach(i=>{if(!(MNAME.test(i.name)||i.closest("form[data-form=salReq],form[data-form=pinew],form[data-form=lnnew]")&&!/^(n|no|hours|days|pct)$/.test(i.name)&&i.name!=="no"&&/amount|basic|allow|alw|housing|transport|meal|other/i.test(i.name)))return;i.type="text";i.inputMode="decimal";i.dataset.money="1";i.removeAttribute("min");i.removeAttribute("step");i.removeAttribute("max");fmtMoney(i)})}
+document.addEventListener("input",ev=>{const i=ev.target;if(!i||!i.dataset||!i.dataset.money)return;const pos=i.selectionStart,left=i.value.slice(0,pos).replace(/[^0-9.]/g,"").length;fmtMoney(i);let n=0,k=0;for(;k<i.value.length&&n<left;k++)if(/[0-9.]/.test(i.value[k]))n++;try{i.setSelectionRange(k,k)}catch(e){}});
+document.addEventListener("submit",ev=>{const f=ev.target;if(!f||!f.querySelectorAll)return;const L=[...f.querySelectorAll("input[data-money]")];L.forEach(i=>{i.value=i.value.replace(/,/g,"")});setTimeout(()=>L.forEach(i=>{if(i.isConnected)fmtMoney(i)}),0)},true);
+{let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;moneyize()})}).observe(document.body,{childList:true,subtree:true})}
+
+document.addEventListener("focusin",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.money)setTimeout(()=>{try{i.select()}catch(e){}},0)});
 
 /* ===== m21: email notifications through Outlook (compose links and outbox) ===== */
 const MCFG=()=>{const c=db("mailcfg",{},false);if(!c.client)Object.assign(c,{client:"web",on:1,ev:{ap:1,dec:1,hq:1,wn:1},cc:"",sig:"Savills Management Resources (SMR) HR",link:"https://mahmoudnaeem2.github.io/smr-hrms/",rm:{}});return c};
