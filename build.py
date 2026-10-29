@@ -36,6 +36,7 @@ R_('const apr=S?inL(X.approvals).concat(LR.filter(r=>r.mode===MODE&&r.status==="
 R_('isWk=d=>d.getDay()===5||d.getDay()===6;','isWk=d=>{try{return WKD().includes(d.getDay())||HOLS().some(h=>h.d===iso(d))}catch(e){return d.getDay()===5||d.getDay()===6}};')
 R_('return`${form}<div class="bar"><input id="q" type="search"','return`${S?form:""}<div class="bar"><input id="q" type="search"')
 R_('GOPEN[g]!==undefined?GOPEN[g]:g==="Overview"','GOPEN[g]!==undefined?GOPEN[g]:(DAILY[role]?g!=="More":g==="Overview")')
+R_('const dshort=s=>new Date(s+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});','const dshort=s=>{const d=new Date(s+"T00:00:00");return d.toLocaleDateString("en-GB",{weekday:"short"})+" "+d.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"})};')
 R_('vac=S?X.vacancies.filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc)):[];','vac=VACS().filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc));')
 js=re.sub(r'DR\.(apr|vac|a_anom|a_exc|a_ot|a_docs|a_onb|a_leave)=S\?',r'DR.\1=1?',js)
 R_('["apr","Pending HR approvals",S?apr.length:"—","Leave, salary, contract and offboarding requests.","",S]','["apr","Pending approvals",apr.length,"Every request waiting in the Approvals inbox.","",true]')

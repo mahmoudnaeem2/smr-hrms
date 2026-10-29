@@ -145,3 +145,8 @@ FORMS.empnew=o=>{if(!canEditEmp())return"Only HR can add employees.";const g=k=>
  if((g("bankacct")||g("iban"))&&!g("bankname"))return"Enter the bank name.";if(g("bankname")&&(g("bankacct")||g("iban"))){ch.bankname=g("bankname");ch.bankacct=g("bankacct");ch.iban=g("iban");ch.bank=true}
  if(allEmps().some(e=>e.no===ch.no))return"Employee number already used, close and try again.";
  E.push({...ch,basic:bs,allow:al,alw,end:""});save();LOGC(ch.no,"New joiner","Added, start "+ch.hire+", basic "+bs);audit("Employee added",ch.no+" - "+ch.name);closeDr();toast(ch.name+" added");PROF=ch.no;TAB.prof="ov";draw()};
+
+/* Dates are shown as dd/mm/yyyy everywhere on screen (stored as yyyy-mm-dd) */
+const ISOT=/\b(20\d\d)-(\d\d)-(\d\d)\b/;
+function dmyText(root){const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);const L=[];let n;while(n=w.nextNode()){const p=n.parentNode&&n.parentNode.nodeName;if(p==="SCRIPT"||p==="STYLE"||p==="TEXTAREA")continue;if(ISOT.test(n.nodeValue))L.push(n)}L.forEach(t=>{t.nodeValue=t.nodeValue.replace(/\b(20\d\d)-(\d\d)-(\d\d)\b/g,"$3/$2/$1")})}
+{let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;dmyText()})}).observe(document.body,{childList:true,subtree:true});dmyText()}
