@@ -358,6 +358,8 @@ html[data-comfort=dark] .b.p{background:#2a7bd1;color:#fff}
 .credl{display:grid;gap:10px;margin:12px 0}.cred b{display:block;margin-bottom:8px;font-size:15px}
 .cr{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--bd)}.cr span{font-size:12px;color:var(--mu,#44546f);text-transform:uppercase;letter-spacing:.04em}.cr code{font-size:14px;overflow-wrap:anywhere;text-align:right}
 .pbody .act{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}.pbody .act>span{flex:1;min-width:0}.pbody .act .b{flex:none}
+
+.orgb{display:inline-flex;gap:6px;align-items:center;margin-left:10px;flex-wrap:wrap}.orgb .b.s{padding:3px 9px;font-size:12px}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -849,9 +851,9 @@ const ATTB={1:"On time",2:"Late",3:"Absent",4:"On leave"};
 /* ================= ORG CHART / DEPARTMENTS / POSITIONS ================= */
 function org(){const L=ALLE().filter(e=>e.status!=="Terminated");if(!L.length)return forbid("No employees yet.");const names=new Set(L.map(e=>e.name)),seen=new Set();
  const kids=n=>L.filter(e=>e.mgr===n);const roots=L.filter(e=>!e.mgr||!names.has(e.mgr));
- const node=(e,dep)=>{if(seen.has(e.no)||dep>8)return"";seen.add(e.no);const k=kids(e.name);return`<li><details ${dep<2?"open":""}><summary><span class="who"><i class="av">${ini(e.name)}</i><span>${esc(e.name)}<small>${esc(e.pos||"–")} · ${esc(e.dept)}</small></span></span>${k.length?`<span class="tag">${k.length} direct</span>`:""}</summary>${k.length?`<ul>${k.map(x=>node(x,dep+1)).join("")}</ul>`:""}</details></li>`};
+ const node=(e,dep)=>{if(seen.has(e.no)||dep>8)return"";seen.add(e.no);const k=kids(e.name);return`<li><details ${dep<2?"open":""}><summary><span class="who"><i class="av">${ini(e.name)}</i><span>${esc(e.name)}<small>${esc(e.pos||"–")} · ${esc(e.dept)}</small></span></span><span class="orgb">${k.length?`<span class="tag">${k.length} direct</span>`:""}${[R.HRD,R.HRS].includes(role)?`<button type="button" class="b s" data-act="mv:${esc(e.no)}">Change manager / move</button><button type="button" class="b s" data-act="eedit:${esc(e.no)}">Edit</button>`:""}</span></summary>${k.length?`<ul>${k.map(x=>node(x,dep+1)).join("")}</ul>`:""}</details></li>`};
  return`<div class="card"><ul class="tree"><li><details open><summary><span class="who"><i class="av">SMR</i><span>Executive team<small>${L.length} people in the structure</small></span></span></summary><ul>${roots.map(r=>node(r,1)).join("")}</ul></details></li></ul></div>`}
-reg("org","Organization Chart","Reporting lines from the executive team down. Expand a person to see their direct reports.",A("HRD","HRS","DM","FIN"),org);
+reg("org","Organization Chart","Reporting lines from the executive team down. Expand a person to see their direct reports. HR can change a manager or edit a person right from the chart.",A("HRD","HRS","DM","FIN"),org);
 function depts(){const L=ALLE().filter(e=>empAt(e,iso(T0))),can=[R.HRD].includes(role);
  const rows=DEPTS.map(d=>{const x=L.filter(e=>e.dept===d),h=x.find(e=>e.mgr==="Executive team")||x[0],vac=MODE==="sample"?SAMPLE.vacancies.filter(v=>v.dept===d).length:db("vac",[]).filter(v=>v.dept===d).length;
   return[esc(d),h?esc(h.name):"–",x.length,"CC-"+d.split(" ").map(w=>w[0]).join(""),vac,canSal()?fmtC(C(x.reduce((s,e)=>s+e.basic+e.allow,0))):'<span class="mu">Restricted</span>']});
