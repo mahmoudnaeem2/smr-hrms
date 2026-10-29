@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -142,6 +142,8 @@ m=re.match(r'(.*?)<style>(.*?)</style>(.*)',pre,re.S)
 HEAD,CSS,BODY=m.group(1),m.group(2),m.group(3)
 R_('<button class="b" data-act="impemp">Import from Excel</button>','${[R.HRD,R.HRS].includes(role)?`<button class="b p" data-act="eadd">+ Add employee</button>`:""}<button class="b" data-act="impemp">Import from Excel</button>')
 R_('cmfUI();wire();updBell()}','cmfUI();uxUI();wire();updBell()}')
+R_('const adj=ladjSum(e.no,t);r[t]={open,used','const adj=ladjSum(e.no,t);open=accOpen(e,t,open);r[t]={open,used')
+R_('${note("Entitlements are sample policy values.','${accrualCard()}${note("Entitlements are sample policy values.')
 full='<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'+HEAD+'<style>'+CSS+'</style></head><body>'+BODY+'<script>\n'+js+'\n</script></body></html>\n'
 open('index.html','w').write(full)
 open('dist/chk.js','w').write(js)
