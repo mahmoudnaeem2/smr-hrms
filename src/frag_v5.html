@@ -156,7 +156,7 @@ function genSample(){
   anomalies:sm(3).map((e,i)=>({no:e.no,detail:["Net pay change above 15% vs last month","Gross changed without an effective-dated revision","Salary changed mid-month, proration to confirm"][i],reason:"Reason required"})),
   vacancies:[["Property Manager","Property Management","Site A"],["Maintenance Technician","Facilities","Site B"],["Accountant","Finance","Head Office"],["Leasing Consultant","Leasing","Head Office"],["Site Supervisor","Operations","Site A"],["HR Specialist","Human Resources","Head Office"]].map(v=>({title:v[0],dept:v[1],loc:v[2],opened:iso(addD(T0,-ri(6,70))),applicants:ri(2,24)}))}}
 const SAMPLE=genSample();
-const normE=e=>({...e,basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null});
+const normE=e=>{const c={...e,b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
 const allEmps=()=>MODE==="sample"?SAMPLE.emps:E.map(normE);
 const flt=a=>a.filter(e=>inScope(e)&&(!F.dept||e.dept===F.dept)&&(!F.loc||e.loc===F.loc)&&(!F.mgr||e.mgr===F.mgr)&&(!F.type||e.type===F.type)&&(!F.status||e.status===F.status));
 const uniq=(k)=>[...new Set(allEmps().filter(inScope).map(e=>e[k]).filter(Boolean))].sort();
@@ -390,6 +390,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDr()});
 function wire(){const ws=$("#wsel");if(ws)ws.onchange=e=>{WSNO=e.target.value;draw()};
  const lf=$("#lf");if(lf)lf.onsubmit=ev=>{ev.preventDefault();const o=Object.fromEntries(new FormData(lf)),er=$("#lerr"),e=allEmps().find(x=>x.no===WSNO),b=balances(e)[o.type];
   if(o.end<o.start){er.textContent="The end date must be on or after the start date.";return}
+  if(e.hire&&o.start<e.hire){er.textContent="The leave cannot start before the hire date ("+e.hire.split("-").reverse().join("/")+").";return}
   const days=wdays(o.start,o.end);if(!days){er.textContent="The selected dates contain no working days.";return}
   if(LR.some(r=>r.mode===MODE&&r.no===e.no&&r.status!=="Rejected"&&r.start<=o.end&&r.end>=o.start)){er.textContent="These dates overlap an existing leave request.";return}
   if(b.avail!=null&&days>b.avail){er.textContent="Not enough balance: "+b.avail+" day(s) available, "+days+" requested.";return}

@@ -545,7 +545,7 @@ function genSample(){
   anomalies:sm(3).map((e,i)=>({no:e.no,detail:["Net pay change above 15% vs last month","Gross changed without an effective-dated revision","Salary changed mid-month, proration to confirm"][i],reason:"Reason required"})),
   vacancies:[["Property Manager","Property Management","Site A"],["Maintenance Technician","Facilities","Site B"],["Accountant","Finance","Head Office"],["Leasing Consultant","Leasing","Head Office"],["Site Supervisor","Operations","Site A"],["HR Specialist","Human Resources","Head Office"]].map(v=>({title:v[0],dept:v[1],loc:v[2],opened:iso(addD(T0,-ri(6,70))),applicants:ri(2,24)}))}}
 const SAMPLE=genSample();
-const normE=e=>({...e,basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null});
+const normE=e=>{const c={...e,b0:e.b0!=null?e.b0:(+e.basic||0),a0:e.a0!=null?e.a0:(+e.allow||0),basic:+e.basic||0,allow:+e.allow||0,term:e.term||"",loc:e.loc||"",mgr:e.mgr||"",att:null};try{const s=salAt(c,iso(T0));c.basic=s.basic;c.allow=s.allow;if(s.alw)c.alw=s.alw}catch(x){}return c};
 const allEmps=()=>MODE==="sample"?(typeof applyOvr==="function"&&applyOvr(),SAMPLE.emps):E.map(normE);
 const flt=a=>a.filter(e=>inScope(e)&&(!F.dept||e.dept===F.dept)&&(!F.loc||e.loc===F.loc)&&(!F.mgr||e.mgr===F.mgr)&&(!F.type||e.type===F.type)&&(!F.status||e.status===F.status)&&(!F.project||e.project===F.project));
 const uniq=(k)=>[...new Set(allEmps().filter(inScope).map(e=>e[k]).filter(Boolean))].sort();
@@ -1252,7 +1252,7 @@ function pay_proc(){const runs=RUNS().slice().reverse(),can=canPrep(),pre=SELRUN
  const sel=RUNS().find(r=>r.id===SELRUN);
  return`${noRules}${can?`<div class="card"><form class="inl" data-form="runnew"><label>Period<select name="period">${free.map(m=>`<option value="${m.key}" ${m.key===pre?"selected":""}>${m.label}</option>`).join("")}</select></label><button class="b p" type="submit" ${free.length?"":"disabled"}>Create regular run</button></form><div class="err"></div></div>`:""}
  <div style="margin-top:12px">${tbl(["Run","Status","Employees","Net pay","",""],list,{empty:"No runs yet. Create one for a period above."})}</div>${sel?runDetail(sel):""}`}
-FORMS.runnew=o=>{if(!canPrep()||!o.period)return"Choose a period.";if(RUNS().some(r=>r.period===o.period&&r.kind==="regular"))return"That period already has a regular run.";const id="N"+Date.now();RUNS().push({id,period:o.period,kind:"regular",status:"draft",results:[],exc:[],excl:{},hist:[{t:new Date().toISOString(),role,a:"Run created"}],createdBy:role});sv("runs");audit("Payroll run created",o.period);SELRUN=id;draw()};
+FORMS.runnew=o=>{if(!canPrep()||!o.period)return"Choose a period.";if(!perOf(o.period)||perOf(o.period).start>iso(T0))return"That period has not started yet. Choose a current or past period.";if(RUNS().some(r=>r.period===o.period&&r.kind==="regular"))return"That period already has a regular run.";const id="N"+Date.now();RUNS().push({id,period:o.period,kind:"regular",status:"draft",results:[],exc:[],excl:{},hist:[{t:new Date().toISOString(),role,a:"Run created"}],createdBy:role});sv("runs");audit("Payroll run created",o.period);SELRUN=id;draw()};
 ACTS.selrun=id=>{SELRUN=id;draw()};
 function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filter(x=>x.sev==="block"),V=varRows(r),needR=V.filter(v=>v.need&&!v.reason).length;
  const btn=[];
@@ -2311,7 +2311,7 @@ ACTS.lv_man=pno=>{if(![R.HRD,R.HRS].includes(role))return;$("#dt").textContent="
  const ee=allEmps().filter(e=>e.status!=="Terminated"),types=Object.keys(balances(ee[0]||{}));
  $("#db").innerHTML=`<form class="g1" data-form="lvman"><label>Employee<select name="no">${ee.map(e=>`<option value="${esc(e.no)}">${esc(e.name)} (${esc(e.no)})</option>`).join("")}</select></label><label>Leave type<select name="type">${types.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label>${fld("From","start","date",{req:1})}${fld("To","end","date",{req:1})}${fld("Note","note","text")}<button class="b p" type="submit">Submit for approval</button></form><div class="err"></div>`;if(pno&&$("#db [name=no]"))$("#db [name=no]").value=pno;$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
 FORMS.lvman=o=>{if(![R.HRD,R.HRS].includes(role))return"Only HR can add leave for an employee.";const e=allEmps().find(x=>x.no===o.no);if(!e)return"Choose an employee.";const b=balances(e)[o.type];
- if(o.end<o.start)return"The end date must be on or after the start date.";const days=wdays(o.start,o.end);if(!days)return"The selected dates contain no working days.";
+ if(o.end<o.start)return"The end date must be on or after the start date.";if(e.hire&&o.start<e.hire)return"The leave cannot start before the hire date ("+e.hire.split("-").reverse().join("/")+").";if(e.term&&o.start>e.term)return"The leave starts after the employment end date.";const days=wdays(o.start,o.end);if(!days)return"The selected dates contain no working days.";
  if(LR.some(r=>r.mode===MODE&&r.no===e.no&&r.status!=="Rejected"&&r.start<=o.end&&r.end>=o.start))return"These dates overlap an existing leave request.";
  if(b&&b.avail!=null&&days>b.avail)return"Not enough balance: "+b.avail+" day(s) available, "+days+" requested.";
  LR.push({id:Date.now(),mode:MODE,no:e.no,type:o.type,start:o.start,end:o.end,days,note:(o.note||"")+" (entered by "+role+")",status:"Pending"});saveW();audit("Leave added for employee",e.no+" "+o.type+" "+o.start+" to "+o.end);closeDr();toast("Leave request created");draw()};
@@ -2367,7 +2367,7 @@ ACTS.eadd=()=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist 
  ${sec("Bank (optional)")}${fld("Bank name","bankname","text")}${fld("Account number","bankacct","text")}${fld("IBAN","iban","text")}
  <button class="b p nsub" type="submit">Add employee</button></form><div class="err"></div>`)};
 FORMS.empnew=o=>{if(!canEditEmp())return"Only HR can add employees.";const g=k=>(o[k]||"").trim(),num=v=>+String(v||0).replace(/,/g,"");
- if(!g("name"))return"Enter the full name.";if(!g("pos"))return"Enter the job title.";if(!g("hire"))return"Enter the start date.";if(!g("dept"))return"Choose the department.";
+ if(!g("name"))return"Enter the full name.";if(!g("pos"))return"Enter the job title.";if(!g("hire"))return"Enter the start date.";if(g("hire")<"1980-01-01"||g("hire")>iso(addD(T0,365)))return"Check the start date. It must be between 1980 and one year from today.";if(!g("dept"))return"Choose the department.";
  if(g("email")&&!/^\S+@\S+\.\S+$/.test(g("email")))return"The email address looks invalid.";if(g("mobile")&&!/^\+?[\d\s\-]{8,16}$/.test(g("mobile")))return"The mobile number looks invalid.";
  if(["Fixed-term","Contractor"].includes(g("type"))&&!g("end"))return"Enter the contract duration or the end date. A fixed-term contract needs an end date.";if(g("end")&&g("end")<=g("hire"))return"The contract end date must be after the start date.";if(g("status")==="Probation"&&!g("probend"))return"Enter the probation months or the probation end date.";if(g("probend")&&g("probend")<=g("hire"))return"The probation end date must be after the start date.";
  const ch={no:g("no"),name:g("name"),mobile:g("mobile"),email:g("email"),dept:g("dept"),pos:g("pos"),mgr:g("mgr"),hire:g("hire"),type:g("type")||"Full-time",status:g("status")||"Active",loc:"Head Office",project:g("project")||"",nat:"Egyptian",sched:SCHEDS[0],coach:"",lapp:"",tapp:"",bank:false};
@@ -2544,7 +2544,8 @@ new MutationObserver(()=>{if(document.querySelector("input[type=date]:not([data-
 /* Loans: policy, live repayment preview, payslip breakdown */
 const LNP=()=>Object.assign({maxMult:0,maxN:60,minSvc:0,oneActive:true,maxPct:0},db("lnpol",{},false));
 function monthlyGross(no){const e=empBy(no);if(!e)return 0;const s=salAt(e,iso(T0));return(s.basic||0)+(s.allow||0)}
-function loanCheck(no,amount,n){const P=LNP(),e=empBy(no);if(!e)return"";const g=monthlyGross(no);
+function loanCheck(no,amount,n){const P=LNP(),e=empBy(no);if(!e)return"Employee not found.";const g=monthlyGross(no);
+ if(g&&n>0&&amount/n>=g)return"The monthly installment ("+fmtC(Math.round(amount/n*100))+") is not less than the monthly gross pay. Use more installments or a smaller amount.";
  if(P.maxN&&n>P.maxN)return"Loan policy: at most "+P.maxN+" installments.";
  if(P.minSvc&&svcMonths(e)<P.minSvc)return"Loan policy: the employee needs at least "+P.minSvc+" months of service.";
  if(P.oneActive&&LOANS().some(l=>l.no===no&&l.status==="Active"&&loanBal(l)>0))return"Loan policy: this employee still has an active loan. Repay or cancel it first.";
@@ -2661,7 +2662,7 @@ function spInit(){const side=$("#side");if(!side||$("#sps"))return;const br=side
  g.addEventListener("blur",()=>setTimeout(()=>{const b=$("#pal2");if(b)b.hidden=true},180));
  g.addEventListener("keydown",e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();SPI=(SPI+(e.key==="ArrowDown"?1:-1)+SPR.length)%Math.max(1,SPR.length);spDraw()}else if(e.key==="Enter"){e.preventDefault();spPick(SPI>=0?SPI:0)}else if(e.key==="Escape"){g.value="";g.blur()}});
  $("#pal2").addEventListener("mousedown",e=>{const b=e.target.closest("[data-si]");if(b){e.preventDefault();spPick(+b.dataset.si)}})}
-function spDraw(){const g=$("#gs2"),b=$("#pal2");if(!g||!b)return;const qq=g.value.trim().toLowerCase();SPR=palResults(g.value);if(qq){const w=r=>r.t.toLowerCase().startsWith(qq)?0:r.t.toLowerCase().includes(qq)?1:2;const gi={};SPR.forEach(r=>{if(!(r.g in gi))gi[r.g]=Object.keys(gi).length});SPR=SPR.map((r,i)=>[r,i]).sort((a,b)=>gi[a[0].g]-gi[b[0].g]||w(a[0])-w(b[0])||a[1]-b[1]).map(x=>x[0])}
+function spDraw(){const g=$("#gs2"),b=$("#pal2");if(!g||!b)return;const qq=g.value.trim().toLowerCase();SPR=palResults(g.value);if(qq){SPR=SPR.filter(r=>r.g!=="Pages");const pk=Object.keys(PAGES).filter(k=>!HIDE_NAV.includes(k)&&canSee(k)&&(PAGES[k].title+" "+PAGES[k].desc).toLowerCase().includes(qq)).slice(0,12);SPR=pk.map(k=>({g:"Pages",t:PAGES[k].title,s:PAGES[k].desc,a:()=>go(k)})).concat(SPR);const w=r=>r.t.toLowerCase().startsWith(qq)?0:r.t.toLowerCase().includes(qq)?1:2;const gi={};SPR.forEach(r=>{if(!(r.g in gi))gi[r.g]=Object.keys(gi).length});SPR=SPR.map((r,i)=>[r,i]).sort((a,b)=>gi[a[0].g]-gi[b[0].g]||w(a[0])-w(b[0])||a[1]-b[1]).map(x=>x[0])}
  if(!SPR.length){b.innerHTML=g.value.trim()?'<div class="pg">No results</div>':"";b.hidden=!g.value.trim()||document.activeElement!==g;return}
  let last="";b.innerHTML=SPR.map((r,i)=>{const h=r.g!==last?`<div class="pg">${esc(r.g)}</div>`:"";last=r.g;return h+`<button type="button" class="pi ${i===SPI?"on":""}" data-si="${i}" role="option"><b>${esc(r.t)}</b><small>${esc((r.s||"").slice(0,80))}</small></button>`}).join("");b.hidden=document.activeElement!==g}
 function spPick(i){const r=SPR[i];if(!r)return;$("#pal2").hidden=true;const g=$("#gs2");g.value="";g.blur();try{document.body.classList.remove("navopen")}catch(e){}r.a()}
@@ -2715,6 +2716,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDr()});
 function wire(){const ws=$("#wsel");if(ws)ws.onchange=e=>{WSNO=e.target.value;draw()};
  const lf=$("#lf");if(lf)lf.onsubmit=ev=>{ev.preventDefault();const o=Object.fromEntries(new FormData(lf)),er=$("#lerr"),e=allEmps().find(x=>x.no===WSNO),b=balances(e)[o.type];
   if(o.end<o.start){er.textContent="The end date must be on or after the start date.";return}
+  if(e.hire&&o.start<e.hire){er.textContent="The leave cannot start before the hire date ("+e.hire.split("-").reverse().join("/")+").";return}
   const days=wdays(o.start,o.end);if(!days){er.textContent="The selected dates contain no working days.";return}
   if(LR.some(r=>r.mode===MODE&&r.no===e.no&&r.status!=="Rejected"&&r.start<=o.end&&r.end>=o.start)){er.textContent="These dates overlap an existing leave request.";return}
   if(b.avail!=null&&days>b.avail){er.textContent="Not enough balance: "+b.avail+" day(s) available, "+days+" requested.";return}

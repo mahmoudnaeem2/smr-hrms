@@ -1,7 +1,8 @@
 /* Loans: policy, live repayment preview, payslip breakdown */
 const LNP=()=>Object.assign({maxMult:0,maxN:60,minSvc:0,oneActive:true,maxPct:0},db("lnpol",{},false));
 function monthlyGross(no){const e=empBy(no);if(!e)return 0;const s=salAt(e,iso(T0));return(s.basic||0)+(s.allow||0)}
-function loanCheck(no,amount,n){const P=LNP(),e=empBy(no);if(!e)return"";const g=monthlyGross(no);
+function loanCheck(no,amount,n){const P=LNP(),e=empBy(no);if(!e)return"Employee not found.";const g=monthlyGross(no);
+ if(g&&n>0&&amount/n>=g)return"The monthly installment ("+fmtC(Math.round(amount/n*100))+") is not less than the monthly gross pay. Use more installments or a smaller amount.";
  if(P.maxN&&n>P.maxN)return"Loan policy: at most "+P.maxN+" installments.";
  if(P.minSvc&&svcMonths(e)<P.minSvc)return"Loan policy: the employee needs at least "+P.minSvc+" months of service.";
  if(P.oneActive&&LOANS().some(l=>l.no===no&&l.status==="Active"&&loanBal(l)>0))return"Loan policy: this employee still has an active loan. Repay or cancel it first.";
