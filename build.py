@@ -88,6 +88,7 @@ R_('<th>Location</th>','<th>Project</th><th>Location</th>')
 R_('<td>${esc(e.loc||"–")}</td>','<td>${esc(e.project||"–")}</td><td>${esc(e.loc||"–")}</td>')
 R_('<select data-k="status">${opts(STAT,F.status,"All statuses")}</select>','<select data-k="project">${opts(PROJL(),F.project,"All projects")}</select><select data-k="status">${opts(STAT,F.status,"All statuses")}</select>')
 
+R_('<div class="notice er" role="alert"><b>Before your first payroll run</b>','<div class="notice setup" role="status"><b>Before your first payroll run</b>')
 # --- employees: manager filter/column, birthdays ---
 R_('emp:["Employee Directory","Search, filter and manage employee records."','emp:["Employees","All employees. Search, filter by department, project, direct manager or status, and see who has a birthday coming up."')
 R_('&&(!F.project||e.project===F.project)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos].join(" ")','&&(!F.project||e.project===F.project)&&(!F.mgr||e.mgr===F.mgr)&&(!F.loc||e.loc===F.loc)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos,e.mgr,e.loc].join(" ")')

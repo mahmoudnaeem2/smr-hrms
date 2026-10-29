@@ -524,3 +524,22 @@ table.stk td:last-child,table.stk th:last-child{width:210px;min-width:210px}tabl
 .bdl{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
 .bdi{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--soft)}
 .bdi b{display:block;font-size:14px}.bdi span{font-size:12.5px;color:var(--mu)}
+/* INTERIOR REVIEW v1: rhythm, balance, calm */
+.pdash .ph p{display:block!important;margin-top:4px;font-size:15px;color:var(--mu)}
+.qa{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important;gap:12px;margin:4px 0 22px}
+@media (min-width:1280px){.qa{grid-template-columns:repeat(var(--qn,6),minmax(0,1fr))!important}}
+.qt{padding:12px 14px;min-height:64px}.qt small{display:none}.qt .qx b{font-size:14.5px;line-height:1.25;white-space:normal}
+.card.filt{width:max-content;max-width:100%;padding:2px;border-radius:999px;margin-bottom:16px}
+.card.filt:has(.fbar){width:auto;border-radius:16px;padding:6px 10px}
+.card.filt .ft{padding:8px 16px}
+.card+.notice,.card.wrap+.notice,.card+.notice.sm{margin-top:14px}
+.notice.setup{background:#fff8e6;border:1px solid #f2d58a;color:#4a3a0a}.notice.setup b{color:#6b4e00}
+html[data-theme=dark] .notice.setup{background:#2b2410;border-color:#6b5415;color:#f1dfa8}
+.inl{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.inl label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13.5px}
+.card.wrap td select{width:220px;max-width:100%}
+.orgb .b.s{opacity:0;transition:opacity .15s}
+summary:hover .orgb .b.s,summary:focus-within .orgb .b.s{opacity:1}
+@media (hover:none){.orgb .b.s{opacity:1}}
+.qt .qn{position:absolute;top:-8px;right:-6px;margin:0}
+.inl label{gap:6px!important;line-height:1.2;flex:0 1 300px}.inl label>*{margin:0}.inl .dpw{display:block;width:100%}
+@media (max-width:600px){.qa{grid-template-columns:1fr 1fr!important;gap:10px}.qt{padding:10px;min-height:56px;gap:8px}.qt svg{width:34px;height:34px;padding:7px}.qt .qx b{font-size:13.5px}}
