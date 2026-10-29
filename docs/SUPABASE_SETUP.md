@@ -65,3 +65,17 @@ A user with no role sees "Waiting for access" and cannot read anything.
 3. Sign in as HR Director or System Administrator and open Settings > Users & Access.
    Add an account (email + role + employee), hand over the temporary password shown once.
    The person chooses their own password at first sign-in.
+
+## Phase 4: leave progress and emails
+
+1. SQL Editor: paste `supabase/004_notify.sql` and Run. Employees can now see where each leave request stands.
+2. Edge Functions > Deploy a new function > Via Editor, name it `notify-leave`, paste
+   `supabase/functions/notify-leave/index.ts`, Deploy.
+3. Edge Functions > Secrets (or Project Settings > Edge Functions > Secrets). Add ONE of these sets:
+   - Gmail or any SMTP: `SMTP_HOST` (smtp.gmail.com), `SMTP_PORT` (465), `SMTP_USER`, `SMTP_PASS`
+     (a Gmail app password, never the normal password), `MAIL_FROM` (for example `SMR HRMS <you@gmail.com>`).
+   - Resend: `RESEND_API_KEY` and `MAIL_FROM` (needs a verified domain).
+   Optional: `APP_URL` (the link inside the emails; default is the GitHub Pages address).
+4. Who gets mail: a new request goes to the employee's line manager if that manager has an email in
+   their employee record (or an account); otherwise to every active HR Director and HR Specialist.
+   An approval or rejection goes to the employee. Each message is sent once (table `mail_log`).

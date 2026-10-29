@@ -759,6 +759,22 @@ body.cloud label:has(input[name=access]){display:none!important}
 @media(hover:none){.nfx{opacity:1}}
 :root[data-theme="dark"] .nfr.un .nfi{background:#14283f;border-color:#24466f}:root[data-theme="dark"] .nfc.ok{background:#12301f;color:#7fd7a3}:root[data-theme="dark"] .nfc.wn{background:#38290c;color:#f3c872}:root[data-theme="dark"] .nfc.er{background:#3a1717;color:#f4a5a0}:root[data-theme="dark"] .nfc.mu{background:#1c2736;color:#9fb0c6}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .nfr.un .nfi{background:#14283f;border-color:#24466f}:root:not([data-theme="light"]) .nfc.ok{background:#12301f;color:#7fd7a3}:root:not([data-theme="light"]) .nfc.wn{background:#38290c;color:#f3c872}:root:not([data-theme="light"]) .nfc.er{background:#3a1717;color:#f4a5a0}:root:not([data-theme="light"]) .nfc.mu{background:#1c2736;color:#9fb0c6}}
+/* ===== request progress ===== */
+.trk{display:flex;align-items:center;flex-wrap:wrap;gap:4px 0;margin-bottom:5px}.tk{position:relative;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--soft,#eef2f8);color:var(--mu,#7b8aa0);white-space:nowrap}.tk+.tk{margin-left:14px}.tk+.tk:before{content:"";position:absolute;left:-12px;top:50%;width:10px;height:2px;background:var(--bd,#d3dce9)}
+.tk.done{background:#e0f4e8;color:#13723d}.tk.cur{background:#0460B5;color:#fff}.tk.bad{background:#fde8e8;color:#b42318}.tk.off{opacity:.55}.trt{font-size:12.5px;color:var(--mu,#5b6b82)}.trt.wn{color:#8a5a00}.trt.ok{color:#13723d}.trt.er{color:#b42318}
+.trk{flex-wrap:nowrap}.tk{padding:2px 8px}
+.trw{min-width:190px;white-space:normal}.trt{white-space:normal}
+
+/* ===== leave request cards ===== */
+.lrl{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.lrc{background:var(--surf,#fff);border:1px solid var(--bd,#e1e8f1);border-radius:16px;padding:16px 18px}
+.lrh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}.lrh b{font-size:15.5px;display:block;margin-bottom:2px}.lrh div span{font-size:13px;color:var(--mu,#5b6b82)}
+.lrs{list-style:none;margin:0;padding:0;display:flex}.lrs li{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;font-size:12.5px;color:var(--mu,#5b6b82)}
+.lrs li:not(:first-child):before{content:"";position:absolute;top:13px;right:50%;width:100%;height:2px;background:#dfe5ee}.lrs li.done:not(:first-child):before,.lrs li.cur:not(:first-child):before{background:#13a05a}.lrs li.bad:not(:first-child):before{background:#13a05a}
+.lrs .dot{width:28px;height:28px;border-radius:50%;border:2px solid #cdd7e5;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;color:#fff}.lrs .done .dot{background:#13a05a;border-color:#13a05a}.lrs .cur .dot{border-color:#0460B5;box-shadow:0 0 0 4px rgba(4,96,181,.15)}.lrs .cur .dot:after{content:"";width:10px;height:10px;border-radius:50%;background:#0460B5}.lrs .bad .dot{background:#d92d20;border-color:#d92d20}.lrs .off .dot{opacity:.5}
+.lrs .lbl{margin-top:7px;font-weight:600;color:var(--tx,#10233d)}.lrs .sub{font-size:11.5px}.lrs .off .lbl{opacity:.55}
+.lrt{margin-top:14px;padding:9px 12px;border-radius:10px;font-size:13px;background:var(--soft,#eef2f8);color:var(--mu,#5b6b82)}.lrt.wn{background:#fff4dc;color:#8a5a00}.lrt.ok{background:#e0f4e8;color:#13723d}.lrt.er{background:#fde8e8;color:#b42318}
+.lrf{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+:root[data-theme="dark"] .lrt.wn{background:#38290c;color:#f3c872}:root[data-theme="dark"] .lrt.ok{background:#12301f;color:#7fd7a3}:root[data-theme="dark"] .lrt.er{background:#3a1717;color:#f4a5a0}:root[data-theme="dark"] .lrs .dot{background:#162131;border-color:#34455e}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -1013,7 +1029,7 @@ function work(){
  <div class="card"><h2>Who is out</h2><div class="cs">Your department, ${dshort(iso(addD(T0,kw)))}</div>${out.length?out.map(x=>`<div class="act"><span>${esc(x.name)}</span><span class="badge s-mu">On leave</span></div>`).join(""):`<div class="empty">${MODE==="sample"?"Nobody in your department is on leave.":"No leave data yet."}</div>`}
   <h2 style="margin-top:14px">Work anniversaries</h2><div class="cs">Next 30 days</div>${ann.length?ann.map(a=>`<div class="act"><span>${esc(a.x.name)} · ${a.y} yr</span><span class="badge s-mu">${a.dd?"in "+a.dd+" d":"today"}</span></div>`).join(""):`<div class="empty">None in the next 30 days.</div>`}</div></div>
  ${myDetails(e)}<h2 class="sec">Leave balances</h2><div class="grid kpis">${bc}</div>
- <h2 class="sec">My requests</h2><div class="card wrap">${mine.length||seed.length?`<table><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th>Approver</th><th></th></tr>${mine.map(r=>`<tr><td>${r.type}</td><td>${r.start} → ${r.end}</td><td>${r.days}${attCount("leave|"+r.id)?` <button class="b" data-act="att:leave|${r.id}">Files (${attCount("leave|"+r.id)})</button>`:""}</td><td><span class="badge ${r.status==="Pending"?"s-wn":"s-ok"}">${r.status}</span></td><td>${esc(e.mgr||"–")}</td><td>${r.status==="Pending"?`<button class="b" data-ws="cancel:${r.id}">Cancel</button>`:""}</td></tr>`).join("")}${seed.map(a=>`<tr><td colspan="2">${esc(a.detail)}</td><td>–</td><td><span class="badge s-wn">Pending</span></td><td>${esc(e.mgr||"–")}</td><td></td></tr>`).join("")}</table>`:`<div class="empty">No requests yet. Use the form above to submit your first leave request.</div>`}</div>`}
+ <h2 class="sec">My requests</h2>${lrCards(mine,seed,e)}`}
 /* ---------- shell ---------- */
 document.querySelectorAll(".slogo").forEach(i=>i.src=LOGO);
 /* ================= CORE FRAMEWORK ================= */
@@ -3243,7 +3259,7 @@ function NAVACT(k){return k===page||(k==="emp"&&page==="profile")||(k==="reports
 reg("reports","Reports","Every report in one place. Pick one, or search by name.",A("HRD","HRS","DM","FIN","PAY","ADM"),reports);
 
 /* ===== m37: accessibility upgrades (WCAG 2.2 AA) ===== */
-(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".card.wrap table").forEach(t=>{const r=t.rows[1];if(r&&r.cells.length>3&&r.cells[r.cells.length-1].querySelector("button.b,form"))t.classList.add("stk")});document.querySelectorAll(".xlbar").forEach(x=>{const hasX=el=>el&&el.querySelector&&(el.matches("[data-act^=\"xlsx:\"]")||el.querySelector("[data-act^=\"xlsx:\"]")),c=x.nextElementSibling;x.hidden=!!(hasX(x.previousElementSibling)||(c&&hasX(c.nextElementSibling)))});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
+(function(){let t=0;const fix=()=>{t=0;try{document.querySelectorAll("th:not([scope])").forEach(h=>h.setAttribute("scope","col"));document.querySelectorAll("#nav .nav").forEach(n=>{if(n.classList.contains("on"))n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".card.wrap table").forEach(t=>{const r=t.rows[1];if(r&&r.cells.length>3&&r.cells[r.cells.length-1].querySelector("button.b,form")&&!t.querySelector(".trk"))t.classList.add("stk")});document.querySelectorAll(".xlbar").forEach(x=>{const hasX=el=>el&&el.querySelector&&(el.matches("[data-act^=\"xlsx:\"]")||el.querySelector("[data-act^=\"xlsx:\"]")),c=x.nextElementSibling;x.hidden=!!(hasX(x.previousElementSibling)||(c&&hasX(c.nextElementSibling)))});document.querySelectorAll("button.lnk:not([aria-label])").forEach(b=>{const r=b.closest("tr");if(r&&r.cells&&r.cells[0]&&!b.getAttribute("aria-describedby")){}})}catch(e){}};
  new MutationObserver(()=>{if(!t)t=setTimeout(fix,60)}).observe(document.body,{childList:true,subtree:true});fix()})();
 document.addEventListener("keydown",ev=>{if(ev.key==="Escape"){const x=document.querySelector(".hqm .hqm-x");if(x&&!document.querySelector("#drawer.open,#confirm:not([hidden])")){x.click();ev.stopPropagation()}}},true);
 new MutationObserver(()=>{const m=document.querySelector(".hqm:not([data-foc])");if(m){m.dataset.foc="1";const f=m.querySelector("input:not([type=hidden]):not([type=file]),select,textarea");if(f)setTimeout(()=>f.focus(),60)}}).observe(document.body,{childList:true,subtree:true});
@@ -3255,6 +3271,24 @@ function bdStrip(){
  const hdr=`<div class="bdh"><b>Upcoming birthdays</b><span class="mu">next 30 days</span><button class="lnk" data-go="r_bday">All birthdays &amp; anniversaries</button></div>`;
  if(!L.length)return`<div class="card bds">${hdr}<p class="mu" style="margin:6px 0 0">${allEmps().some(e=>e.dob)?"No birthdays in the next 30 days.":"No dates of birth recorded yet. Add them in each employee profile to see birthdays here."}</p></div>`;
  return`<div class="card bds">${hdr}<div class="bdl">${L.slice(0,6).map(x=>`<div class="bdi"><i class="av">${ini(x.e.name)}</i><div><b>${esc(x.e.name)}</b><span>${+x.d.slice(8)} ${MN[+x.d.slice(5,7)-1]} · turns ${x.age} · ${x.n===0?"today":x.n===1?"tomorrow":"in "+x.n+" days"}</span></div></div>`).join("")}</div>${L.length>6?`<p class="mu" style="margin:8px 0 0">+ ${L.length-6} more in the full report.</p>`:""}</div>`}
+
+/* ===== m40: where a leave request stands (shown to the employee) ===== */
+function lrTrack(r,e){
+ const D=(db("dec",{})["L"+r.id])||{step:0,log:[]},log=D.log||[],lst=log[log.length-1],mg=String(e.lapp||e.mgr||"").trim(),hasM=!!mg&&mg!==e.name,fn=n=>String(n||"").split(" ")[0];
+ const dt=x=>{try{return x&&x.t?new Date(x.t).toISOString().slice(0,10).split("-").reverse().join("/"):""}catch(_){return""}},who=x=>!x?"HR":x.role===R.DM?"your manager":"HR";
+ const nodes=[["Sent","done",""]];if(hasM)nodes.push(["Manager","todo",fn(mg)]);nodes.push(["HR","todo",""]);
+ let txt="",tone="";
+ if(r.status==="Cancelled"){nodes.forEach((n,i)=>n[1]=i?"off":"done");txt="Cancelled by you.";tone="mu"}
+ else if(r.status==="Rejected"){const bi=lst&&lst.role===R.DM&&hasM?1:nodes.length-1;nodes.forEach((n,i)=>n[1]=i===0||i<bi?"done":i===bi?"bad":"off");txt="Rejected by "+who(lst)+(dt(lst)?" on "+dt(lst):"")+(lst&&lst.reason?": "+lst.reason:"");tone="er"}
+ else if(r.status==="Approved"){nodes.forEach(n=>n[1]="done");txt="Approved by "+who(lst)+(dt(lst)?" on "+dt(lst):"")+".";tone="ok"}
+ else{const mDone=hasM&&(D.step||0)>=1;nodes[0][1]="done";const cur=hasM?(mDone?2:1):1;nodes.forEach((n,i)=>{if(i>0&&i<cur)n[1]="done";else if(i===cur)n[1]="cur"});
+  txt=hasM&&!mDone?"Waiting for "+mg+" (your manager)":"Waiting for HR";tone="wn"}
+ const ck='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',xx='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+ return`<ol class="lrs">${nodes.map(n=>`<li class="${n[1]}"><span class="dot">${n[1]==="done"?ck:n[1]==="bad"?xx:""}</span><span class="lbl">${esc(n[0])}</span>${n[2]?`<span class="sub">${esc(n[2])}</span>`:""}</li>`).join("")}</ol><div class="lrt ${tone}">${esc(txt)}</div>`}
+function lrCards(mine,seed,e){
+ if(!mine.length&&!seed.length)return`<div class="card"><div class="empty">No requests yet. Use the form above to submit your first leave request.</div></div>`;
+ const bc=s=>s==="Pending"?"s-wn":s==="Approved"?"s-ok":s==="Rejected"?"s-er":"s-mu",dd=x=>typeof dmyS==="function"?dmyS(x):x;
+ return`<div class="lrl">${mine.map(r=>{const n=typeof attCount==="function"?attCount("leave|"+r.id):0;return`<div class="lrc"><div class="lrh"><div><b>${esc(r.type)}</b><span>${dd(r.start)}${r.end!==r.start?" → "+dd(r.end):""} · ${r.days} day${+r.days===1?"":"s"}</span></div><span class="badge ${bc(r.status)}">${esc(r.status)}</span></div>${lrTrack(r,e)}${r.status==="Pending"||n?`<div class="lrf">${r.status==="Pending"?`<button class="b" data-ws="cancel:${r.id}">Cancel request</button>`:""}${n?`<button class="b" data-act="att:leave|${r.id}">Files (${n})</button>`:""}</div>`:""}</div>`}).join("")}${seed.map(a=>`<div class="lrc"><div class="lrh"><div><b>${esc(a.detail)}</b></div><span class="badge s-wn">Pending</span></div><div class="lrt wn">Waiting for ${esc(e.mgr||"HR")}</div></div>`).join("")}</div>`}
 
 /* Cloud mode (Supabase). Only active when the page was started by the cloud loader. */
 (function(){const C=window.SMR_CLOUD_ON;if(!C)return;
@@ -3489,14 +3523,24 @@ draw();
     var g = gate("<h1>Someone else saved first</h1><p>Another person changed the same records while you were working. Reload to get the latest data, then repeat your last change.</p><button class='p' id='cgr'>Reload latest data</button>");
     g.querySelector("#cgr").onclick = function () { location.reload(); };
   }
+  /* leave emails: sent by the server function, which reads the request itself. Failures never block the user. */
+  function leaveIds(txt) { try { var o = {}; JSON.parse(txt).forEach(function (r) { o[r.id] = r.status; }); return o; } catch (e) { return {}; } }
+  function notifyLeave(oldTxt, newVal) {
+    if (!window.SMR_CLOUD_ON) return;
+    var a = leaveIds(oldTxt || "[]"), b = leaveIds(JSON.stringify(newVal));
+    Object.keys(b).forEach(function (id) {
+      var kind = a[id] === undefined && b[id] === "Pending" ? "submitted" : (a[id] === "Pending" && (b[id] === "Approved" || b[id] === "Rejected") ? "decided" : null);
+      if (kind) window.SMR_CLOUD_ON.fn("notify-leave", { kind: kind, lr_id: id }).catch(function (e) { try { console.warn("email not sent:", e.message); } catch (x) { } });
+    });
+  }
   function flush() {
     if (busy) { timer = setTimeout(flush, 400); return; }
     var keys = Object.keys(pend); if (!keys.length) { setStatus("saved"); return; }
     busy = true;
     var k = keys[0], val = pend[k];
-    var p = portal ? rest("rpc/portal_put", { method: "POST", body: { p_k: k, p_v: JSON.parse(val) } }).then(function () { last[k] = canon(JSON.parse(val)); })
+    var p = portal ? rest("rpc/portal_put", { method: "POST", body: { p_k: k, p_v: JSON.parse(val) } }).then(function () { var o = last[k]; last[k] = canon(JSON.parse(val)); if (k === "smr_lr") notifyLeave(o, JSON.parse(val)); })
       : val === null ? rest("rpc/del_store", { method: "POST", body: { p_k: k } }).then(function () { delete ver[k]; delete last[k]; })
-      : rest("rpc/put_store", { method: "POST", body: { p_k: k, p_v: JSON.parse(val), p_ver: ver[k] || 0 } }).then(function (n) { ver[k] = n; last[k] = canon(JSON.parse(val)); });
+      : rest("rpc/put_store", { method: "POST", body: { p_k: k, p_v: JSON.parse(val), p_ver: ver[k] || 0 } }).then(function (n) { var o = last[k]; ver[k] = n; last[k] = canon(JSON.parse(val)); if (k === "smr_lr") notifyLeave(o, JSON.parse(val)); });
     p.then(function () { if (pend[k] === val) delete pend[k]; busy = false; retry = 0; flush(); })
       .catch(function (e) {
         busy = false;

@@ -7,7 +7,7 @@ USERS={'admin@x.com':{'id':'u-admin','pw':'Passw0rd1','role':'System Administrat
        'emp@x.com':{'id':'u-emp','pw':'Passw0rd1','role':'Employee','name':'Mahmoud E','active':True,'emp_no':'E-1'},
        'new@x.com':{'id':'u-new','pw':'Passw0rd1','role':'Pending','name':'New','active':True}}
 TOK={}
-LOG=[];PUTS=[];SETP=[];FN=[]
+LOG=[];PUTS=[];SETP=[];FN=[];NOTI=[]
 def who(req):
     a=req.headers.get('authorization','').replace('Bearer ','');return TOK.get(a)
 def handler(route):
@@ -37,6 +37,8 @@ def handler(route):
         for k,v in USERS.items():
             if v['id']==b['p_id']:v['role']=b['p_role'];v['active']=b['p_active'];v['emp_no']=b['p_emp_no']
         return js(200,None)
+    if '/functions/v1/notify-leave' in u:
+        NOTI.append(json.loads(r.post_data));return js(200,{'ok':True})
     if '/functions/v1/admin-users' in u:
         b=json.loads(r.post_data);FN.append(b)
         if b['action']=='create':
@@ -129,6 +131,7 @@ with sync_playwright() as p:
     PUTS.clear()
     pg5.evaluate("const L=JSON.parse(localStorage.getItem('smr_lr'));L.push({id:99,no:'E-1',status:'Pending',days:1});localStorage.setItem('smr_lr',JSON.stringify(L))");pg5.wait_for_timeout(1500)
     ok(len(PUTS)==1 and PUTS[0]['p_k']=='smr_lr' and len(PUTS[0]['p_v'])==2,'leave request sent through portal_put')
+    ok(any(n['kind']=='submitted' and str(n['lr_id'])=='99' for n in NOTI),'submitting a leave asks the server to email the approver')
     PUTS.clear();pg5.evaluate("localStorage.setItem('smr_emp','[]')");pg5.evaluate("localStorage.setItem('smr_loans_mine','[]')");pg5.wait_for_timeout(1200)
     ok(len(PUTS)==0 and not [x for x in LOG if x[1] in('smr_loans_mine',)],'non-writable keys never sent')
     pg5.evaluate("ACTS.esout()");pg5.wait_for_timeout(300);pg5.click('#cy');pg5.wait_for_selector('#cgf',timeout=4000)
@@ -154,6 +157,9 @@ with sync_playwright() as p:
     # 11 HR Director approves a leave request on behalf of the manager step
     pg6.evaluate("closeDr();E.push({no:'E-8',name:'Eight',dept:'Finance',pos:'A',type:'Full-time',status:'Active',hire:'2024-01-01',basic:1,allow:0,loc:'Head Office',mgr:'Hana Director'});LR.push({id:Date.now(),no:'E-8',mode:MODE,type:'Annual',start:'2026-11-10',end:'2026-11-11',days:2,status:'Pending',note:''});save();saveW();go('appr')");pg6.wait_for_timeout(600)
     ok(pg6.evaluate("(()=>{const it=apprItems().find(x=>x.no==='E-8');return !!it&&canAct(it)})()"),'HR Director can act on a pending leave in cloud mode')
+    pg6.wait_for_timeout(1800)
     pg6.evaluate("(()=>{const it=apprItems().find(x=>x.no==='E-8');decide(it.id,'Approved','ok')})()");pg6.wait_for_timeout(300)
     ok(pg6.evaluate("LR.find(r=>r.no==='E-8').status")=='Approved','one approval finalises the leave')
+    pg6.wait_for_timeout(1800)
+    ok(any(n['kind']=='decided' for n in NOTI),'approving a leave asks the server to email the employee')
     print('errors',errs,e2,e3,e4,e5,e6,e7)

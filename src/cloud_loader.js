@@ -109,14 +109,24 @@
     var g = gate("<h1>Someone else saved first</h1><p>Another person changed the same records while you were working. Reload to get the latest data, then repeat your last change.</p><button class='p' id='cgr'>Reload latest data</button>");
     g.querySelector("#cgr").onclick = function () { location.reload(); };
   }
+  /* leave emails: sent by the server function, which reads the request itself. Failures never block the user. */
+  function leaveIds(txt) { try { var o = {}; JSON.parse(txt).forEach(function (r) { o[r.id] = r.status; }); return o; } catch (e) { return {}; } }
+  function notifyLeave(oldTxt, newVal) {
+    if (!window.SMR_CLOUD_ON) return;
+    var a = leaveIds(oldTxt || "[]"), b = leaveIds(JSON.stringify(newVal));
+    Object.keys(b).forEach(function (id) {
+      var kind = a[id] === undefined && b[id] === "Pending" ? "submitted" : (a[id] === "Pending" && (b[id] === "Approved" || b[id] === "Rejected") ? "decided" : null);
+      if (kind) window.SMR_CLOUD_ON.fn("notify-leave", { kind: kind, lr_id: id }).catch(function (e) { try { console.warn("email not sent:", e.message); } catch (x) { } });
+    });
+  }
   function flush() {
     if (busy) { timer = setTimeout(flush, 400); return; }
     var keys = Object.keys(pend); if (!keys.length) { setStatus("saved"); return; }
     busy = true;
     var k = keys[0], val = pend[k];
-    var p = portal ? rest("rpc/portal_put", { method: "POST", body: { p_k: k, p_v: JSON.parse(val) } }).then(function () { last[k] = canon(JSON.parse(val)); })
+    var p = portal ? rest("rpc/portal_put", { method: "POST", body: { p_k: k, p_v: JSON.parse(val) } }).then(function () { var o = last[k]; last[k] = canon(JSON.parse(val)); if (k === "smr_lr") notifyLeave(o, JSON.parse(val)); })
       : val === null ? rest("rpc/del_store", { method: "POST", body: { p_k: k } }).then(function () { delete ver[k]; delete last[k]; })
-      : rest("rpc/put_store", { method: "POST", body: { p_k: k, p_v: JSON.parse(val), p_ver: ver[k] || 0 } }).then(function (n) { ver[k] = n; last[k] = canon(JSON.parse(val)); });
+      : rest("rpc/put_store", { method: "POST", body: { p_k: k, p_v: JSON.parse(val), p_ver: ver[k] || 0 } }).then(function (n) { var o = last[k]; ver[k] = n; last[k] = canon(JSON.parse(val)); if (k === "smr_lr") notifyLeave(o, JSON.parse(val)); });
     p.then(function () { if (pend[k] === val) delete pend[k]; busy = false; retry = 0; flush(); })
       .catch(function (e) {
         busy = false;

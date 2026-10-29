@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m39_cloud','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m39_cloud','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -77,6 +77,10 @@ R_('const x=b[t];return`<div class="card k"><span class="l">${t}</span><span cla
 R_('<label style="grid-column:span 2">Note (optional)<input name="note"></label>','<label style="grid-column:span 2">Note (optional)<input name="note"></label><div style="grid-column:span 2" class="fl">Supporting document (optional, for example a medical certificate)<div data-attbox="leaveform|${e.no}">${attList("leaveform|"+e.no,true)}<label class="b" style="cursor:pointer">Attach file<input type="file" data-att="leaveform|${e.no}" accept=".pdf,.png,.jpg,.jpeg,.webp,.docx" style="display:none"></label></div><div class="err" data-atterr="leaveform|${e.no}"></div></div>')
 R_('LR.push({id:Date.now(),mode:MODE,no:e.no,type:o.type,start:o.start,end:o.end,days,note:o.note,status:"Pending"});','const nid=Date.now();LR.push({id:nid,mode:MODE,no:e.no,type:o.type,start:o.start,end:o.end,days,note:o.note,status:"Pending"});attMove("leaveform|"+e.no,"leave|"+nid);')
 R_('<td>${r.days}</td><td><span class="badge ${r.status==="Pending"?"s-wn":"s-ok"}">${r.status}</span></td>','<td>${r.days}${attCount("leave|"+r.id)?` <button class="b" data-act="att:leave|${r.id}">Files (${attCount("leave|"+r.id)})</button>`:""}</td><td><span class="badge ${r.status==="Pending"?"s-wn":"s-ok"}">${r.status}</span></td>')
+_a='<h2 class="sec">My requests</h2><div class="card wrap">${mine.length||seed.length?`'
+_b='<div class="empty">No requests yet. Use the form above to submit your first leave request.</div>`}</div>`}'
+_i=js.index(_a);_j=js.index(_b,_i)+len(_b)
+js=js[:_i]+'<h2 class="sec">My requests</h2>${lrCards(mine,seed,e)}`}'+js[_j:]
 # --- projects ---
 R_('let MODE="sample";try{MODE=localStorage.getItem("smr_mode")||"sample"}catch(e){}','let MODE="mine";')
 js=js.replace('F={dept:"",loc:"",mgr:"",type:"",status:""}','F={dept:"",loc:"",mgr:"",type:"",status:"",project:""}')
