@@ -467,9 +467,6 @@ html.collapsed .brand img,.side.collapsed .brand img,body.collapsed .brand img{w
 .brand{gap:12px;padding:18px 14px 14px}.brand img{width:82px;padding-right:12px}.brand>div{min-width:0}.brand>div b,.brand>div strong,.brand>div .t{white-space:nowrap;font-size:15.5px}
 body.rail .brand{padding:16px 6px 10px;justify-content:center}body.rail .brand img{width:44px;padding-right:0;border:0}
 .brand img{border-radius:0!important;border:0!important;padding-right:0!important}.brand .prod{padding-left:14px;border-left:1px solid rgba(255,255,255,.35);line-height:1.2}body.rail .brand .prod{border:0;padding:0}
-.bmark{width:46px;height:46px;border-radius:13px;background:#fff;color:#0460B5;font-weight:800;font-size:22px;letter-spacing:-.05em;display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit;padding-bottom:3px}.bmark.bm{width:38px;height:38px;font-size:18px;background:#0460B5;color:#fff;box-shadow:none}
-.brand .prod{border-left:0;padding-left:0;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.25}.brand .prod small{display:block;font-size:11.5px;font-weight:500;opacity:.8;letter-spacing:0;text-transform:none;margin-top:2px}
-body.rail .brand .bmark{width:40px;height:40px;font-size:19px}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2577,9 +2574,6 @@ function dedupeExports(){const v=document.getElementById("view");if(!v)return;co
 try{new MutationObserver(()=>{if(!window.__dd){window.__dd=1;setTimeout(()=>{window.__dd=0;dedupeExports()},60)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
 function dedupeExcel(){const v=document.getElementById("view");if(!v)return;const L=[...v.querySelectorAll("button")].filter(b=>b.textContent.trim()==="Export Excel");if(L.length<2)return;L.forEach(b=>{const sib=[...b.parentNode.children].some(x=>x!==b&&/^Copy/.test(x.textContent.trim()));if(!sib&&L.some(o=>o!==b&&[...o.parentNode.children].some(x=>/^Copy/.test(x.textContent.trim()))))b.remove()})}
 try{new MutationObserver(()=>{if(!window.__d2){window.__d2=1;setTimeout(()=>{window.__d2=0;dedupeExcel()},80)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
-/* Brand mark: crisp text tile instead of the pasted image */
-function brandFix(){document.querySelectorAll(".brand img.slogo,.topbar img.mlogo").forEach(i=>{const s=document.createElement("span");s.className=i.classList.contains("mlogo")?"bmark bm":"bmark";s.textContent="smr";s.setAttribute("aria-label","SMR");i.replaceWith(s)});const sm=document.querySelector(".brand .prod small");if(sm&&sm.textContent!=="Savills Management Resources")sm.textContent="Savills Management Resources"}
-brandFix();setInterval(brandFix,1000);
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
