@@ -1087,7 +1087,7 @@ ACTS.exres=id=>ask("Describe how this exception was resolved.","Resolve",(t)=>{e
 reg("exceptions","Attendance Exceptions","Missing punches and unexplained absences that need a decision.",A("HRD","HRS","DM","PAY"),exceptions);
 
 /* ================= LEAVE ================= */
-const ladjSum=(no,t)=>(db("ladj",{})[no+"|"+t]||[]).reduce((s,x)=>s+x.days,0);
+const ladjSum=(no,t)=>lvAdjEff(no,t);
 function leaveDrill(e,t){const b=balances(e)[t],open=(LTYPES.find(l=>l[0]===t)||[])[1];
  if(open==null)return{title:t+": "+e.name,desc:"Unpaid leave has no balance limit. Salary is deducted under the approved payroll policy; no deduction is calculated here.",cols:[],rows:[]};
  const adj=db("ladj",{})[e.no+"|"+t]||[],rows=[["Opening balance","",String(open),"Policy entitlement"]];
@@ -1097,7 +1097,7 @@ function leaveDrill(e,t){const b=balances(e)[t],open=(LTYPES.find(l=>l[0]===t)||
  return{title:t+": "+e.name,desc:"How the "+t.toLowerCase()+" balance is made up.",cols:["Entry","Dates","Days","Basis or status"],rows}}
 function ledger(e){const rows=[];LTYPES.filter(l=>l[1]!=null).forEach(([t,open])=>{const b=balances(e)[t],adj=db("ladj",{})[e.no+"|"+t]||[];
  rows.push([t,"Opening balance",open,"Policy entitlement"]);rows.push([t,"Accrual",0,"Entitlement is granted up front in this policy"]);
- rows.push([t,"Usage","-"+(b.used),"Attendance leave days and approved requests"]);adj.forEach(a=>rows.push([t,"Adjustment",(a.days>0?"+":"")+a.days,esc(a.reason)+" ("+esc(a.by)+")"]));rows.push([t,"Expiry",0,"No expiry rule configured"]);rows.push([t,"Pending requests","-"+b.pend,"Reserved, not yet used"]);rows.push([t,"<b>Closing available</b>","<b>"+b.avail+"</b>",""])});
+ rows.push([t,"Usage","-"+(b.used),"Attendance leave days and approved requests"]);adj.forEach(a=>rows.push([t,a.kind==="cf"?"Carry-forward from "+a.from:a.kind==="open"?"Used before the system":"Adjustment",(a.days>0?"+":"")+a.days,esc(a.reason||"")+(a.exp?" · expires "+a.exp.split("-").reverse().join("/"):"")+" ("+esc(a.by)+")"]));{const lo=lvLost(e.no,t);rows.push([t,"Expiry",lo?"-"+lo:0,lo?"Carried-forward days that expired unused":"No carried-forward days have expired"])}rows.push([t,"Pending requests","-"+b.pend,"Reserved, not yet used"]);rows.push([t,"<b>Closing available</b>","<b>"+b.avail+"</b>",""])});
  return tbl(["Leave type","Entry","Days","Basis"],rows)}
 function leave_req(){const items=apprItems().filter(i=>i.type==="Leave request"),cur=tab("lr","pending");
  const rows=items.filter(i=>{const e=empBy(i.no);return e&&inScope(e)&&(cur==="all"||(cur==="pending"?!i.fin:i.fin===(cur==="appr"?"Approved":"Rejected")))}).map(i=>{const e=empBy(i.no);return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button>`,esc(e.dept),esc(i.detail),i.sub,i.fin?bd(i.fin,i.fin==="Approved"?"s-ok":"s-er"):bd("Waiting: "+(nextRole(i)||""),"s-wn"),canAct(i)?`<button class="b p" data-act="ap:${i.id}">Approve</button> <button class="b" data-act="rj:${i.id}">Reject</button>`:`<button class="b" data-act="apd:${i.id}">Details</button>`]});
@@ -1107,7 +1107,7 @@ let LBN="";
 function leave_bal(){const all=ALLE().filter(e=>e.status!=="Terminated"),can=[R.HRD,R.HRS].includes(role);if(!all.length)return forbid("No employees yet.");if(!all.some(e=>e.no===LBN))LBN=all[0].no;const e=all.find(x=>x.no===LBN);
  const lim=LTYPES.filter(l=>l[1]!=null).map(l=>l[0]);
  const rows=all.map(x=>{const b=balances(x);return[`<button class="lnk" data-act="lbn:${esc(x.no)}">${esc(x.name)}</button>`,esc(x.dept),...lim.map(t=>b[t].avail+(b[t].pend?` <span class="mu">(${b[t].pend} pending)</span>`:""))]});
- return`${ptbl("lb",["Employee","Department",...lim],rows,{csv:"lb"})}${secH("Ledger: "+esc(e.name))}${ledger(e)}${can?`<div class="card" style="margin-top:14px"><h2>Adjust a balance</h2><form class="g" data-form="ladj"><input type="hidden" name="no" value="${esc(e.no)}">${fld("Leave type","t","select",{opts:lim})}${fld("Days (+ adds, - removes)","days","number",{req:1,step:"0.5"})}${fld("Reason","reason","text",{req:1})}<button class="b p" type="submit">Record adjustment</button></form><div class="err"></div></div>`:""}`}
+ return`${ptbl("lb",["Employee","Department",...lim],rows,{csv:"lb"})}${secH("Ledger: "+esc(e.name))}${ledger(e)}${lcfCard(e)}${can?`<div class="card" style="margin-top:14px"><h2>Adjust a balance</h2><form class="g" data-form="ladj"><input type="hidden" name="no" value="${esc(e.no)}">${fld("Leave type","t","select",{opts:lim})}${fld("Days (+ adds, - removes)","days","number",{req:1,step:"0.5"})}${fld("Reason","reason","text",{req:1})}<button class="b p" type="submit">Record adjustment</button></form><div class="err"></div></div>`:""}`}
 ACTS.lbn=no=>{LBN=no;draw()};
 FORMS.ladj=o=>{const d=+o.days;if(!d)return"Enter a number of days other than zero.";const m=db("ladj",{});(m[o.no+"|"+o.t]=m[o.no+"|"+o.t]||[]).push({days:d,reason:o.reason.trim(),by:role,t:iso(T0)});sv("ladj");audit("Leave balance adjusted",o.no+" "+o.t+": "+d+" day(s). "+o.reason);toast("Adjustment recorded");draw()};
 reg("leave_bal","Leave Balances","Available leave for every employee, with a ledger showing how each balance was reached.",A("HRD","HRS","DM","PAY"),leave_bal);
@@ -2566,6 +2566,29 @@ function dedupeExports(){const v=document.getElementById("view");if(!v)return;co
 try{new MutationObserver(()=>{if(!window.__dd){window.__dd=1;setTimeout(()=>{window.__dd=0;dedupeExports()},60)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
 function dedupeExcel(){const v=document.getElementById("view");if(!v)return;const L=[...v.querySelectorAll("button")].filter(b=>b.textContent.trim()==="Export Excel");if(L.length<2)return;L.forEach(b=>{const sib=[...b.parentNode.children].some(x=>x!==b&&/^Copy/.test(x.textContent.trim()));if(!sib&&L.some(o=>o!==b&&[...o.parentNode.children].some(x=>/^Copy/.test(x.textContent.trim()))))b.remove()})}
 try{new MutationObserver(()=>{if(!window.__d2){window.__d2=1;setTimeout(()=>{window.__d2=0;dedupeExcel()},80)}}).observe(document.getElementById("view")||document.body,{childList:true,subtree:true})}catch(e){}
+
+/* Leave balances: carry-forward from previous years (with expiry) and opening usage */
+function lvUsedNo(no,t){const e=empBy(no);let u=0;if(t==="Annual leave"&&e&&e.att)u+=e.att.filter(c=>c===4).length;u+=LR.filter(x=>x.mode===MODE&&x.no===no&&x.type===t&&x.status==="Approved").reduce((s,x)=>s+x.days,0);return u}
+function lvSplit(no,t){const L=(db("ladj",{})[no+"|"+t]||[]),today=iso(T0);let live=0,exp=0;L.forEach(a=>{if(a.kind==="cf"&&a.exp&&a.exp<today)exp+=a.days;else live+=a.days});return{live,exp}}
+function lvLost(no,t){const{exp}=lvSplit(no,t);if(exp<=0)return 0;return Math.max(0,exp-lvUsedNo(no,t))}
+function lvAdjEff(no,t){const{live,exp}=lvSplit(no,t);return live+(exp-lvLost(no,t))}
+const dmyS=v=>v?v.split("-").reverse().join("/"):"";
+function lcfCard(e){const can=role===R.HRD,all=ALLE().filter(x=>x.status!=="Terminated"),lim=LTYPES.filter(l=>l[1]!=null).map(l=>l[0]);if(!can)return note("Carry-forward and opening balances are set by the HR Director.","sm");
+ const ty=TAB.lcf_t||"Annual leave",yr=TAB.lcf_y||String(T0.getFullYear()-1),ex=TAB.lcf_e||"";
+ const get=(no,kind,from)=>((db("ladj",{})[no+"|"+ty]||[]).find(a=>a.kind===kind&&(kind!=="cf"||a.from===yr))||null);
+ const rows=all.map(x=>{const b=balances(x)[ty],cf=get(x.no,"cf"),ou=get(x.no,"open");return[`<button class="lnk" data-act="lbn:${esc(x.no)}">${esc(x.name)}</button>`,String(b?b.avail:"–"),`<input class="lcfi" name="cf_${esc(x.no)}" type="number" min="0" max="365" step="0.5" value="${cf?cf.days:""}" placeholder="0">`,`<input class="lcfi" name="ou_${esc(x.no)}" type="number" min="0" max="365" step="0.5" value="${ou?-ou.days:""}" placeholder="0">`]});
+ const mine=lim.flatMap(t=>(db("ladj",{})[e.no+"|"+t]||[]).map((a,i)=>({t,a,i}))),list=mine.length?tbl(["Type","Entry","Days","Details",""],mine.map(({t,a,i})=>[t,a.kind==="cf"?"Carry-forward from "+a.from:a.kind==="open"?"Used before the system":"Adjustment",(a.days>0?"+":"")+a.days,esc(a.reason||"")+(a.exp?" · expires "+dmyS(a.exp):"")+" ("+esc(a.by)+", "+a.t+")",`<button class="b" data-act="ladj_x:${esc(e.no)}|${esc(t)}|${i}">Remove</button>`])):'<div class="cs">No manual entries for this employee yet.</div>';
+ return`<div class="card" style="margin-top:14px"><h2>Carry-forward and opening balances</h2><div class="cs">For each employee enter the days carried from a previous year and the days already used before this system. Saving again for the same year replaces the earlier entry. Carried days are used first and are lost if still unused after the expiry date.</div>
+ <form data-form="lcfbulk" style="margin-top:12px"><div class="nf"><label>Leave type<select name="t" data-lcf="t">${lim.map(t=>`<option ${t===ty?"selected":""}>${t}</option>`).join("")}</select></label><label>Carried from year<input name="y" type="number" min="2000" max="2100" value="${yr}" data-lcf="y"></label><label>Carried days expire on (optional)<input name="e" type="date" value="${ex}" data-lcf="e"></label></div>
+ <div style="margin-top:12px">${tbl(["Employee","Available now","Carry-forward days","Already used this year"],rows)}</div><button class="b p" type="submit" style="margin-top:12px">Save for everyone</button><div class="err"></div></form>
+ <h3 style="margin:18px 0 8px">Entries for ${esc(e.name)}</h3>${list}</div>`}
+document.addEventListener("change",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.lcf){TAB["lcf_"+i.dataset.lcf]=i.value;draw()}});
+FORMS.lcfbulk=(o,f)=>{if(role!==R.HRD)return"Only the HR Director can set carry-forward and opening balances.";const t=o.t,y=String(o.y||"").trim(),ex=o.e||"";if(!/^\d{4}$/.test(y))return"Enter the year the days are carried from.";if(+y>=T0.getFullYear())return"Carry-forward is from a previous year, so the year must be before "+T0.getFullYear()+".";if(ex&&ex<=iso(T0))return"The expiry date must be in the future. Leave it empty if the days do not expire.";
+ const m=db("ladj",{});let n=0;for(const x of ALLE().filter(z=>z.status!=="Terminated")){const cf=o["cf_"+x.no],ou=o["ou_"+x.no];const c=cf===""||cf==null?0:+cf,u=ou===""||ou==null?0:+ou;if(!(c>=0&&c<=365)||!(u>=0&&u<=365))return"Check the days for "+x.name+": enter a number from 0 to 365.";
+  const k=x.no+"|"+t,L=(m[k]=m[k]||[]);for(let i=L.length-1;i>=0;i--){const a=L[i];if((a.kind==="cf"&&a.from===y)||a.kind==="open")L.splice(i,1)}
+  if(c>0){L.push({kind:"cf",from:y,days:c,exp:ex,reason:"Carried forward from "+y,by:role,t:iso(T0)});n++}if(u>0){L.push({kind:"open",days:-u,reason:"Days already used before this system",by:role,t:iso(T0)});n++}}
+ sv("ladj");audit("Carry-forward saved",t+" from "+y+(ex?" expiring "+ex:"")+", "+n+" entr"+(n===1?"y":"ies"));toast("Saved "+n+" entr"+(n===1?"y":"ies"));draw()};
+ACTS.ladj_x=a=>{if(role!==R.HRD)return;const[no,t,i]=a.split("|"),L=db("ladj",{})[no+"|"+t];if(!L||!L[+i])return;ask("Remove this entry? The balance changes immediately and the removal is logged.","Remove",()=>{const r=L.splice(+i,1)[0];sv("ladj");audit("Leave entry removed",no+" "+t+" "+(r.days>0?"+":"")+r.days);draw()})};
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);
