@@ -151,4 +151,9 @@ with sync_playwright() as p:
     # must-change flow
     c7,pg7,e7=ctx();pg7.goto('file:///tmp/full_cloud.html');pg7.wait_for_selector('#cgf');login(pg7,'new.emp@x.com','Temp1234ab');pg7.wait_for_timeout(900)
     ok('Set your own password' in pg7.inner_text('#cg'),'first sign-in forces a new password')
+    # 11 HR Director approves a leave request on behalf of the manager step
+    pg6.evaluate("closeDr();E.push({no:'E-8',name:'Eight',dept:'Finance',pos:'A',type:'Full-time',status:'Active',hire:'2024-01-01',basic:1,allow:0,loc:'Head Office',mgr:'Hana Director'});LR.push({id:Date.now(),no:'E-8',mode:MODE,type:'Annual',start:'2026-11-10',end:'2026-11-11',days:2,status:'Pending',note:''});save();saveW();go('appr')");pg6.wait_for_timeout(600)
+    ok(pg6.evaluate("(()=>{const it=apprItems().find(x=>x.no==='E-8');return !!it&&canAct(it)})()"),'HR Director can act on a pending leave in cloud mode')
+    pg6.evaluate("(()=>{const it=apprItems().find(x=>x.no==='E-8');decide(it.id,'Approved','ok')})()");pg6.wait_for_timeout(300)
+    ok(pg6.evaluate("LR.find(r=>r.no==='E-8').status")=='Approved','one approval finalises the leave')
     print('errors',errs,e2,e3,e4,e5,e6,e7)
