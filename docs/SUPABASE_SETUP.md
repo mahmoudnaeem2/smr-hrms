@@ -1,8 +1,9 @@
 # Going live on Supabase (phase 1)
 
 Phase 1 is for **staff accounts only**: System Administrator, HR Director, HR Specialist,
-Payroll Specialist and Finance Manager. Employee and department-manager self-service needs
-per-row tables (phase 2), because today one saved document holds many employees.
+Payroll Specialist and Finance Manager. Employee self-service is phase 2: run `supabase/002_portal.sql`, then create the employee's sign-in
+in Authentication > Users (Auto Confirm) with the same email as the employee record. It links by email
+automatically, or run `select public.link_employee('email','E-xxxx');`. Department managers come later.
 
 ## 1. Create the project
 1. supabase.com > New project. Pick a region close to Egypt (for example Frankfurt) and a strong database password. Save it in your password manager.

@@ -4,9 +4,10 @@ STORE={}   # k -> {v,ver}
 USERS={'admin@x.com':{'id':'u-admin','pw':'Passw0rd1','role':'System Administrator','name':'Admin One','active':True},
        'hr@x.com':{'id':'u-hr','pw':'Passw0rd1','role':'HR Specialist','name':'Hala HR','active':True},
        'hd@x.com':{'id':'u-hd','pw':'Passw0rd1','role':'HR Director','name':'Hana Director','active':True},
+       'emp@x.com':{'id':'u-emp','pw':'Passw0rd1','role':'Employee','name':'Mahmoud E','active':True,'emp_no':'E-1'},
        'new@x.com':{'id':'u-new','pw':'Passw0rd1','role':'Pending','name':'New','active':True}}
 TOK={}
-LOG=[]
+LOG=[];PUTS=[]
 def who(req):
     a=req.headers.get('authorization','').replace('Bearer ','');return TOK.get(a)
 def handler(route):
@@ -22,11 +23,23 @@ def handler(route):
     us=who(r)
     if '/rest/v1/' in u and not us:return js(401,{'message':'JWT expired'})
     if '/rest/v1/profiles' in u:
-        return js(200,[{'full_name':us['name'],'role':us['role'],'active':us['active']}])
+        return js(200,[{'full_name':us['name'],'role':us['role'],'active':us['active'],'emp_no':us.get('emp_no')}])
     if '/rest/v1/app_store' in u and m=='GET':
         if us['role']=='Pending':return js(200,[])
         if 'select=k,ver' in u:return js(200,[{'k':k,'ver':x['ver']} for k,x in STORE.items()])
         return js(200,[{'k':k,'v':x['v'],'ver':x['ver']} for k,x in STORE.items()])
+    if '/rpc/portal_data' in u:
+        if us['role']!='Employee':return js(403,{'message':'not_an_employee'})
+        me=us['emp_no'];o={}
+        for k,x in STORE.items():
+            if k=='smr_emp':o[k]=[e for e in x['v'] if e['no']==me]
+            elif k=='smr_lr':o[k]=[e for e in x['v'] if e['no']==me]
+            elif k in('smr_depts',):o[k]=x['v']
+        return js(200,o)
+    if '/rpc/portal_put' in u:
+        b=json.loads(r.post_data);PUTS.append(b);
+        if b['p_k'] not in('smr_lr','smr_hrq_mine','smr_punch'):return js(403,{'message':'key_not_writable'})
+        return js(200,None)
     if '/rpc/put_store' in u:
         b=json.loads(r.post_data);k=b['p_k'];cur=STORE.get(k)
         if (cur and cur['ver']!=b['p_ver']) or (not cur and b['p_ver']!=0):return js(400,{'code':'P0001','message':'version_conflict'})
@@ -88,4 +101,20 @@ with sync_playwright() as p:
     pg4.evaluate("const s=document.getElementById('role');s.disabled=false;s.value='Finance Manager';s.dispatchEvent(new Event('change',{bubbles:true}))");pg4.wait_for_timeout(1200)
     ok(pg4.evaluate("role")=='HR Director','role snaps back to the server role after tampering')
     ok(pg4.evaluate("document.querySelector('.rmb b')?.textContent")=='HR Director','role card shows HR Director')
-    print('errors',errs,e2,e3,e4)
+    # 9 employee portal
+    STORE['smr_lr']={'v':[{'id':1,'no':'E-1','status':'Approved','days':2},{'id':2,'no':'E-2','status':'Pending','days':5}],'ver':1}
+    c5,pg5,e5=ctx();pg5.goto('file:///tmp/full_cloud.html');pg5.wait_for_selector('#cgf');login(pg5,'emp@x.com','Passw0rd1')
+    pg5.wait_for_function("typeof E!=='undefined'&&document.querySelector('#cg')===null",timeout=6000);pg5.wait_for_timeout(600)
+    ok(pg5.evaluate("role")=='Employee' and pg5.evaluate("WSNO")=='E-1','employee session role + own number')
+    ok(pg5.evaluate("E.length")==1 and pg5.evaluate("E[0].no")=='E-1','employee only holds own record')
+    ok(pg5.evaluate("JSON.parse(localStorage.getItem('smr_lr')).length")==1,'employee holds only own leave rows')
+    ok(pg5.evaluate("sessionStorage.getItem('smr_ss')") is None,'no staff session for employee')
+    ok(pg5.evaluate("document.body.innerText.includes('Edited by hr')||document.body.innerText.includes('Local Two')")==False,'other employees not visible')
+    PUTS.clear()
+    pg5.evaluate("const L=JSON.parse(localStorage.getItem('smr_lr'));L.push({id:99,no:'E-1',status:'Pending',days:1});localStorage.setItem('smr_lr',JSON.stringify(L))");pg5.wait_for_timeout(1500)
+    ok(len(PUTS)==1 and PUTS[0]['p_k']=='smr_lr' and len(PUTS[0]['p_v'])==2,'leave request sent through portal_put')
+    PUTS.clear();pg5.evaluate("localStorage.setItem('smr_emp','[]')");pg5.evaluate("localStorage.setItem('smr_loans_mine','[]')");pg5.wait_for_timeout(1200)
+    ok(len(PUTS)==0 and not [x for x in LOG if x[1] in('smr_loans_mine',)],'non-writable keys never sent')
+    pg5.evaluate("ACTS.esout()");pg5.wait_for_timeout(300);pg5.click('#cy');pg5.wait_for_selector('#cgf',timeout=4000)
+    ok(pg5.evaluate("localStorage.getItem('smr_emp')") is None,'sign out wipes cached data')
+    print('errors',errs,e2,e3,e4,e5)

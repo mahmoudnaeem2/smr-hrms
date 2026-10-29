@@ -9,31 +9,44 @@
   if (!C.url || !C.key) { run(); return; }
 
   var URL_ = String(C.url).replace(/\/+$/, ""), KEY = C.key, SK = "smr_sb";
-  var ver = {}, last = {}, pend = {}, timer = null, busy = false, status = "saved", retry = 0, stale = false;
+  var ver = {}, last = {}, pend = {}, timer = null, busy = false, status = "saved", retry = 0, stale = false, portal = false, me = null;
+  var PW = /^smr_(lr|hrq_mine|punch)$/;
   var NOSYNC = /^smr_(mode|gopen|rail|comfort|seed2|seed_pending|sb|staff|acct|users|localbak|cloud_init)$/;
   var syncable = function (k) { return typeof k === "string" && k.indexOf("smr_") === 0 && !NOSYNC.test(k) && !/_sample$/.test(k); };
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
   var rawSet = Storage.prototype.setItem, rawRemove = Storage.prototype.removeItem;
 
+  var LG = ""; try { var mm = /const LOGO="(data:image[^"]+)"/.exec(src.textContent); if (mm) LG = mm[1]; } catch (e) { }
   function css() {
     if ($("cgcss")) return;
     var s = document.createElement("style"); s.id = "cgcss";
-    s.textContent = "#cg{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0460B5,#0a3f78);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#10233d}" +
-      "#cg .cgc{width:100%;max-width:420px;background:#fff;border-radius:20px;padding:30px 28px;box-shadow:0 24px 60px rgba(0,0,0,.28)}" +
-      "#cg h1{margin:0 0 4px;font-size:22px;color:#0460B5}#cg p{margin:0 0 16px;color:#52627a;font-size:14.5px;line-height:1.5}" +
-      "#cg label{display:block;font-weight:600;font-size:13.5px;margin:12px 0 6px}#cg input{width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1px solid #cdd7e5;border-radius:12px;font:inherit;font-size:15px;background:#f6f8fc}" +
-      "#cg input:focus{outline:0;border-color:#0460B5;box-shadow:0 0 0 3px rgba(4,96,181,.15)}" +
-      "#cg button{font:inherit;cursor:pointer}#cg .p{width:100%;margin-top:18px;height:46px;border:0;border-radius:12px;background:#0460B5;color:#fff;font-weight:700;font-size:15px}" +
-      "#cg .p:disabled{opacity:.6;cursor:wait}#cg .s{width:100%;margin-top:10px;height:44px;border:1px solid #cdd7e5;border-radius:12px;background:#fff;color:#0460B5;font-weight:600}" +
-      "#cg .l{background:none;border:0;color:#0460B5;font-weight:600;padding:8px 0 0;font-size:13.5px}#cg .e{color:#b42318;font-size:13.5px;min-height:18px;margin-top:10px}#cg .m{color:#0b6b3a;font-size:13.5px;margin-top:10px}" +
+    s.textContent = "#cg{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1200px 600px at 15% 0%,#1b7fd6 0%,transparent 60%),linear-gradient(160deg,#0460B5,#08305e);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#10233d;overflow:auto}" +
+      "#cg .cgc{width:100%;max-width:880px;display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}" +
+      "#cg .cgl{background:linear-gradient(155deg,#0460B5,#0a3f78);color:#fff;padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;position:relative;overflow:hidden}" +
+      "#cg .cgl:after{content:'';position:absolute;right:-90px;bottom:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.07)}" +
+      "#cg .cgl:before{content:'';position:absolute;right:30px;bottom:130px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.05)}" +
+      "#cg .cgl img{width:84px;height:84px;border-radius:18px;background:#fff;object-fit:contain;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.25)}" +
+      "#cg .cgl h2{margin:18px 0 6px;font-size:26px;line-height:1.2;letter-spacing:-.01em}#cg .cgl p{margin:20px 0 0;color:rgba(255,255,255,.82);font-size:14.5px;line-height:1.55}" +
+      "#cg .cgl ul{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:13.5px;color:rgba(255,255,255,.9);position:relative;z-index:1}#cg .cgl li{display:flex;gap:10px;align-items:center}#cg .cgl li i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}" +
+      "#cg .cgr{padding:40px 38px;display:flex;flex-direction:column;justify-content:center}" +
+      "#cg h1{margin:0 0 6px;font-size:24px;color:#10233d;letter-spacing:-.01em}#cg .cgr>p{margin:0 0 14px;color:#52627a;font-size:14.5px;line-height:1.5}" +
+      "#cg label{display:block;font-weight:600;font-size:13.5px;margin:14px 0 6px}#cg input{width:100%;box-sizing:border-box;height:48px;padding:0 14px;border:1px solid #cdd7e5;border-radius:12px;font:inherit;font-size:15px;background:#f6f8fc;transition:border-color .15s,box-shadow .15s}" +
+      "#cg input:focus{outline:0;border-color:#0460B5;background:#fff;box-shadow:0 0 0 4px rgba(4,96,181,.14)}" +
+      "#cg button{font:inherit;cursor:pointer}#cg .p{width:100%;margin-top:20px;height:48px;border:0;border-radius:12px;background:#0460B5;color:#fff;font-weight:700;font-size:15px;transition:background .15s,transform .05s}#cg .p:hover{background:#0a54a0}#cg .p:active{transform:translateY(1px)}" +
+      "#cg .p:disabled{opacity:.6;cursor:wait}#cg .s{width:100%;margin-top:10px;height:46px;border:1px solid #cdd7e5;border-radius:12px;background:#fff;color:#0460B5;font-weight:600}" +
+      "#cg .l{background:none;border:0;color:#0460B5;font-weight:600;padding:12px 0 0;font-size:13.5px;text-align:left}#cg .e{color:#b42318;font-size:13.5px;min-height:18px;margin-top:8px}#cg .m{color:#0b6b3a;font-size:13.5px;margin-top:8px}" +
+      "#cg .cgs{margin-top:22px;padding-top:14px;border-top:1px solid #e6ecf4;font-size:12px;color:#7b8aa0}" +
+      "#cg .cgc.one{max-width:440px;grid-template-columns:1fr}#cg .cgc.one .cgl{display:none}" +
+      "@media(max-width:760px){#cg{align-items:flex-start;padding:0}#cg .cgc{grid-template-columns:1fr;border-radius:0;min-height:100%;max-width:none}#cg .cgl{padding:26px 24px;gap:14px}#cg .cgl ul{display:none}#cg .cgl img{width:60px;height:60px}#cg .cgl h2{font-size:21px;margin-top:12px}#cg .cgr{padding:26px 24px 34px}}" +
       "#cst{font-size:12px;margin-top:6px;opacity:.85}#cst.off{color:#ffd166;font-weight:700}";
     document.head.appendChild(s);
   }
   function gate(html) {
     css(); var g = $("cg");
     if (!g) { g = document.createElement("div"); g.id = "cg"; document.body.appendChild(g); }
-    g.innerHTML = '<div class="cgc" role="dialog" aria-modal="true">' + html + "</div>";
+    g.innerHTML = '<div class="cgc" role="dialog" aria-modal="true"><div class="cgl">' + '<div>' + (LG ? '<img src="' + LG + '" alt="SMR">' : "") + '<p>Savills Management Resources, Egypt</p></div>' +
+      '<ul><li><i>&#10003;</i>Your own data, protected by your account</li><li><i>&#10003;</i>Leave, attendance and payslips</li><li><i>&#10003;</i>Works on phone and desktop</li></ul></div><div class="cgr">' + html + "</div></div>";
     var f = g.querySelector("input"); if (f) f.focus();
     return g;
   }
@@ -86,6 +99,7 @@
   }
   function canon(v) { return JSON.stringify(v, function (_, x) { if (x && typeof x === "object" && !Array.isArray(x)) { var o = {}; Object.keys(x).sort().forEach(function (q) { o[q] = x[q]; }); return o; } return x; }); }
   function queue(k, val) {
+    if (portal && (val === null || !PW.test(k))) return;
     if (val !== null) { var same = false; try { same = last[k] !== undefined && canon(JSON.parse(val)) === last[k]; } catch (e) { } if (same) { delete pend[k]; if (!Object.keys(pend).length) setStatus("saved"); return; } }
     else if (last[k] === undefined && ver[k] === undefined) { delete pend[k]; return; }
     pend[k] = val; setStatus("saving"); clearTimeout(timer); timer = setTimeout(flush, 700); }
@@ -99,7 +113,8 @@
     var keys = Object.keys(pend); if (!keys.length) { setStatus("saved"); return; }
     busy = true;
     var k = keys[0], val = pend[k];
-    var p = val === null ? rest("rpc/del_store", { method: "POST", body: { p_k: k } }).then(function () { delete ver[k]; delete last[k]; })
+    var p = portal ? rest("rpc/portal_put", { method: "POST", body: { p_k: k, p_v: JSON.parse(val) } }).then(function () { last[k] = canon(JSON.parse(val)); })
+      : val === null ? rest("rpc/del_store", { method: "POST", body: { p_k: k } }).then(function () { delete ver[k]; delete last[k]; })
       : rest("rpc/put_store", { method: "POST", body: { p_k: k, p_v: JSON.parse(val), p_ver: ver[k] || 0 } }).then(function (n) { ver[k] = n; last[k] = canon(JSON.parse(val)); });
     p.then(function () { if (pend[k] === val) delete pend[k]; busy = false; retry = 0; flush(); })
       .catch(function (e) {
@@ -115,6 +130,7 @@
   /* detect that someone else saved: compare versions, never merge silently */
   function check() {
     if (stale || busy || Object.keys(pend).length) return;
+    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) { stale = true; setStatus("stale"); } }).catch(function () { }); return; }
     rest("app_store?select=k,ver").then(function (rows) {
       var changed = rows.some(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver; }) || Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); });
       if (changed) { stale = true; setStatus("stale"); }
@@ -128,11 +144,18 @@
   }
 
   /* ---------- screens ---------- */
-  function signedOut() { rawRemove.call(localStorage, SK); location.reload(); }
+  function signedOut() {
+    rawRemove.call(localStorage, SK);
+    if (!Object.keys(pend).length) { var del = [], i, k; for (i = 0; i < localStorage.length; i++) { k = localStorage.key(i); if (syncable(k)) del.push(k); } del.forEach(function (x) { rawRemove.call(localStorage, x); }); }
+    try { sessionStorage.removeItem("smr_es"); sessionStorage.removeItem("smr_ss"); } catch (e) { }
+    location.reload();
+  }
   function loginScreen(msg) {
-    var g = gate("<h1>SMR HRMS &amp; Payroll</h1><p>Sign in with your company account.</p><form id='cgf'><label for='cge'>Email</label><input id='cge' type='email' required autocomplete='username'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password'><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button>");
+    var g = gate("<h1>Welcome back</h1><p>Sign in with your work email and password.</p><form id='cgf' novalidate><label for='cge'>Work email</label><input id='cge' type='email' required autocomplete='username' placeholder='name@savills.me' inputmode='email' autocapitalize='off' spellcheck='false'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password' placeholder='Your password'><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button><div class='cgs'>Trouble signing in? Ask HR to check that your account is set up.</div>");
     g.querySelector("#cgf").onsubmit = function (ev) {
-      ev.preventDefault(); var b = g.querySelector(".p"); b.disabled = true; g.querySelector("#cgx").textContent = "";
+      ev.preventDefault(); var b = g.querySelector(".p");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("cge").value.trim())) { g.querySelector("#cgx").textContent = "Enter your full work email, for example name@savills.me."; $("cge").focus(); return; }
+      b.disabled = true; g.querySelector("#cgx").textContent = "";
       authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t); start(); })
         .catch(function (e) { b.disabled = false; g.querySelector("#cgx").textContent = /invalid login/i.test(e.message) ? "Wrong email or password." : e.message; });
     };
@@ -143,7 +166,7 @@
     };
   }
   function passwordScreen(t) {
-    var g = gate("<h1>Choose your password</h1><p>Use at least 8 characters, with letters and a digit.</p><form id='cgf'><label for='cgn'>New password</label><input id='cgn' type='password' required minlength='8' autocomplete='new-password'><div class='e' id='cgx' role='alert'></div><button class='p' type='submit'>Save password</button></form>");
+    var g = gate("<h1>Choose your password</h1><p>Use at least 8 characters, with letters and a digit.</p><form id='cgf' novalidate><label for='cgn'>New password</label><input id='cgn' type='password' required minlength='8' autocomplete='new-password'><div class='e' id='cgx' role='alert'></div><button class='p' type='submit'>Save password</button></form>");
     g.querySelector("#cgf").onsubmit = function (ev) {
       ev.preventDefault(); var p = $("cgn").value, x = g.querySelector("#cgx");
       if (!(p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p))) { x.textContent = "Use at least 8 characters, with letters and a digit."; return; }
@@ -173,10 +196,18 @@
   function start() {
     var s = sess(); if (!s) { loginScreen(); return; }
     gate("<h1>Loading…</h1><p>Getting your data.</p>");
-    rest("profiles?select=full_name,role,active&id=eq." + s.uid).then(function (rows) {
+    rest("profiles?select=full_name,role,active,emp_no&id=eq." + s.uid).then(function (rows) {
       var p = rows && rows[0];
       if (!p) return blocked("Account not set up", "Your account has no profile yet. Ask the administrator to set it up.");
       if (!p.active || p.role === "Pending") return blocked("Waiting for access", "Your account exists but has no role yet. Ask the administrator to give you one, then sign in again.");
+      if (p.role === "Employee") {
+        if (!p.emp_no) return blocked("Account not linked", "Your sign-in is not linked to an employee record yet. Ask HR to link it to your work email.");
+        portal = true; me = p.emp_no;
+        return rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) {
+          var rows = Object.keys(d || {}).map(function (k) { return { k: k, v: d[k], ver: 0 }; });
+          boot(p, null, rows, s);
+        });
+      }
       return rest("app_store?select=k,v,ver").then(function (rows2) { hydrate(p, s, rows2 || []); });
     }).catch(function (e) {
       if (e.auth || e.status === 401) { rawRemove.call(localStorage, SK); loginScreen("Please sign in again."); }
@@ -195,13 +226,18 @@
     s = s || prof._s;
     var local = {}, i, k;
     for (i = 0; i < localStorage.length; i++) { k = localStorage.key(i); if (syncable(k)) local[k] = localStorage.getItem(k); }
-    if (Object.keys(local).length && !localStorage.getItem("smr_localbak")) rawSet.call(localStorage, "smr_localbak", JSON.stringify({ at: new Date().toISOString(), data: local }));
+    if (!portal && Object.keys(local).length && !localStorage.getItem("smr_localbak")) rawSet.call(localStorage, "smr_localbak", JSON.stringify({ at: new Date().toISOString(), data: local }));
     Object.keys(local).forEach(function (key) { rawRemove.call(localStorage, key); });
     if (rows) { ver = {}; last = {}; }
     (rows || []).forEach(function (r) { if (syncable(r.k)) { rawSet.call(localStorage, r.k, JSON.stringify(r.v)); ver[r.k] = r.ver; last[r.k] = canon(r.v); } });
     if (uploaded) Object.keys(uploaded).forEach(function (key) { rawSet.call(localStorage, key, uploaded[key]); });
     rawSet.call(localStorage, "smr_mode", "mine"); rawSet.call(localStorage, "smr_seed2", "1"); rawRemove.call(localStorage, "smr_seed_pending"); rawSet.call(localStorage, "smr_cloud_init", "1");
-    try { sessionStorage.setItem("smr_ss", JSON.stringify({ id: s.uid, name: prof.full_name || s.email, role: prof.role })); sessionStorage.removeItem("smr_es"); } catch (e) { }
+    try {
+      if (portal) {
+        var em = null; try { em = (JSON.parse(localStorage.getItem("smr_emp") || "[]").filter(function (x) { return x.no === me; })[0]) || null; } catch (e) { }
+        sessionStorage.setItem("smr_es", JSON.stringify({ no: me, mode: "mine", lvl: "emp", view: "emp", dept: em ? em.dept : "", wrole: "Employee" })); sessionStorage.removeItem("smr_ss");
+      } else { sessionStorage.setItem("smr_ss", JSON.stringify({ id: s.uid, name: prof.full_name || s.email, role: prof.role })); sessionStorage.removeItem("smr_es"); }
+    } catch (e) { }
     window.SMR_CLOUD_ON = {
       uid: s.uid, email: s.email, name: prof.full_name || s.email, role: prof.role,
       signOut: function () { flush(); var t = sess(); (t ? authCall("logout", {}, "POST", t.access) : Promise.resolve()).catch(function () { }).then(signedOut); },
