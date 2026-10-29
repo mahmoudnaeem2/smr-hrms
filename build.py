@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m39_cloud','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -143,7 +143,14 @@ assert PH in pre
 pre=pre.replace(PH,'<div class="ph"><div class="phl"><button class="backl" id="backl" hidden></button><h1 id="title"></h1><span class="uline"></span><p id="desc"></p></div><div class="pact" id="pact"></div></div>',1)
 pre=pre.replace('</style>',css+'</style>',1)
 pre=pre.replace('<p id="cm"></p><div>','<p id="cm"></p><textarea id="cr" rows="2" aria-label="Reason" hidden></textarea><select id="cs" aria-label="Choice" hidden></select><p id="cerr" class="err" role="alert"></p><div>')
-frag=pre+'<script>\n'+js+'\n</script>'+post
+import os,json
+_cfgp='config.json'
+_cfg=json.load(open(_cfgp)) if os.path.exists(_cfgp) else {}
+_cfg={k:v for k,v in _cfg.items() if k in ('url','key') and v}
+_ld=open('src/cloud_loader.js').read()
+assert '</script' not in js
+APP='<script id="smr-app" type="text/plain">\n'+js+'\n</script><script>window.SMR_CLOUD='+json.dumps(_cfg)+';\n'+_ld+'\n</script>'
+frag=pre+APP+post
 open('dist/frag.html','w').write(frag)
 head=pre.split('<style>')[0]
 m=re.match(r'(.*?)<style>(.*?)</style>(.*)',pre,re.S)
@@ -152,7 +159,7 @@ R_('<button class="b" data-act="impemp">Import from Excel</button>','${[R.HRD,R.
 R_('cmfUI();wire();updBell()}','cmfUI();uxUI();wire();updBell()}')
 R_('const adj=ladjSum(e.no,t);r[t]={open,used','const adj=ladjSum(e.no,t);open=accOpen(e,t,open);r[t]={open,used')
 R_('${note("Entitlements are sample policy values.','${accrualCard()}${note("Entitlements are sample policy values.')
-full='<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'+HEAD+'<style>'+CSS+'</style></head><body>'+BODY+'<script>\n'+js+'\n</script></body></html>\n'
+full='<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'+HEAD+'<style>'+CSS+'</style></head><body>'+BODY+APP+'</body></html>\n'
 open('index.html','w').write(full)
 open('dist/chk.js','w').write(js)
 print('ok',len(frag))
