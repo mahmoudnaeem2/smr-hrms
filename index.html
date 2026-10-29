@@ -432,6 +432,7 @@ form label{display:flex;flex-direction:column;gap:6px}
 .dpn{width:34px;height:34px;border-radius:50%;border:0;background:#f3f6fb;font-size:20px;line-height:1;cursor:pointer;color:#0b2a4a}.dpn:hover{background:#e3edf9}
 .dpg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}.dpg b{font-size:11px;color:var(--mu);padding:6px 0;font-weight:700}.dpd{height:38px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:14px;color:var(--tx);cursor:pointer}.dpd:hover:not(:disabled){background:#e3edf9}.dpd.wk{color:#9a5b5b;background:#fbf3f3}.dpd.td{box-shadow:inset 0 0 0 1.5px #0460B5}.dpd.on{background:#0460B5!important;color:#fff;font-weight:700}.dpd:disabled{opacity:.3;cursor:not-allowed}
 .dpf{display:flex;justify-content:space-between;gap:6px;margin-top:10px;border-top:1px solid var(--bd);padding-top:10px}.dpf button{border:0;background:transparent;color:#0460B5;font-weight:700;font-size:13.5px;padding:6px 10px;border-radius:8px;cursor:pointer}.dpf button:hover{background:#eaf2fb}.dpf [data-x]{color:var(--mu);margin-left:auto}
+.lnprev{grid-column:1/-1;background:#eef5fd;border:1px solid #cfe0f5;border-radius:12px;padding:10px 14px;font-size:14px;margin:4px 0}.lnprev.bad{background:#fdf1ef;border-color:#f0c4bd}.lnw{color:#b03a2e;font-weight:600;margin-top:4px}.chk1{flex-direction:row!important;align-items:center;gap:8px!important}.chk1 input{width:auto;height:auto}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -1985,7 +1986,7 @@ FORMS.hrqnew=o=>{const e=allEmps().find(x=>x.no===((o.on&&[R.HRD,R.HRS].includes
  if(t.k==="trip"&&v.to<v.from)return"The return date cannot be before the departure date.";
  if(t.k==="tickets"&&v.ret&&v.ret<v.date)return"The return date cannot be before the travel date.";
  if(t.k==="visa"&&v.to<v.from)return"The end date cannot be before the start date.";
- if(t.k==="loan"){if(!(+v.amount>0))return"Enter a loan amount above zero.";if(!(+v.n>=1&&+v.n<=60&&Number.isInteger(+v.n)))return"Installments must be a whole number from 1 to 60.";if(RUNS().some(r=>r.period===v.month&&FINAL.includes(r.status)))return"That payroll month is already finalized. Choose a later month."}
+ if(t.k==="loan"){if(!(+v.amount>0))return"Enter a loan amount above zero.";{const pe=typeof loanCheck==="function"?loanCheck(e.no,+v.amount,+v.n):"";if(pe)return pe}if(!(+v.n>=1&&+v.n<=60&&Number.isInteger(+v.n)))return"Installments must be a whole number from 1 to 60.";if(RUNS().some(r=>r.period===v.month&&FINAL.includes(r.status)))return"That payroll month is already finalized. Choose a later month."}
  if(t.k==="data"){const f=v.field,x=v.value;if(f==="iban"&&!ibanOK(x))return"The IBAN is not valid. An Egyptian IBAN is EG followed by 27 digits.";if((f==="mobile"||f==="ecp")&&!/^\+?[\d\s\-]{8,16}$/.test(x))return"The phone number looks invalid.";if(f==="kids"&&!/^\d{1,2}$/.test(x))return"Enter a whole number.";
   if(f==="nid"){if((e.nat||"Egyptian")==="Egyptian"){const g=egyId(x);if(!g)return"The Egyptian National ID must be 14 digits with a valid century digit and birth date.";if(e.dob&&g.dob!==e.dob)return"The birth date inside this ID does not match your file."}else if(!/^[A-Za-z0-9]{6,12}$/.test(x))return"Passport number must be 6 to 12 letters and digits."}
   if((t.proof||[]).includes(f)&&!FILES().some(z=>z.ctx==="hrqform|"+e.no))return"Attach proof for this change (for example a bank letter or an ID copy)."}
@@ -2027,7 +2028,7 @@ const mlab=k=>{const[y,m]=k.split("-").map(Number);return new Date(y,m-1,1).toLo
 const LOANS=()=>db("loans",[]).filter(l=>l.mode===MODE);
 function loanSched(l){const cents=Math.round(l.amount*100),base=Math.floor(cents/l.n);return Array.from({length:l.n},(_,i)=>{const p=addM(l.start,i);return{i:i+1,period:p,amt:i<l.n-1?base:cents-base*(l.n-1),paid:RUNS().some(r=>r.period===p&&FINAL.includes(r.status)&&r.results.some(x=>x.no===l.no))}})}
 const loanBal=l=>l.status==="Cancelled"?0:loanSched(l).filter(s=>!s.paid).reduce((a,s)=>a+s.amt,0);
-function createLoan(no,amount,n,start,note){if(!(amount>0))return"Enter a loan amount above zero.";if(!(Number.isInteger(n)&&n>=1&&n<=60))return"Installments must be a whole number from 1 to 60.";
+function createLoan(no,amount,n,start,note){const pe=typeof loanCheck==="function"?loanCheck(no,amount,n):"";if(pe)return pe;if(!(amount>0))return"Enter a loan amount above zero.";if(!(Number.isInteger(n)&&n>=1&&n<=60))return"Installments must be a whole number from 1 to 60.";
  if(RUNS().some(r=>r.period===start&&FINAL.includes(r.status)))return"The first deduction month is already finalized.";
  const id="L"+Date.now(),l={id,mode:MODE,no,amount,n,start,note:note||"",status:"Active",by:role,t:iso(T0)};db("loans",[]).push(l);
  loanSched(l).forEach(s=>db("pinp",[]).push({id:"i"+Date.now()+"_"+s.i,mode:MODE,no,period:s.period,until:"",type:"Loan installment",amount:s.amt/100,note:"Loan "+id+" ("+s.i+"/"+n+")",by:role,loan:id}));
@@ -2039,6 +2040,7 @@ function loans(){const can=[R.HRD,R.PAY].includes(role),L=LOANS().slice().revers
  return`<div class="grid kpis">${stat("Active loans",L.filter(l=>l.status==="Active"&&loanBal(l)>0).length,"",D("Active loans",l=>l.status==="Active"&&loanBal(l)>0))}${stat("Outstanding balance",fmtC(out),"Installments not yet paid in a finalized payroll")}</div>
  ${note("Each installment becomes a Payroll Input of type Loan installment, taken from net pay. Check the legal limit on deductions from wages before granting a loan; this prototype does not enforce one. Employees can also request a loan from the Requests tab.","sm")}
  ${can?`<div class="card" style="margin-top:12px"><h2>Grant a loan</h2><form class="g" data-form="lnnew">${fld("Employee","no","select",{req:1,opts:ALLE().filter(e=>e.status!=="Terminated").map(e=>[e.no,e.name+" ("+e.no+")"])})}${fld("Loan amount (EGP)","amount","number",{req:1,min:1,step:"0.01"})}${fld("Number of monthly installments","n","number",{req:1,min:1,step:"1"})}${fld("First deduction","start","select",{req:1,opts:[monthsBack(1)[0],...monthsFwd(6)].map(m=>[m.key,m.label])})}${fld("Reason","note","text")}<button class="b p" type="submit">Grant loan</button></form><div class="err"></div></div>`:""}
+ ${typeof lnPolCard==="function"?lnPolCard():""}
  <div style="margin-top:12px">${ptbl("ln",["Employee","Amount","Installments","Paid","Balance","First deduction","Status","Reason",""],rows,{csv:"loans",empty:"No loans yet."})}</div>`}
 reg("loans","Employee Loans","Loans and salary advances repaid through payroll.",A("HRD","PAY","FIN"),loans);
 FORMS.lnnew=o=>{if(![R.HRD,R.PAY].includes(role))return"Not allowed.";const er=createLoan(o.no,+o.amount,+o.n,o.start,(o.note||"").trim());if(er)return er;toast("Loan granted");draw()};
@@ -2455,7 +2457,7 @@ FORMS.lvacc=o=>{if(![R.HRD,R.HRS].includes(role))return"Only HR can change this 
 
 /* Payslips: designed slip, preview for staff before finalization, employee sees it once finalized, reports */
 const slipOK=(r,staff)=>FINAL.includes(r.status)||(staff!==false&&role!==R.EMP&&r.results&&r.results.length>0);
-function slipLines(x){const E=slipRows(x).map(l=>[l[0],x===null?0:l[1]]);const D=[["Employee insurance (social insurance)",x.empIns],["Income tax",x.tax]];if(x.ded)D.push(["Other deductions (loans, penalties)",x.ded]);return{E,D}}
+function slipLines(x){const E=slipRows(x).map(l=>[l[0],x===null?0:l[1]]);const D=[["Employee insurance (social insurance)",x.empIns],["Income tax",x.tax]];if(x.ded){const r=RUNS().find(z=>z.results&&z.results.includes(x));const L2=r&&typeof slipDed==="function"?slipDed(r,x):[["Other deductions",x.ded]];L2.forEach(l=>D.push(l))}return{E,D}}
 function slipHtml(r,x){const p=perOf(r.period)||{label:r.period},e=empBy(x.no)||{},fin=FINAL.includes(r.status),L=slipLines(x),dd=C=>fmtC(C);
  const ib=e.iban||e.bankacct||"",bank=ib?(e.bankname?esc(e.bankname)+" · ":"")+"••••"+esc(String(ib).slice(-4)):"Not on file";
  const info=[["Employee",esc(x.name)],["Employee no.",esc(x.no)],["Department",esc(x.dept||"")],["Position",esc(e.pos||"–")],["Hire date",esc(e.hire||"–")],["Bank",bank],["Worked days",x.md?x.wd+" of "+x.md:"Full month"],["Pay period",esc(p.label)]];
@@ -2496,6 +2498,31 @@ document.addEventListener("change",ev=>{const t=ev.target;if(DPO&&DPO.contains(t
 document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&DPO)dpClose()});
 window.addEventListener("resize",()=>{if(DPO)dpClose()});
 new MutationObserver(()=>{if(document.querySelector("input[type=date]:not([data-dp])"))dpScan()}).observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(document.body)dpScan()},500);
+
+/* Loans: policy, live repayment preview, payslip breakdown */
+const LNP=()=>Object.assign({maxMult:0,maxN:60,minSvc:0,oneActive:true,maxPct:0},db("lnpol",{},false));
+function monthlyGross(no){const e=empBy(no);if(!e)return 0;const s=salAt(e,iso(T0));return(s.basic||0)+(s.allow||0)}
+function loanCheck(no,amount,n){const P=LNP(),e=empBy(no);if(!e)return"";const g=monthlyGross(no);
+ if(P.maxN&&n>P.maxN)return"Loan policy: at most "+P.maxN+" installments.";
+ if(P.minSvc&&svcMonths(e)<P.minSvc)return"Loan policy: the employee needs at least "+P.minSvc+" months of service.";
+ if(P.oneActive&&LOANS().some(l=>l.no===no&&l.status==="Active"&&loanBal(l)>0))return"Loan policy: this employee still has an active loan. Repay or cancel it first.";
+ if(P.maxMult&&g&&amount>P.maxMult*g)return"Loan policy: the amount cannot exceed "+P.maxMult+" x monthly gross ("+fmtC(Math.round(P.maxMult*g*100))+").";
+ if(P.maxPct&&g&&n>0&&amount/n>g*P.maxPct/100)return"Loan policy: an installment cannot exceed "+P.maxPct+"% of monthly gross ("+fmtC(Math.round(g*P.maxPct))+"). Use more installments.";
+ return""}
+FORMS.lnpol=o=>{if(![R.HRD,R.FIN].includes(role))return"Only the HR Director or Finance Manager can change the loan policy.";const v={maxMult:+o.maxMult||0,maxN:+o.maxN||60,minSvc:+o.minSvc||0,oneActive:o.oneActive==="1",maxPct:+o.maxPct||0};if(v.maxN<1||v.maxN>60)return"Maximum installments must be between 1 and 60.";if(v.maxPct<0||v.maxPct>100)return"The percentage must be between 0 and 100.";const D=db("lnpol",{},false);Object.assign(D,v);sv("lnpol");audit("Loan policy changed",JSON.stringify(v));toast("Loan policy saved");draw()};
+function lnPolCard(){const P=LNP(),can=[R.HRD,R.FIN].includes(role);return`<div class="card" style="margin-top:12px"><h2>Loan policy</h2><div class="cs">Applies to every loan request and every loan granted by HR. Leave a limit at 0 for no limit. Check the legal limit on wage deductions before setting these: the system does not assume one.</div><form class="nf" data-form="lnpol" style="margin-top:10px"><label>Max loan (x monthly gross)<input name="maxMult" type="number" min="0" step="0.5" value="${P.maxMult}" ${can?"":"disabled"}></label><label>Max installment (% of monthly gross)<input name="maxPct" type="number" min="0" max="100" step="1" value="${P.maxPct}" ${can?"":"disabled"}></label><label>Max number of installments<input name="maxN" type="number" min="1" max="60" value="${P.maxN}" ${can?"":"disabled"}></label><label>Minimum service (months)<input name="minSvc" type="number" min="0" value="${P.minSvc}" ${can?"":"disabled"}></label><label class="chk1"><input type="checkbox" name="oneActive" value="1" ${P.oneActive?"checked":""} ${can?"":"disabled"}> One active loan at a time</label>${can?'<button class="b p nsub" type="submit">Save policy</button>':""}</form><div class="err"></div></div>`}
+/* live preview */
+function lnPrev(f){const a=f.querySelector('[name=amount]'),n=f.querySelector('[name=n]'),m=f.querySelector('[name=month],[name=start]');if(!a||!n||!m)return;let no=f.querySelector('[name=no]');no=no?no.value:(role===R.EMP?WSNO:(f.querySelector('[name=on]')||{}).value||WSNO);
+ let d=f.querySelector(".lnprev");if(!d){d=document.createElement("div");d.className="lnprev";(n.closest("label")||n).after(d)}
+ const A=+String(a.value).replace(/,/g,""),N=+n.value,mo=m.value;if(!(A>0&&N>=1&&mo)){d.innerHTML='<span class="cs">Enter the amount, number of installments and first month to see the repayment plan.</span>';return}
+ const per=Math.floor(A*100/N),last=Math.round(A*100)-per*(N-1),g=monthlyGross(no),pc=g?Math.round(per/100/g*1000)/10:null,er=loanCheck(no,A,N);
+ d.className="lnprev"+(er?" bad":"");d.innerHTML=`<b>${N} x ${fmtC(per)}</b>${last!==per?` (last ${fmtC(last)})`:""} · from ${mlab(mo)} to ${mlab(addM(mo,N-1))}${pc!=null?` · ${pc}% of monthly gross`:""}<div class="cs">Deducted automatically from net pay in each payroll run.</div>${er?`<div class="lnw">${esc(er)}</div>`:""}`}
+document.addEventListener("input",ev=>{const f=ev.target.closest&&ev.target.closest("form");if(f&&f.querySelector('[name=amount]')&&f.querySelector('[name=n]'))lnPrev(f)});
+document.addEventListener("change",ev=>{const f=ev.target.closest&&ev.target.closest("form");if(f&&f.querySelector('[name=amount]')&&f.querySelector('[name=n]'))lnPrev(f)});
+/* payslip: itemised deductions */
+function slipDed(r,x){const out=[];const INP=db("pinp",[]).filter(i=>i.mode===MODE&&i.no===x.no&&(i.until?(i.period<=r.period&&r.period<=i.until):i.period===r.period));let sum=0;
+ INP.forEach(i=>{if(["Bonus","One-off allowance","Variable allowance"].includes(i.type))return;const a=Math.round(i.amount*100);sum+=a;let lab=i.type;if(i.loan){const l=db("loans",[]).find(z=>z.id===i.loan);if(l){const S=loanSched(l),k=S.findIndex(s=>s.period===r.period);if(k>=0){const rem=S.slice(k+1).reduce((t,s)=>t+s.amt,0);lab="Loan installment "+(k+1)+" of "+l.n+" (balance after: "+fmtC(rem)+")"}}}else if(i.note)lab+=" - "+i.note;out.push([lab,a])});
+ if(x.ded&&Math.abs(sum-x.ded)>1)out.push(["Other deductions",x.ded-sum]);return out}
 
 /* ===== boot: register legacy pages, change handlers ===== */
 reg("dash",META0.dash[0],META0.dash[1],A("HRD","HRS","DM","FIN","PAY"),dash);

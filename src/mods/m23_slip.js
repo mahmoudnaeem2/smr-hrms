@@ -1,6 +1,6 @@
 /* Payslips: designed slip, preview for staff before finalization, employee sees it once finalized, reports */
 const slipOK=(r,staff)=>FINAL.includes(r.status)||(staff!==false&&role!==R.EMP&&r.results&&r.results.length>0);
-function slipLines(x){const E=slipRows(x).map(l=>[l[0],x===null?0:l[1]]);const D=[["Employee insurance (social insurance)",x.empIns],["Income tax",x.tax]];if(x.ded)D.push(["Other deductions (loans, penalties)",x.ded]);return{E,D}}
+function slipLines(x){const E=slipRows(x).map(l=>[l[0],x===null?0:l[1]]);const D=[["Employee insurance (social insurance)",x.empIns],["Income tax",x.tax]];if(x.ded){const r=RUNS().find(z=>z.results&&z.results.includes(x));const L2=r&&typeof slipDed==="function"?slipDed(r,x):[["Other deductions",x.ded]];L2.forEach(l=>D.push(l))}return{E,D}}
 function slipHtml(r,x){const p=perOf(r.period)||{label:r.period},e=empBy(x.no)||{},fin=FINAL.includes(r.status),L=slipLines(x),dd=C=>fmtC(C);
  const ib=e.iban||e.bankacct||"",bank=ib?(e.bankname?esc(e.bankname)+" · ":"")+"••••"+esc(String(ib).slice(-4)):"Not on file";
  const info=[["Employee",esc(x.name)],["Employee no.",esc(x.no)],["Department",esc(x.dept||"")],["Position",esc(e.pos||"–")],["Hire date",esc(e.hire||"–")],["Bank",bank],["Worked days",x.md?x.wd+" of "+x.md:"Full month"],["Pay period",esc(p.label)]];

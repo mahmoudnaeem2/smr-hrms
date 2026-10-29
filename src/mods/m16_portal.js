@@ -8,7 +8,7 @@ const mlab=k=>{const[y,m]=k.split("-").map(Number);return new Date(y,m-1,1).toLo
 const LOANS=()=>db("loans",[]).filter(l=>l.mode===MODE);
 function loanSched(l){const cents=Math.round(l.amount*100),base=Math.floor(cents/l.n);return Array.from({length:l.n},(_,i)=>{const p=addM(l.start,i);return{i:i+1,period:p,amt:i<l.n-1?base:cents-base*(l.n-1),paid:RUNS().some(r=>r.period===p&&FINAL.includes(r.status)&&r.results.some(x=>x.no===l.no))}})}
 const loanBal=l=>l.status==="Cancelled"?0:loanSched(l).filter(s=>!s.paid).reduce((a,s)=>a+s.amt,0);
-function createLoan(no,amount,n,start,note){if(!(amount>0))return"Enter a loan amount above zero.";if(!(Number.isInteger(n)&&n>=1&&n<=60))return"Installments must be a whole number from 1 to 60.";
+function createLoan(no,amount,n,start,note){const pe=typeof loanCheck==="function"?loanCheck(no,amount,n):"";if(pe)return pe;if(!(amount>0))return"Enter a loan amount above zero.";if(!(Number.isInteger(n)&&n>=1&&n<=60))return"Installments must be a whole number from 1 to 60.";
  if(RUNS().some(r=>r.period===start&&FINAL.includes(r.status)))return"The first deduction month is already finalized.";
  const id="L"+Date.now(),l={id,mode:MODE,no,amount,n,start,note:note||"",status:"Active",by:role,t:iso(T0)};db("loans",[]).push(l);
  loanSched(l).forEach(s=>db("pinp",[]).push({id:"i"+Date.now()+"_"+s.i,mode:MODE,no,period:s.period,until:"",type:"Loan installment",amount:s.amt/100,note:"Loan "+id+" ("+s.i+"/"+n+")",by:role,loan:id}));
@@ -20,6 +20,7 @@ function loans(){const can=[R.HRD,R.PAY].includes(role),L=LOANS().slice().revers
  return`<div class="grid kpis">${stat("Active loans",L.filter(l=>l.status==="Active"&&loanBal(l)>0).length,"",D("Active loans",l=>l.status==="Active"&&loanBal(l)>0))}${stat("Outstanding balance",fmtC(out),"Installments not yet paid in a finalized payroll")}</div>
  ${note("Each installment becomes a Payroll Input of type Loan installment, taken from net pay. Check the legal limit on deductions from wages before granting a loan; this prototype does not enforce one. Employees can also request a loan from the Requests tab.","sm")}
  ${can?`<div class="card" style="margin-top:12px"><h2>Grant a loan</h2><form class="g" data-form="lnnew">${fld("Employee","no","select",{req:1,opts:ALLE().filter(e=>e.status!=="Terminated").map(e=>[e.no,e.name+" ("+e.no+")"])})}${fld("Loan amount (EGP)","amount","number",{req:1,min:1,step:"0.01"})}${fld("Number of monthly installments","n","number",{req:1,min:1,step:"1"})}${fld("First deduction","start","select",{req:1,opts:[monthsBack(1)[0],...monthsFwd(6)].map(m=>[m.key,m.label])})}${fld("Reason","note","text")}<button class="b p" type="submit">Grant loan</button></form><div class="err"></div></div>`:""}
+ ${typeof lnPolCard==="function"?lnPolCard():""}
  <div style="margin-top:12px">${ptbl("ln",["Employee","Amount","Installments","Paid","Balance","First deduction","Status","Reason",""],rows,{csv:"loans",empty:"No loans yet."})}</div>`}
 reg("loans","Employee Loans","Loans and salary advances repaid through payroll.",A("HRD","PAY","FIN"),loans);
 FORMS.lnnew=o=>{if(![R.HRD,R.PAY].includes(role))return"Not allowed.";const er=createLoan(o.no,+o.amount,+o.n,o.start,(o.note||"").trim());if(er)return er;toast("Loan granted");draw()};
