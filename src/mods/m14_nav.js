@@ -36,7 +36,7 @@ document.addEventListener("mousedown",e=>{const b=e.target.closest("[data-pi]");
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const g=$("#gs");if(g){g.focus();g.select()}}else if(e.key==="/"&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||"")){e.preventDefault();const g=$("#gs");if(g)g.focus()}else if(e.altKey&&e.key==="ArrowLeft"){e.preventDefault();goBack()}});
 /* comfort theme */
 const CMF=["light","soft","dark"];let CMFV="light";try{CMFV=localStorage.getItem("smr_comfort")||"light"}catch(e){}
-function cmfApply(){document.documentElement.setAttribute("data-comfort",CMFV)}
+function cmfApply(){const r=document.documentElement;r.setAttribute("data-comfort",CMFV);r.setAttribute("data-theme",CMFV==="dark"?"dark":"light")}
 cmfApply();
 function cmfUI(){let b=$("#thm");if(!b){const t=document.querySelector(".topbar");if(!t)return;t.insertAdjacentHTML("beforeend",'<button id="thm" type="button" data-act="thm"></button>');b=$("#thm")}b.textContent=({light:"Light",soft:"Soft",dark:"Dark"})[CMFV];b.title="Change screen colors to be easier on the eyes";b.setAttribute("aria-label","Screen colors: "+CMFV)}
 ACTS.thm=()=>{CMFV=CMF[(CMF.indexOf(CMFV)+1)%3];try{localStorage.setItem("smr_comfort",CMFV)}catch(e){}cmfApply();cmfUI()};
