@@ -31,6 +31,7 @@
       "#cg .cgl ul{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:13.5px;color:rgba(255,255,255,.9);position:relative;z-index:1}#cg .cgl li{display:flex;gap:10px;align-items:center}#cg .cgl li i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}" +
       "#cg .cgr{padding:40px 38px;display:flex;flex-direction:column;justify-content:center}" +
       "#cg h1{margin:0 0 6px;font-size:24px;color:#10233d;letter-spacing:-.01em}#cg .cgr>p{margin:0 0 14px;color:#52627a;font-size:14.5px;line-height:1.5}" +
+      "#cg label.cgrm{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;align-items:center;gap:10px;font-weight:500;font-size:14px;margin:14px 0 2px;cursor:pointer;min-height:44px}#cg label.cgrm input{width:20px;height:20px;min-width:20px;padding:0;margin:0;accent-color:#0460B5;border-radius:5px;cursor:pointer}" +
       "#cg label{display:block;font-weight:600;font-size:13.5px;margin:14px 0 6px}#cg input{width:100%;box-sizing:border-box;height:48px;padding:0 14px;border:1px solid #cdd7e5;border-radius:12px;font:inherit;font-size:16px;background:#f6f8fc;color:#10233d;-webkit-text-fill-color:#10233d;caret-color:#0460B5;color-scheme:light;transition:border-color .15s,box-shadow .15s}" +
       "#cg{color-scheme:light;--tx:#10233d;--hd:#10233d}#cg h1{color:#10233d!important;font-size:24px!important;letter-spacing:-.01em!important}#cg label,#cg .cgr>p{color:#10233d}#cg .cgr>p{color:#52627a}#cg .cgl,#cg .cgl p{color:#fff}#cg input::placeholder{color:#8a97ab;-webkit-text-fill-color:#8a97ab}#cg input:-webkit-autofill{-webkit-text-fill-color:#10233d;box-shadow:0 0 0 40px #f6f8fc inset}#cg select,#cg textarea{color:#10233d}" +
       "#cg input:focus{outline:0;border-color:#0460B5;background:#fff;box-shadow:0 0 0 4px rgba(4,96,181,.14)}" +
@@ -54,10 +55,20 @@
   function closeGate() { var g = $("cg"); if (g) g.remove(); }
 
   /* ---------- session and requests ---------- */
-  function sess() { try { return JSON.parse(localStorage.getItem(SK) || "null"); } catch (e) { return null; } }
-  function setSess(t) {
-    var s = { access: t.access_token, refresh: t.refresh_token, exp: Date.now() + (t.expires_in || 3600) * 1000 - 60000, uid: t.user && t.user.id, email: t.user && t.user.email };
-    rawSet.call(localStorage, SK, JSON.stringify(s)); return s;
+  function sess() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SK) || "null");
+      /* "Remember me" off: the session lasts only while this browser tab or window stays open */
+      if (s && s.rm === false && !sessionStorage.getItem("smr_live")) { rawRemove.call(localStorage, SK); return null; }
+      return s;
+    } catch (e) { return null; }
+  }
+  function setSess(t, rm) {
+    if (rm === undefined) { var o = null; try { o = JSON.parse(localStorage.getItem(SK) || "null"); } catch (e) { } rm = !(o && o.rm === false); }
+    var s = { access: t.access_token, refresh: t.refresh_token, exp: Date.now() + (t.expires_in || 3600) * 1000 - 60000, uid: t.user && t.user.id, email: t.user && t.user.email, rm: rm !== false };
+    rawSet.call(localStorage, SK, JSON.stringify(s));
+    try { if (s.rm) sessionStorage.removeItem("smr_live"); else sessionStorage.setItem("smr_live", "1"); } catch (e) { }
+    return s;
   }
   function authCall(path, body, method, bearer) {
     var h = { apikey: KEY, "Content-Type": "application/json" }; if (bearer) h.Authorization = "Bearer " + bearer;
@@ -139,12 +150,23 @@
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") check(); else if (Object.keys(pend).length) flush(); });
 
   /* detect that someone else saved: compare versions, never merge silently */
+  /* When newer data exists and the person is not in the middle of something, reload by itself so HR edits show up without a click. */
+  function idleNow() {
+    var a = document.activeElement, dr = document.getElementById("drawer"), cf = document.getElementById("confirm");
+    var typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+    return !typing && !(dr && dr.classList.contains("open")) && !(cf && !cf.hidden) && !document.getElementById("cg") && !busy && !Object.keys(pend).length && document.visibilityState === "visible";
+  }
+  function markStale() {
+    stale = true; setStatus("stale");
+    if (!portal) return;  /* staff keep the manual "Reload latest data" button so a report is never refreshed under them */
+    var tries = 0, t = setInterval(function () { if (++tries > 40) return clearInterval(t); if (idleNow()) { clearInterval(t); location.reload(); } }, 3000);
+  }
   function check() {
     if (stale || busy || Object.keys(pend).length) return;
-    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) { stale = true; setStatus("stale"); } }).catch(function () { }); return; }
+    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) markStale(); }).catch(function () { }); return; }
     rest("app_store?select=k,ver").then(function (rows) {
       var changed = rows.some(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver; }) || Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); });
-      if (changed) { stale = true; setStatus("stale"); }
+      if (changed) markStale();
     }).catch(function () { });
   }
   setInterval(check, 45000);
@@ -162,14 +184,16 @@
     location.reload();
   }
   function loginScreen(msg) {
-    var g = gate("<h1>Welcome back</h1><p>Sign in with your work email and password.</p><form id='cgf' novalidate><label for='cge'>Work email</label><input id='cge' type='email' required autocomplete='username' placeholder='name@savills.me' inputmode='email' autocapitalize='off' spellcheck='false'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password' placeholder='Your password'><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button><div class='cgs'>Trouble signing in? Ask HR to check that your account is set up.</div>");
+    var g = gate("<h1>Welcome back</h1><p>Sign in with your work email and password.</p><form id='cgf' novalidate><label for='cge'>Work email</label><input id='cge' type='email' required autocomplete='username' placeholder='name@savills.me' inputmode='email' autocapitalize='off' spellcheck='false'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password' placeholder='Your password'><label class='cgrm' for='cgrm'><input id='cgrm' type='checkbox' checked>Remember me on this device</label><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button><div class='cgs'>Trouble signing in? Ask HR to check that your account is set up.</div>");
     g.querySelector("#cgf").onsubmit = function (ev) {
       ev.preventDefault(); var b = g.querySelector(".p");
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("cge").value.trim())) { g.querySelector("#cgx").textContent = "Enter your full work email, for example name@savills.me."; $("cge").focus(); return; }
       b.disabled = true; g.querySelector("#cgx").textContent = "";
-      authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t); start(); })
+      var rm = $("cgrm").checked; try { if (rm) localStorage.setItem("cg_email", $("cge").value.trim()); else localStorage.removeItem("cg_email"); } catch (e) { }
+      authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t, rm); start(); })
         .catch(function (e) { b.disabled = false; g.querySelector("#cgx").textContent = /invalid login/i.test(e.message) ? "Wrong email or password." : e.message; });
     };
+    try { var le = localStorage.getItem("cg_email"); if (le) { $("cge").value = le; $("cgp").focus(); } else { $("cgrm").checked = true; } } catch (e) { }
     g.querySelector("#cgfp").onclick = function () {
       var em = $("cge").value.trim(); if (!em) { g.querySelector("#cgx").textContent = "Type your email first, then choose Forgot password."; return; }
       authCall("recover", { email: em }).then(function () { g.querySelector("#cgx").className = "m"; g.querySelector("#cgx").textContent = "If this email has an account, a reset link was sent."; })

@@ -4,7 +4,9 @@
  try{const U=USR();if(!U.some(x=>x.id===C.uid))U.push({id:C.uid,name:C.name,role:C.role,active:true,email:C.email||""})}catch(e){}
  /* the signed-in role is fixed by the server: no "preview as" switching */
  const lockRole=()=>{try{if(role!==C.role)role=C.role;const sel=$("#role");if(sel){if(sel.value!==C.role)sel.value=C.role;sel.disabled=true}}catch(e){}};
- window.rmToggle=()=>{};lockRole();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
+ window.rmToggle=()=>{};lockRole();
+ /* real accounts cannot preview other roles: show who is signed in instead of "Switch role" */
+ const idBox=()=>{const b=document.querySelector(".rmb");if(!b)return;const sm=b.querySelector("small"),t=C.name||C.email||"";if(sm&&sm.textContent!==t)sm.textContent=t;const v=b.querySelector("svg");if(v)v.style.display="none";b.style.cursor="default";b.setAttribute("aria-haspopup","false");b.tabIndex=-1;b.setAttribute("aria-label","Signed in as "+t)};setInterval(idBox,500);idBox();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
  /* sign-ins live in Supabase (Authentication > Users), not in this browser */
  try{NAV.forEach(g=>{g[1]=g[1].filter(i=>i[1]!=="emp_access");g[1].forEach(i=>{if(i[1]==="users")i[0]="Users & Access"})})}catch(e){}
  ACTS.esout=()=>{ask("Sign out?","Sign out",()=>C.signOut())};

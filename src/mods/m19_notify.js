@@ -6,7 +6,7 @@ let NF=[];
 function feed(){const o=[],who=(typeof ESES!=="undefined"&&ESES)?ESES.no:(role===R.EMP?WSNO:null);
  const ap=apprItems().filter(i=>!i.fin&&canAct(i));if(ap.length)o.push({id:"ap|"+ap.map(i=>i.id).join(","),t:ap.length+" approval"+(ap.length>1?"s":"")+" waiting for you",d:ap.slice(0,3).map(i=>i.type+" · "+((empBy(i.no)||{}).name||"")).join(", "),go:"appr",tone:"s-er"});
  if(who){
-  LR.filter(r=>r.mode===MODE&&r.no===who&&(r.status==="Approved"||r.status==="Rejected")).forEach(r=>o.push({id:"lr|"+r.id+"|"+r.status,t:"Your "+r.type.toLowerCase()+" request for "+r.start+" was "+r.status.toLowerCase(),act:"to",tone:r.status==="Approved"?"s-ok":"s-er"}));
+  LR.filter(r=>r.mode===MODE&&r.no===who&&(r.status==="Approved"||r.status==="Rejected")).forEach(r=>o.push({id:"lr|"+r.id+"|"+r.status,t:"Your "+r.type.toLowerCase()+" request for "+(typeof lrSpan==="function"?lrSpan(r.start,r.end):r.start)+" was "+r.status.toLowerCase(),act:"to",tone:r.status==="Approved"?"s-ok":"s-er"}));
   HQL().filter(r=>r.no===who&&r.status!=="Pending").forEach(r=>o.push({id:"hq|"+r.id+"|"+r.status,t:"Your request ("+((HQT(r.type)||{}).t||r.type)+") is "+(HQS[r.status]||[r.status])[0].toLowerCase(),d:r.resp||"",act:"rq",tone:r.status==="Rejected"?"s-er":"s-ok"}));
   WARNS().filter(w=>w.no===who&&!w.withdrawn&&!w.ack).forEach(w=>o.push({id:"wn|"+w.id,t:"You have a warning to acknowledge ("+w.level+")",act:"wn",tone:"s-wn"}));
   const dm=DOCS_REQ.filter(d=>docStatus(who,d)==="Missing");if(dm.length)o.push({id:"dm|"+dm.join(","),t:dm.length+" document"+(dm.length>1?"s":"")+" HR still needs from you",d:dm.join(", "),act:"dc",tone:"s-wn"})}

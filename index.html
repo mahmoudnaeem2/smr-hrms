@@ -775,6 +775,33 @@ body.cloud label:has(input[name=access]){display:none!important}
 .lrt{margin-top:14px;padding:9px 12px;border-radius:10px;font-size:13px;background:var(--soft,#eef2f8);color:var(--mu,#5b6b82)}.lrt.wn{background:#fff4dc;color:#8a5a00}.lrt.ok{background:#e0f4e8;color:#13723d}.lrt.er{background:#fde8e8;color:#b42318}
 .lrf{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 :root[data-theme="dark"] .lrt.wn{background:#38290c;color:#f3c872}:root[data-theme="dark"] .lrt.ok{background:#12301f;color:#7fd7a3}:root[data-theme="dark"] .lrt.er{background:#3a1717;color:#f4a5a0}:root[data-theme="dark"] .lrs .dot{background:#162131;border-color:#34455e}
+
+/* request list v2: compact rows, expand for the progress */
+.lrx{display:grid;gap:12px}.lrlist{background:var(--surf,#fff);border:1px solid var(--bd,#e1e8f1);border-radius:16px;overflow:hidden}
+.lrg{padding:9px 16px;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mu,#5b6b82);background:var(--soft,#f4f7fb);border-bottom:1px solid var(--bd,#e1e8f1)}
+.lrr{border-bottom:1px solid var(--bd,#e1e8f1)}.lrr:last-child{border-bottom:0}
+.lrr summary,.lrs0{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;list-style:none;min-height:56px}.lrr summary::-webkit-details-marker{display:none}.lrr summary:hover{background:var(--soft,#f4f7fb)}
+.lrr summary:focus-visible{outline:2px solid #0460B5;outline-offset:-2px}
+.lri{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;background:#eef2f8;color:#5b6b82}.lri.ok{background:#e0f4e8;color:#13723d}.lri.er{background:#fde8e8;color:#b42318}.lri.wn{background:#fff4dc;color:#8a5a00}
+.lrm{flex:1;min-width:0;display:flex;flex-direction:column}.lrm b{font-size:14.5px}.lrm span{font-size:12.5px;color:var(--mu,#5b6b82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrq{display:flex;align-items:center;gap:8px;flex:none}.chev{color:var(--mu,#7b8aa0);transition:transform .15s}.lrr[open] .chev{transform:rotate(180deg)}
+.lrb{padding:4px 18px 16px 60px}.lrb .lrt{margin-top:12px}
+.lrmore{justify-self:center}
+@media(max-width:560px){.lrb{padding:4px 14px 14px}.lrr summary{padding:11px 12px}}
+:root[data-theme="dark"] .lri{background:#1d2a3c;color:#9fb0c7}:root[data-theme="dark"] .lri.ok{background:#12301f;color:#7fd7a3}:root[data-theme="dark"] .lri.er{background:#3a1717;color:#f4a5a0}:root[data-theme="dark"] .lri.wn{background:#38290c;color:#f3c872}
+
+/* drill-down drawer: readable columns, cards on phones */
+#db .drt table{min-width:0;width:100%}#db .drt th,#db .drt td{white-space:normal;vertical-align:top;padding:11px 12px;line-height:1.4}
+#db .drt th{position:sticky;top:0;background:var(--surf,#fff);font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;border-bottom:1px solid var(--bd,#e1e8f1);z-index:1}
+#db .drt td.f{font-weight:600}#db .drt td:not(.f){color:var(--tx)}#db .drt td .badge{white-space:nowrap}
+.drn{font-size:12.5px;color:var(--mu,#5b6b82);margin:0 0 8px}.drl{display:none}
+.drc{border:1px solid var(--bd,#e1e8f1);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--surf,#fff)}.drh{font-weight:700;font-size:14.5px;margin-bottom:6px}
+.drk{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:13.5px;border-top:1px solid var(--bd,#eef2f8)}.drk span{color:var(--mu,#5b6b82);flex:none}.drk b{font-weight:500;text-align:right;overflow-wrap:anywhere}
+@media(max-width:620px){#db .drt{display:none}.drl{display:block}}
+/* drawer header: title on its own line, Close in the corner, export buttons below */
+#drawer .dh{flex-wrap:wrap;align-items:flex-start;gap:10px 8px;position:relative}
+#drawer .dh h2{flex:1 1 100%;padding-right:84px;line-height:1.3}
+#drawer .dh>div{display:flex;gap:8px;flex-wrap:wrap}#drawer #dcl{position:absolute;top:0;right:0}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -2540,7 +2567,7 @@ let NF=[];
 function feed(){const o=[],who=(typeof ESES!=="undefined"&&ESES)?ESES.no:(role===R.EMP?WSNO:null);
  const ap=apprItems().filter(i=>!i.fin&&canAct(i));if(ap.length)o.push({id:"ap|"+ap.map(i=>i.id).join(","),t:ap.length+" approval"+(ap.length>1?"s":"")+" waiting for you",d:ap.slice(0,3).map(i=>i.type+" · "+((empBy(i.no)||{}).name||"")).join(", "),go:"appr",tone:"s-er"});
  if(who){
-  LR.filter(r=>r.mode===MODE&&r.no===who&&(r.status==="Approved"||r.status==="Rejected")).forEach(r=>o.push({id:"lr|"+r.id+"|"+r.status,t:"Your "+r.type.toLowerCase()+" request for "+r.start+" was "+r.status.toLowerCase(),act:"to",tone:r.status==="Approved"?"s-ok":"s-er"}));
+  LR.filter(r=>r.mode===MODE&&r.no===who&&(r.status==="Approved"||r.status==="Rejected")).forEach(r=>o.push({id:"lr|"+r.id+"|"+r.status,t:"Your "+r.type.toLowerCase()+" request for "+(typeof lrSpan==="function"?lrSpan(r.start,r.end):r.start)+" was "+r.status.toLowerCase(),act:"to",tone:r.status==="Approved"?"s-ok":"s-er"}));
   HQL().filter(r=>r.no===who&&r.status!=="Pending").forEach(r=>o.push({id:"hq|"+r.id+"|"+r.status,t:"Your request ("+((HQT(r.type)||{}).t||r.type)+") is "+(HQS[r.status]||[r.status])[0].toLowerCase(),d:r.resp||"",act:"rq",tone:r.status==="Rejected"?"s-er":"s-ok"}));
   WARNS().filter(w=>w.no===who&&!w.withdrawn&&!w.ack).forEach(w=>o.push({id:"wn|"+w.id,t:"You have a warning to acknowledge ("+w.level+")",act:"wn",tone:"s-wn"}));
   const dm=DOCS_REQ.filter(d=>docStatus(who,d)==="Missing");if(dm.length)o.push({id:"dm|"+dm.join(","),t:dm.length+" document"+(dm.length>1?"s":"")+" HR still needs from you",d:dm.join(", "),act:"dc",tone:"s-wn"})}
@@ -3272,10 +3299,14 @@ function bdStrip(){
  if(!L.length)return`<div class="card bds">${hdr}<p class="mu" style="margin:6px 0 0">${allEmps().some(e=>e.dob)?"No birthdays in the next 30 days.":"No dates of birth recorded yet. Add them in each employee profile to see birthdays here."}</p></div>`;
  return`<div class="card bds">${hdr}<div class="bdl">${L.slice(0,6).map(x=>`<div class="bdi"><i class="av">${ini(x.e.name)}</i><div><b>${esc(x.e.name)}</b><span>${+x.d.slice(8)} ${MN[+x.d.slice(5,7)-1]} · turns ${x.age} · ${x.n===0?"today":x.n===1?"tomorrow":"in "+x.n+" days"}</span></div></div>`).join("")}</div>${L.length>6?`<p class="mu" style="margin:8px 0 0">+ ${L.length-6} more in the full report.</p>`:""}</div>`}
 
+const LRM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],LRD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+ lrP=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(v||"");return m?{y:+m[1],m:+m[2]-1,d:+m[3],w:new Date(Date.UTC(+m[1],+m[2]-1,+m[3])).getUTCDay()}:null},
+ lrNice=v=>{const a=lrP(v);return a?a.d+" "+LRM[a.m]+" "+a.y:""},
+ lrSpan=(s,e)=>{const a=lrP(s),b=lrP(e);if(!a)return"";if(!b||s===e)return LRD[a.w]+" "+a.d+" "+LRM[a.m]+" "+a.y;if(a.y===b.y&&a.m===b.m)return a.d+" – "+b.d+" "+LRM[a.m]+" "+a.y;if(a.y===b.y)return a.d+" "+LRM[a.m]+" – "+b.d+" "+LRM[b.m]+" "+a.y;return lrNice(s)+" – "+lrNice(e)};
 /* ===== m40: where a leave request stands (shown to the employee) ===== */
 function lrTrack(r,e){
  const D=(db("dec",{})["L"+r.id])||{step:0,log:[]},log=D.log||[],lst=log[log.length-1],mg=String(e.lapp||e.mgr||"").trim(),hasM=!!mg&&mg!==e.name,fn=n=>String(n||"").split(" ")[0];
- const dt=x=>{try{return x&&x.t?new Date(x.t).toISOString().slice(0,10).split("-").reverse().join("/"):""}catch(_){return""}},who=x=>!x?"HR":x.role===R.DM?"your manager":"HR";
+ const dt=x=>{try{return x&&x.t?lrNice(new Date(x.t).toISOString().slice(0,10)):""}catch(_){return""}},who=x=>!x?"HR":x.role===R.DM?"your manager":"HR";
  const nodes=[["Sent","done",""]];if(hasM)nodes.push(["Manager","todo",fn(mg)]);nodes.push(["HR","todo",""]);
  let txt="",tone="";
  if(r.status==="Cancelled"){nodes.forEach((n,i)=>n[1]=i?"off":"done");txt="Cancelled by you.";tone="mu"}
@@ -3284,11 +3315,23 @@ function lrTrack(r,e){
  else{const mDone=hasM&&(D.step||0)>=1;nodes[0][1]="done";const cur=hasM?(mDone?2:1):1;nodes.forEach((n,i)=>{if(i>0&&i<cur)n[1]="done";else if(i===cur)n[1]="cur"});
   txt=hasM&&!mDone?"Waiting for "+mg+" (your manager)":"Waiting for HR";tone="wn"}
  const ck='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',xx='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
- return`<ol class="lrs">${nodes.map(n=>`<li class="${n[1]}"><span class="dot">${n[1]==="done"?ck:n[1]==="bad"?xx:""}</span><span class="lbl">${esc(n[0])}</span>${n[2]?`<span class="sub">${esc(n[2])}</span>`:""}</li>`).join("")}</ol><div class="lrt ${tone}">${esc(txt)}</div>`}
+ lrTrack.last={txt,tone};return`<ol class="lrs">${nodes.map(n=>`<li class="${n[1]}"><span class="dot">${n[1]==="done"?ck:n[1]==="bad"?xx:""}</span><span class="lbl">${esc(n[0])}</span>${n[2]?`<span class="sub">${esc(n[2])}</span>`:""}</li>`).join("")}</ol><div class="lrt ${tone}">${esc(txt)}</div>`}
 function lrCards(mine,seed,e){
  if(!mine.length&&!seed.length)return`<div class="card"><div class="empty">No requests yet. Use the form above to submit your first leave request.</div></div>`;
- const bc=s=>s==="Pending"?"s-wn":s==="Approved"?"s-ok":s==="Rejected"?"s-er":"s-mu",dd=x=>typeof dmyS==="function"?dmyS(x):x;
- return`<div class="lrl">${mine.map(r=>{const n=typeof attCount==="function"?attCount("leave|"+r.id):0;return`<div class="lrc"><div class="lrh"><div><b>${esc(r.type)}</b><span>${dd(r.start)}${r.end!==r.start?" → "+dd(r.end):""} · ${r.days} day${+r.days===1?"":"s"}</span></div><span class="badge ${bc(r.status)}">${esc(r.status)}</span></div>${lrTrack(r,e)}${r.status==="Pending"||n?`<div class="lrf">${r.status==="Pending"?`<button class="b" data-ws="cancel:${r.id}">Cancel request</button>`:""}${n?`<button class="b" data-act="att:leave|${r.id}">Files (${n})</button>`:""}</div>`:""}</div>`}).join("")}${seed.map(a=>`<div class="lrc"><div class="lrh"><div><b>${esc(a.detail)}</b></div><span class="badge s-wn">Pending</span></div><div class="lrt wn">Waiting for ${esc(e.mgr||"HR")}</div></div>`).join("")}</div>`}
+ const MN=["January","February","March","April","May","June","July","August","September","October","November","December"],bc=s=>s==="Pending"?"s-wn":s==="Approved"?"s-ok":s==="Rejected"?"s-er":"s-mu",
+  ic={ok:'<path d="M20 6L9 17l-5-5"/>',er:'<path d="M18 6L6 18M6 6l12 12"/>',wn:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',mu:'<path d="M5 12h14"/>'};
+ const all=mine.slice().sort((a,b)=>String(b.start).localeCompare(String(a.start))),nP=all.filter(r=>r.status==="Pending").length+seed.length,nA=all.filter(r=>r.status==="Approved").length,nR=all.filter(r=>r.status==="Rejected").length;
+ const f=typeof tab==="function"?tab("lrf","all"):"all",list=all.filter(r=>f==="all"||(f==="pending"&&r.status==="Pending")||(f==="appr"&&r.status==="Approved")||(f==="rej"&&(r.status==="Rejected"||r.status==="Cancelled")));
+ const lim=(typeof TAB!=="undefined"&&TAB.lrall)?9999:8,shown=list.slice(0,lim),openP=nP<=3;
+ const row=r=>{const n=typeof attCount==="function"?attCount("leave|"+r.id):0,body=lrTrack(r,e),st=lrTrack.last;
+  return`<details class="lrr"${r.status==="Pending"&&openP?" open":""}><summary><span class="lri ${st.tone}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic[st.tone]||ic.mu}</svg></span><span class="lrm"><b>${esc(r.type)}</b><span>${lrSpan(r.start,r.end)} · ${r.days} day${+r.days===1?"":"s"}</span></span><span class="lrq"><span class="badge ${bc(r.status)}">${esc(r.status)}</span><svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary><div class="lrb">${body}${r.status==="Pending"||n?`<div class="lrf">${r.status==="Pending"?`<button class="b" data-ws="cancel:${r.id}">Cancel request</button>`:""}${n?`<button class="b" data-act="att:leave|${r.id}">Files (${n})</button>`:""}</div>`:""}</div></details>`};
+ let out="",cur="";
+ shown.forEach(r=>{const m=P3m(r.start);if(list.length>6&&m!==cur){cur=m;out+=`<div class="lrg">${esc(m)}</div>`}out+=row(r)});
+ function P3m(v){const m=/^(\d{4})-(\d{2})/.exec(v||"");return m?MN[+m[2]-1]+" "+m[1]:""}
+ const sd=f==="all"||f==="pending"?seed.map(a=>`<div class="lrr"><div class="lrs0"><span class="lri wn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">${ic.wn}</svg></span><span class="lrm"><b>${esc(a.detail)}</b><span>Waiting for ${esc(e.mgr||"HR")}</span></span><span class="lrq"><span class="badge s-wn">Pending</span></span></div></div>`).join(""):"";
+ const chips=typeof tabs==="function"?tabs("lrf",[["all","All ("+all.length+")"],["pending","Pending ("+nP+")"],["appr","Approved ("+nA+")"],["rej","Rejected ("+nR+")"]],"all"):"";
+ return`<div class="lrx">${all.length>3?chips:""}<div class="lrlist">${sd}${out||(sd?"":'<div class="empty" style="padding:22px">No requests in this view.</div>')}</div>${list.length>shown.length?`<button class="b lrmore" data-act="lrmore">Show all ${list.length} requests</button>`:""}</div>`}
+ACTS.lrmore=()=>{TAB.lrall=1;draw()};
 
 /* Cloud mode (Supabase). Only active when the page was started by the cloud loader. */
 (function(){const C=window.SMR_CLOUD_ON;if(!C)return;
@@ -3296,7 +3339,9 @@ function lrCards(mine,seed,e){
  try{const U=USR();if(!U.some(x=>x.id===C.uid))U.push({id:C.uid,name:C.name,role:C.role,active:true,email:C.email||""})}catch(e){}
  /* the signed-in role is fixed by the server: no "preview as" switching */
  const lockRole=()=>{try{if(role!==C.role)role=C.role;const sel=$("#role");if(sel){if(sel.value!==C.role)sel.value=C.role;sel.disabled=true}}catch(e){}};
- window.rmToggle=()=>{};lockRole();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
+ window.rmToggle=()=>{};lockRole();
+ /* real accounts cannot preview other roles: show who is signed in instead of "Switch role" */
+ const idBox=()=>{const b=document.querySelector(".rmb");if(!b)return;const sm=b.querySelector("small"),t=C.name||C.email||"";if(sm&&sm.textContent!==t)sm.textContent=t;const v=b.querySelector("svg");if(v)v.style.display="none";b.style.cursor="default";b.setAttribute("aria-haspopup","false");b.tabIndex=-1;b.setAttribute("aria-label","Signed in as "+t)};setInterval(idBox,500);idBox();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
  /* sign-ins live in Supabase (Authentication > Users), not in this browser */
  try{NAV.forEach(g=>{g[1]=g[1].filter(i=>i[1]!=="emp_access");g[1].forEach(i=>{if(i[1]==="users")i[0]="Users & Access"})})}catch(e){}
  ACTS.esout=()=>{ask("Sign out?","Sign out",()=>C.signOut())};
@@ -3445,6 +3490,7 @@ draw();
       "#cg .cgl ul{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:13.5px;color:rgba(255,255,255,.9);position:relative;z-index:1}#cg .cgl li{display:flex;gap:10px;align-items:center}#cg .cgl li i{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}" +
       "#cg .cgr{padding:40px 38px;display:flex;flex-direction:column;justify-content:center}" +
       "#cg h1{margin:0 0 6px;font-size:24px;color:#10233d;letter-spacing:-.01em}#cg .cgr>p{margin:0 0 14px;color:#52627a;font-size:14.5px;line-height:1.5}" +
+      "#cg label.cgrm{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;align-items:center;gap:10px;font-weight:500;font-size:14px;margin:14px 0 2px;cursor:pointer;min-height:44px}#cg label.cgrm input{width:20px;height:20px;min-width:20px;padding:0;margin:0;accent-color:#0460B5;border-radius:5px;cursor:pointer}" +
       "#cg label{display:block;font-weight:600;font-size:13.5px;margin:14px 0 6px}#cg input{width:100%;box-sizing:border-box;height:48px;padding:0 14px;border:1px solid #cdd7e5;border-radius:12px;font:inherit;font-size:16px;background:#f6f8fc;color:#10233d;-webkit-text-fill-color:#10233d;caret-color:#0460B5;color-scheme:light;transition:border-color .15s,box-shadow .15s}" +
       "#cg{color-scheme:light;--tx:#10233d;--hd:#10233d}#cg h1{color:#10233d!important;font-size:24px!important;letter-spacing:-.01em!important}#cg label,#cg .cgr>p{color:#10233d}#cg .cgr>p{color:#52627a}#cg .cgl,#cg .cgl p{color:#fff}#cg input::placeholder{color:#8a97ab;-webkit-text-fill-color:#8a97ab}#cg input:-webkit-autofill{-webkit-text-fill-color:#10233d;box-shadow:0 0 0 40px #f6f8fc inset}#cg select,#cg textarea{color:#10233d}" +
       "#cg input:focus{outline:0;border-color:#0460B5;background:#fff;box-shadow:0 0 0 4px rgba(4,96,181,.14)}" +
@@ -3468,10 +3514,20 @@ draw();
   function closeGate() { var g = $("cg"); if (g) g.remove(); }
 
   /* ---------- session and requests ---------- */
-  function sess() { try { return JSON.parse(localStorage.getItem(SK) || "null"); } catch (e) { return null; } }
-  function setSess(t) {
-    var s = { access: t.access_token, refresh: t.refresh_token, exp: Date.now() + (t.expires_in || 3600) * 1000 - 60000, uid: t.user && t.user.id, email: t.user && t.user.email };
-    rawSet.call(localStorage, SK, JSON.stringify(s)); return s;
+  function sess() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SK) || "null");
+      /* "Remember me" off: the session lasts only while this browser tab or window stays open */
+      if (s && s.rm === false && !sessionStorage.getItem("smr_live")) { rawRemove.call(localStorage, SK); return null; }
+      return s;
+    } catch (e) { return null; }
+  }
+  function setSess(t, rm) {
+    if (rm === undefined) { var o = null; try { o = JSON.parse(localStorage.getItem(SK) || "null"); } catch (e) { } rm = !(o && o.rm === false); }
+    var s = { access: t.access_token, refresh: t.refresh_token, exp: Date.now() + (t.expires_in || 3600) * 1000 - 60000, uid: t.user && t.user.id, email: t.user && t.user.email, rm: rm !== false };
+    rawSet.call(localStorage, SK, JSON.stringify(s));
+    try { if (s.rm) sessionStorage.removeItem("smr_live"); else sessionStorage.setItem("smr_live", "1"); } catch (e) { }
+    return s;
   }
   function authCall(path, body, method, bearer) {
     var h = { apikey: KEY, "Content-Type": "application/json" }; if (bearer) h.Authorization = "Bearer " + bearer;
@@ -3553,12 +3609,23 @@ draw();
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") check(); else if (Object.keys(pend).length) flush(); });
 
   /* detect that someone else saved: compare versions, never merge silently */
+  /* When newer data exists and the person is not in the middle of something, reload by itself so HR edits show up without a click. */
+  function idleNow() {
+    var a = document.activeElement, dr = document.getElementById("drawer"), cf = document.getElementById("confirm");
+    var typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+    return !typing && !(dr && dr.classList.contains("open")) && !(cf && !cf.hidden) && !document.getElementById("cg") && !busy && !Object.keys(pend).length && document.visibilityState === "visible";
+  }
+  function markStale() {
+    stale = true; setStatus("stale");
+    if (!portal) return;  /* staff keep the manual "Reload latest data" button so a report is never refreshed under them */
+    var tries = 0, t = setInterval(function () { if (++tries > 40) return clearInterval(t); if (idleNow()) { clearInterval(t); location.reload(); } }, 3000);
+  }
   function check() {
     if (stale || busy || Object.keys(pend).length) return;
-    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) { stale = true; setStatus("stale"); } }).catch(function () { }); return; }
+    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) markStale(); }).catch(function () { }); return; }
     rest("app_store?select=k,ver").then(function (rows) {
       var changed = rows.some(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver; }) || Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); });
-      if (changed) { stale = true; setStatus("stale"); }
+      if (changed) markStale();
     }).catch(function () { });
   }
   setInterval(check, 45000);
@@ -3576,14 +3643,16 @@ draw();
     location.reload();
   }
   function loginScreen(msg) {
-    var g = gate("<h1>Welcome back</h1><p>Sign in with your work email and password.</p><form id='cgf' novalidate><label for='cge'>Work email</label><input id='cge' type='email' required autocomplete='username' placeholder='name@savills.me' inputmode='email' autocapitalize='off' spellcheck='false'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password' placeholder='Your password'><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button><div class='cgs'>Trouble signing in? Ask HR to check that your account is set up.</div>");
+    var g = gate("<h1>Welcome back</h1><p>Sign in with your work email and password.</p><form id='cgf' novalidate><label for='cge'>Work email</label><input id='cge' type='email' required autocomplete='username' placeholder='name@savills.me' inputmode='email' autocapitalize='off' spellcheck='false'><label for='cgp'>Password</label><input id='cgp' type='password' required autocomplete='current-password' placeholder='Your password'><label class='cgrm' for='cgrm'><input id='cgrm' type='checkbox' checked>Remember me on this device</label><div class='e' id='cgx' role='alert'>" + esc(msg || "") + "</div><button class='p' type='submit'>Sign in</button></form><button class='l' id='cgfp' type='button'>Forgot password?</button><div class='cgs'>Trouble signing in? Ask HR to check that your account is set up.</div>");
     g.querySelector("#cgf").onsubmit = function (ev) {
       ev.preventDefault(); var b = g.querySelector(".p");
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("cge").value.trim())) { g.querySelector("#cgx").textContent = "Enter your full work email, for example name@savills.me."; $("cge").focus(); return; }
       b.disabled = true; g.querySelector("#cgx").textContent = "";
-      authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t); start(); })
+      var rm = $("cgrm").checked; try { if (rm) localStorage.setItem("cg_email", $("cge").value.trim()); else localStorage.removeItem("cg_email"); } catch (e) { }
+      authCall("token?grant_type=password", { email: $("cge").value.trim(), password: $("cgp").value }).then(function (t) { setSess(t, rm); start(); })
         .catch(function (e) { b.disabled = false; g.querySelector("#cgx").textContent = /invalid login/i.test(e.message) ? "Wrong email or password." : e.message; });
     };
+    try { var le = localStorage.getItem("cg_email"); if (le) { $("cge").value = le; $("cgp").focus(); } else { $("cgrm").checked = true; } } catch (e) { }
     g.querySelector("#cgfp").onclick = function () {
       var em = $("cge").value.trim(); if (!em) { g.querySelector("#cgx").textContent = "Type your email first, then choose Forgot password."; return; }
       authCall("recover", { email: em }).then(function () { g.querySelector("#cgx").className = "m"; g.querySelector("#cgx").textContent = "If this email has an account, a reset link was sent."; })

@@ -79,3 +79,11 @@ A user with no role sees "Waiting for access" and cannot read anything.
 4. Who gets mail: a new request goes to the employee's line manager if that manager has an email in
    their employee record (or an account); otherwise to every active HR Director and HR Specialist.
    An approval or rejection goes to the employee. Each message is sent once (table `mail_log`).
+
+## Phase 5: admin edits reach the employee
+
+Run `supabase/005_employee_sync.sql` in the SQL Editor (after 004). Before it, leave-balance edits, salary history, renewals and termination dates never reached the employee portal. Employees' open pages also reload by themselves (when they are idle) as soon as HR changes something.
+
+## Microsoft 365 email
+
+In `notify-leave` set the secrets `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` and `MAIL_FROM` (the mailbox to send from). The app needs the Microsoft Graph application permission `Mail.Send` with admin consent; ask IT to restrict it to that one mailbox.
