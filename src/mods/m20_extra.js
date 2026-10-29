@@ -68,7 +68,7 @@ const DAILY={[R.HRD]:["dash","appr","hr_req","mail_out","emp","org","leave_req",
  [R.PAY]:["paydash","appr","pay_proc","pay_inputs","overtime","loans","pay_reg","payslips","pay_je","pay_rec","rep_pay"],
  [R.FIN]:["paydash","appr","pay_reg","pay_je","pay_rec","pay_fs","rep_cost","rep_pay","loans"],
  [R.DM]:["dash","appr","work","emp","org","leave_req","att_d"]};
-function NAVV(){const d=DAILY[role];if(!d)return NAV;const rest=[];const out=NAV.map(([g,items])=>{const keep=items.filter(i=>d.includes(i[1]));items.forEach(i=>{if(!d.includes(i[1])&&canSee(i[1]))rest.push(i)});return[g,keep]}).filter(([g,it])=>it.length);
+function NAVV(){if(role===R.EMP){const pick=(g,ks)=>{const it=[];NAV.forEach(([,l])=>l.forEach(i=>{if(ks.includes(i[1])&&canSee(i[1]))it.push(i)}));return[g,ks.map(k=>it.find(i=>i[1]===k)).filter(Boolean)]};return[pick("Overview",["work","myprofile","hr_req","notif"]),pick("Leave",["leave_req","leave_bal","leave_cal","leave_pol"]),pick("Payroll",["payslips"])].filter(([g,it])=>it.length)}const d=DAILY[role];if(!d)return NAV;const rest=[];const out=NAV.map(([g,items])=>{const keep=items.filter(i=>d.includes(i[1]));items.forEach(i=>{if(!d.includes(i[1])&&canSee(i[1]))rest.push(i)});return[g,keep]}).filter(([g,it])=>it.length);
  if(rest.length)out.push(["More",rest]);return out}
 GIC.More=GIC.Administration;
 /* Manual attendance and leave on behalf of an employee (HR) */
