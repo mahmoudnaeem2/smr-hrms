@@ -619,6 +619,8 @@ h2{font-size:17px;letter-spacing:-.01em;font-weight:700}
 #nav .gh{font-size:11.5px;letter-spacing:.09em;opacity:.8}
 #nav .nav{font-size:14px}
 @media (max-width:700px){td{padding:10px 12px!important}h1{font-size:23px!important}}
+/* touch targets on phones */
+@media (max-width:700px){.chip2,.backl,select,.b,#side .nav{min-height:42px}.backl{padding:8px 4px}td button.lnk{padding:10px 2px}input[type=checkbox],input[type=radio]{width:22px;height:22px}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -888,7 +890,7 @@ const fmtC=c=>(c<0?"-":"")+"EGP "+(Math.abs(c)/100).toLocaleString("en-US",{mini
 const C=n=>Math.round((+n||0)*100);
 const bd=(t,c)=>`<span class="badge ${c||"s-mu"}">${esc(t)}</span>`;
 const plain=h=>String(h).replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').trim();
-const ALLE=()=>allEmps().filter(inScope);
+const ALLE=()=>{const L=allEmps();if(MODE==="sample"){L.forEach(e=>{if(e.dept&&!DEPTS.includes(e.dept))DEPTS.push(e.dept)})}else{const keep=new Set([...db("depts",[],false),"Management","Finance","Human Resources",...L.map(e=>e.dept)]);SAMPLE.emps.forEach(e=>{if(!keep.has(e.dept)){const i=DEPTS.indexOf(e.dept);if(i>=0)DEPTS.splice(i,1)}})}return L.filter(inScope)};
 const empBy=no=>allEmps().find(e=>e.no===no);
 const monthsBack=n=>{const o=[];for(let i=0;i<n;i++){const d=new Date(T0.getFullYear(),T0.getMonth()-i,1);o.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"long",year:"numeric"}),start:iso(d),end:i===0?iso(T0):iso(new Date(d.getFullYear(),d.getMonth()+1,0)),fullEnd:iso(new Date(d.getFullYear(),d.getMonth()+1,0))})}return o};
 
@@ -2276,7 +2278,7 @@ function portalBase(initial){const L=allEmps().filter(x=>x.status!=="Terminated"
  const body=({ov:pt_ov,ps:pt_ps,dc:pt_dc,wn:pt_wn,ln:pt_ln,ct:pt_ct,to:pt_to,at:pt_at,rq:()=>my_req(),pf:()=>profile()}[cur]||pt_ov)(e);
  const nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length;
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
- <div class="pbn"><div class="pwho"><i class="pav">${ini(e.name)}</i><div class="pwt"><h1>${esc(e.name)} ${bd(e.status,{Active:"s-ok","On leave":"s-wn",Probation:"s-wn"}[e.status]||"s-mu")}</h1><div class="pps">${esc(e.pos||"–")} · ${esc(e.dept)}</div><div class="pchips"><span>No. ${esc(e.no)}</span>${e.mgr?`<span>Manager: ${esc(e.mgr)}</span>`:""}${e.hire?`<span>Joined ${esc(e.hire.split("-").reverse().join("/"))}</span>`:""}<span>${pSvc(e)}</span></div></div></div><div class="pact"><button class="pnew" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg> New Request</button></div></div>
+ <div class="pbn"><div class="pwho"><i class="pav">${ini(e.name)}</i><div class="pwt"><h2 style="font-size:24px;margin:0">${esc(e.name)} ${bd(e.status,{Active:"s-ok","On leave":"s-wn",Probation:"s-wn"}[e.status]||"s-mu")}</h2><div class="pps">${esc(e.pos||"–")} · ${esc(e.dept)}</div><div class="pchips"><span>No. ${esc(e.no)}</span>${e.mgr?`<span>Manager: ${esc(e.mgr)}</span>`:""}${e.hire?`<span>Joined ${esc(e.hire.split("-").reverse().join("/"))}</span>`:""}<span>${pSvc(e)}</span></div></div></div><div class="pact"><button class="pnew" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg> New Request</button></div></div>
  <div class="pstats">${pStats(e)}</div>${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev2">Previewing <select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}
  <button class="zback" data-act="pt:ov"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Home</button>
  <div class="pbody">${body}</div>`}
@@ -2895,7 +2897,7 @@ function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if
  P=[...lv,...hq].sort((a,c)=>c.t-a.t).slice(0,5),
  pend=P.length?P.map(p=>`<button class="zp" data-act="pt:${p.go}"><div><b>${esc(p.a)}</b><span>${esc(p.b)}</span><em>${esc(p.c)}<i>${esc(p.s)}</i></em></div></button>`).join(""):`<div class="zp zp0">Nothing waiting. Tap Requests or Time off to send one.</div>`;
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
- <div class="zh"><h1 class="zw">Welcome, ${first}</h1><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}</div>
+ <div class="zh"><h2 class="zw">Welcome, ${first}</h2><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}</div>
  ${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev2">Previewing <select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}
  <div class="zrow"><span>Your remaining balance</span><button class="zlink" data-act="pt:to">Full Details</button></div><div class="zbal">${bal}</div>
  <div class="zq">What would you like to do?</div><div class="zgrid">${tiles}</div>
@@ -2920,7 +2922,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 81";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 82";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;

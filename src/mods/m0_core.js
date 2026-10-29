@@ -11,7 +11,7 @@ const fmtC=c=>(c<0?"-":"")+"EGP "+(Math.abs(c)/100).toLocaleString("en-US",{mini
 const C=n=>Math.round((+n||0)*100);
 const bd=(t,c)=>`<span class="badge ${c||"s-mu"}">${esc(t)}</span>`;
 const plain=h=>String(h).replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').trim();
-const ALLE=()=>allEmps().filter(inScope);
+const ALLE=()=>{const L=allEmps();if(MODE==="sample"){L.forEach(e=>{if(e.dept&&!DEPTS.includes(e.dept))DEPTS.push(e.dept)})}else{const keep=new Set([...db("depts",[],false),"Management","Finance","Human Resources",...L.map(e=>e.dept)]);SAMPLE.emps.forEach(e=>{if(!keep.has(e.dept)){const i=DEPTS.indexOf(e.dept);if(i>=0)DEPTS.splice(i,1)}})}return L.filter(inScope)};
 const empBy=no=>allEmps().find(e=>e.no===no);
 const monthsBack=n=>{const o=[];for(let i=0;i<n;i++){const d=new Date(T0.getFullYear(),T0.getMonth()-i,1);o.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"long",year:"numeric"}),start:iso(d),end:i===0?iso(T0):iso(new Date(d.getFullYear(),d.getMonth()+1,0)),fullEnd:iso(new Date(d.getFullYear(),d.getMonth()+1,0))})}return o};
 

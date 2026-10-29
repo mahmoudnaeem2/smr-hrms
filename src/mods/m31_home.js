@@ -12,7 +12,7 @@ function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if
  P=[...lv,...hq].sort((a,c)=>c.t-a.t).slice(0,5),
  pend=P.length?P.map(p=>`<button class="zp" data-act="pt:${p.go}"><div><b>${esc(p.a)}</b><span>${esc(p.b)}</span><em>${esc(p.c)}<i>${esc(p.s)}</i></em></div></button>`).join(""):`<div class="zp zp0">Nothing waiting. Tap Requests or Time off to send one.</div>`;
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
- <div class="zh"><h1 class="zw">Welcome, ${first}</h1><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}</div>
+ <div class="zh"><h2 class="zw">Welcome, ${first}</h2><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}</div>
  ${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev2">Previewing <select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}
  <div class="zrow"><span>Your remaining balance</span><button class="zlink" data-act="pt:to">Full Details</button></div><div class="zbal">${bal}</div>
  <div class="zq">What would you like to do?</div><div class="zgrid">${tiles}</div>
