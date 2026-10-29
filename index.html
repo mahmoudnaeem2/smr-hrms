@@ -708,8 +708,7 @@ function work(){
   <label style="grid-column:span 2">Leave type<select name="type">${LTYPES.map(([t])=>`<option>${t}</option>`).join("")}</select></label>
   <label>From<input type="date" name="start" required></label><label>To<input type="date" name="end" required></label>
   <label style="grid-column:span 2">Note (optional)<input name="note"></label><div style="grid-column:span 2" class="fl">Supporting document (optional, for example a medical certificate)<div data-attbox="leaveform|${e.no}">${attList("leaveform|"+e.no,true)}<label class="b" style="cursor:pointer">Attach file<input type="file" data-att="leaveform|${e.no}" accept=".pdf,.png,.jpg,.jpeg,.webp,.docx" style="display:none"></label></div><div class="err" data-atterr="leaveform|${e.no}"></div></div>
-  <button class="b p" type="submit" style="grid-column:span 2">Submit request</button></form><div class="err" id="lerr"></div>
-  <div class="cs">Goes to ${esc(e.mgr||"your manager")} for approval. Working days exclude Fri–Sat. Supporting documents come with the documents module.</div></div>
+  <button class="b p" type="submit" style="grid-column:span 2">Submit request</button></form><div class="err" id="lerr"></div></div>
  <div class="card"><h2>Who is out</h2><div class="cs">Your department, ${dshort(iso(addD(T0,kw)))}</div>${out.length?out.map(x=>`<div class="act"><span>${esc(x.name)}</span><span class="badge s-mu">On leave</span></div>`).join(""):`<div class="empty">${MODE==="sample"?"Nobody in your department is on leave.":"No leave data yet."}</div>`}
   <h2 style="margin-top:14px">Work anniversaries</h2><div class="cs">Next 30 days</div>${ann.length?ann.map(a=>`<div class="act"><span>${esc(a.x.name)} · ${a.y} yr</span><span class="badge s-mu">${a.dd?"in "+a.dd+" d":"today"}</span></div>`).join(""):`<div class="empty">None in the next 30 days.</div>`}</div></div>
  ${myDetails(e)}<h2 class="sec">Leave balances</h2><div class="grid kpis">${bc}</div>
