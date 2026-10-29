@@ -732,6 +732,7 @@ summary:hover .orgb .b.s,summary:focus-within .orgb .b.s{opacity:1}
 .inl label{gap:6px!important;line-height:1.2;flex:0 1 300px}.inl label>*{margin:0}.inl .dpw{display:block;width:100%}
 @media (max-width:600px){.qa{grid-template-columns:1fr 1fr!important;gap:10px}.qt{padding:10px;min-height:56px;gap:8px}.qt svg{width:34px;height:34px;padding:7px}.qt .qx b{font-size:13.5px}}
 body.cloud .rmb svg,body.cloud .rmb small{display:none}body.cloud .rmb{cursor:default}
+body.cloud label:has(input[name=access]){display:none!important}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3051,7 +3052,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 96";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="29 Oct 2026 12:40 · build 97";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -3218,6 +3219,8 @@ function bdStrip(){
  /* the signed-in role is fixed by the server: no "preview as" switching */
  const lockRole=()=>{try{if(role!==C.role)role=C.role;const sel=$("#role");if(sel){if(sel.value!==C.role)sel.value=C.role;sel.disabled=true}}catch(e){}};
  window.rmToggle=()=>{};lockRole();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
+ /* sign-ins live in Supabase (Authentication > Users), not in this browser */
+ try{NAV.forEach(g=>{g[1]=g[1].filter(i=>!["users","emp_access"].includes(i[1]))})}catch(e){}
  ACTS.esout=()=>{ask("Sign out?","Sign out",()=>C.signOut())};
  const st=()=>{const f=document.querySelector(".side-f");if(!f)return;let el=document.getElementById("cst");if(!el){f.insertAdjacentHTML("afterbegin",'<div id="cst" role="status" aria-live="polite"></div>');el=document.getElementById("cst")}
   const s=C.status();el.className=s==="saved"||s==="saving"?"":"off";el.textContent=s==="saved"?"All changes saved":s==="saving"?"Saving…":s==="offline"?"Offline. Changes are not saved yet.":s==="stale"?"Newer data is available. Reload.":"Conflict. Reload.";

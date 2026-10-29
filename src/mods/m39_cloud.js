@@ -5,6 +5,8 @@
  /* the signed-in role is fixed by the server: no "preview as" switching */
  const lockRole=()=>{try{if(role!==C.role)role=C.role;const sel=$("#role");if(sel){if(sel.value!==C.role)sel.value=C.role;sel.disabled=true}}catch(e){}};
  window.rmToggle=()=>{};lockRole();setInterval(()=>{if(role!==C.role){lockRole();draw()}else lockRole()},500);
+ /* sign-ins live in Supabase (Authentication > Users), not in this browser */
+ try{NAV.forEach(g=>{g[1]=g[1].filter(i=>!["users","emp_access"].includes(i[1]))})}catch(e){}
  ACTS.esout=()=>{ask("Sign out?","Sign out",()=>C.signOut())};
  const st=()=>{const f=document.querySelector(".side-f");if(!f)return;let el=document.getElementById("cst");if(!el){f.insertAdjacentHTML("afterbegin",'<div id="cst" role="status" aria-live="polite"></div>');el=document.getElementById("cst")}
   const s=C.status();el.className=s==="saved"||s==="saving"?"":"off";el.textContent=s==="saved"?"All changes saved":s==="saving"?"Saving…":s==="offline"?"Offline. Changes are not saved yet.":s==="stale"?"Newer data is available. Reload.":"Conflict. Reload.";
