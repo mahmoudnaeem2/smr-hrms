@@ -1,5 +1,25 @@
 # Frontend changelog
 
+## 30 Oct 2026: simpler navigation (hubs)
+
+- The side menu went from 47 entries to about 9 (exact numbers depend on the role). Related pages are now tabs inside one hub:
+  - **Dashboard**
+  - **Inbox:** Approvals, HR requests, Notifications. The menu shows the approvals count.
+  - **My portal:** My portal, My profile
+  - **Employees:** Directory, Organization chart, Reporting lines, Departments, Job positions
+  - **Contracts & records:** Contracts, Probation, Documents, Warnings, Offboarding
+  - **Attendance:** Daily, Monthly, Timesheets, Shifts, Overtime, Exceptions
+  - **Leave:** Requests, Balances, Calendar, Policies
+  - **Payroll:** Overview, Run payroll, Inputs, Loans, Payslips, Final settlements
+  - **Reports**
+  - **Settings**
+- **Settings** is one index page. It lists 17 settings in six groups (Organization, People and access, Payroll, Leave, Email, System), each with a one-line explanation. Every settings page has a "Settings" link back.
+- Menu groups that hold a single entry no longer show a heading.
+- Employees keep their own short menu (My portal, My profile, Notifications, Leave calendar, Payslips) without hub tabs.
+- Page routes are unchanged, so links, search and tests still work. The code is in `src/mods/m45_hubs.js`, with styles at the end of `m8.css`.
+- Checks: all 21 local suites passed (audit_all 0 issues, sweep 526), and cloud_e2e had 37 PASS.
+
+
 ## 30 Oct 2026: home dashboard v5 (executive HR summary)
 
 - The dashboard is now a one-page monthly HR summary that can be shown to management and printed. It has these parts:

@@ -68,6 +68,15 @@ Colours live in `:root` in `src/frag_v5.html` and `m7.css`. **New code uses `var
 - **Text:** content is left-aligned, and line length stays under about 75 characters (`max-width: 62–70ch` on descriptions).
 - **Right-to-left:** the app is English only for now. New CSS should prefer logical properties (`margin-inline`, `inset-inline`) so it can be added later.
 
+## 4b. Navigation
+
+- The menu shows **hubs**, not pages. A hub groups related pages and shows them as tabs above the page title (`.hubt`). There are 10 hubs: Dashboard, Inbox, My portal, Employees, Contracts & records, Attendance, Leave, Payroll, Reports and Settings.
+- The hubs are defined in `HUBS` in `m45_hubs.js`, and the settings list in `SETG`.
+- **Adding a page:**
+  - Add it to an existing hub; don't create a new menu entry.
+  - A settings page goes into `SETG`, with a one-line description.
+- The Employee role gets its own short menu and no hub tabs.
+
 ## 5. Components
 
 The full rules are in `docs/COMPONENT_GUIDELINES.md`. In short:

@@ -153,3 +153,38 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 /* summary charts keep the size they were drawn for, so labels stay small */
 .xchart svg{height:210px;max-height:none;width:100%}
 @media(max-width:560px){.xf,.xf+.xf,.xf:nth-child(2n+1),.xf:first-child{box-shadow:none}.xf:nth-child(n+3){box-shadow:inset 0 1px 0 var(--bd)}.xf:nth-child(2n){box-shadow:inset 1px 0 0 var(--bd)}.xf:nth-child(2n):nth-child(n+3){box-shadow:inset 1px 0 0 var(--bd),inset 0 1px 0 var(--bd)}.xf:last-child:nth-child(odd){grid-column:1/-1}}
+
+/* ===== Simplified navigation: hubs in the menu, tabs inside each hub, settings index ===== */
+#nav .grp2 .gl{display:block!important;max-height:none!important;overflow:visible!important}
+#nav .gh{pointer-events:none;cursor:default;height:auto!important;margin:var(--sp-4) 0 var(--sp-1)!important;padding:0 12px!important}
+#nav .gh .chev,#nav .gh .ic{display:none!important}
+#nav .grp2:first-child .gh{margin-top:var(--sp-2)!important}
+.hubt{margin:0 0 var(--sp-4);border-bottom:1px solid var(--bd)}
+.hubr{display:flex;gap:var(--sp-1);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hubr::-webkit-scrollbar{display:none}
+.hubr button{flex:none;position:relative;border:0;background:none;padding:10px 14px 12px;font:inherit;font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--mu);cursor:pointer;border-radius:var(--r-sm) var(--r-sm) 0 0;transition:color var(--dur-1),background-color var(--dur-1)}
+.hubr button:hover{color:var(--tx);background:var(--soft)}
+.hubr button.on{color:var(--brand)}.hubr button.on::after{content:"";position:absolute;inset-inline:10px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--brand)}
+.hubt.hubs{border:0;margin-bottom:var(--sp-2)}
+.hbk{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 0;color:var(--brand);font:inherit;font-weight:var(--fw-semi);font-size:var(--fs-sm);cursor:pointer}.hbk .ic{width:16px;height:16px}.hbk:hover{text-decoration:underline}
+.stg{margin-bottom:var(--sp-6)}.stg h2{font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--mu);margin:0 0 var(--sp-2)}
+.stl{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--sp-3)}
+.sti{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4);background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-lg);text-align:start;cursor:pointer;color:var(--tx);font:inherit;transition:border-color var(--dur-1),background-color var(--dur-1)}
+.sti:hover,.sti:focus-visible{border-color:var(--brand);background:color-mix(in srgb,var(--soft) 50%,var(--surf))}
+.sti>.ic:first-child{width:20px;height:20px;padding:9px;box-sizing:content-box;border-radius:var(--r-md);background:var(--soft);color:var(--brand);flex:none}
+.sti span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sti b{font-weight:var(--fw-semi)}.sti small{color:var(--mu);font-size:var(--fs-sm)}
+.sti .sta{width:18px;height:18px;color:var(--mu);flex:none}
+.hubt+.ph .backl{display:none!important}
+#side .nav{height:42px!important}
+#nav .gh{margin:var(--sp-3) 0 2px!important}
+#nav .grp2.one{margin-top:var(--sp-2)!important;padding-top:var(--sp-2)!important}
+@media(min-width:901px){
+ #side .brand{padding:14px 16px 10px!important}#side .brand img{width:44px!important;height:44px!important}
+ #side .side-f{display:flex;align-items:center;gap:var(--sp-2);padding:6px 12px 8px!important}
+ #side .side-f .nav{width:auto;height:34px!important;padding:0 8px;flex:none}
+ body:not(.rail) #side .side-f .nav .lb{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+ #bst{margin:0!important;margin-inline-start:auto!important;font-size:10.5px!important;opacity:.7;text-align:end}
+ #side .side-u{padding:8px 12px!important}
+}
+/* a group with a single entry needs no heading */
+#nav .grp2:has(.gl>.nav:only-child) .gh{display:none!important}
+#nav .grp2:has(.gl>.nav:only-child){margin-top:var(--sp-3)!important}
