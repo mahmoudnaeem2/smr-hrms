@@ -39,5 +39,5 @@ FORMS.mailcfg=o=>{if(![R.HRD,R.ADM].includes(role))return"Only HR Director or th
  for(const k of["cc"]){if(o[k]&&!/^\S+@\S+\.\S+$/.test(o[k]))return"The copy address is not a valid email."}
  const rm={};for(const r of[R.HRD,R.HRS,R.PAY,R.FIN]){const v=(o["rm_"+r]||"").trim();if(v&&!/^\S+@\S+\.\S+$/.test(v))return r+": the email is not valid.";rm[r]=v}
  Object.assign(c,{client:o.client,on:o.on?1:0,ev:{ap:o.ev_ap?1:0,dec:o.ev_dec?1:0,hq:o.ev_hq?1:0,wn:o.ev_wn?1:0},rm,cc:(o.cc||"").trim(),link:(o.link||"").trim(),sig:o.sig||""});sv("mailcfg",false);audit("Email settings changed","");toast("Email settings saved");draw()};
-ACTS.mail_test=()=>{const to=($("#mtest")||{}).value||"";if(!/^\S+@\S+\.\S+$/.test(to))return toast("Type a valid email for the test.");mailOpen({to,cc:"",subject:"[SMR HR] Test email",body:"This is a test message from the SMR HRMS.\n\n"+MCFG().sig})};
+ACTS.mail_test=()=>{const to=($("#mtest")||{}).value||"";if(!/^\S+@\S+\.\S+$/.test(to))return toast("Type a valid email for the test.");mailOpen({to,cc:"",subject:"[SMR HR] Test email",body:"This is a test message from SMR Workplace.\n\n"+MCFG().sig})};
 NAV.forEach(g=>{if(g[0]==="Administration"){g[1].push(["Email Outbox","mail_out"],["Email Settings","mail_set"])}});

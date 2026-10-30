@@ -18,7 +18,7 @@ const STAFF = ["System Administrator", "HR Director", "HR Specialist", "Payroll 
 
 function page(title: string, lines: string[], appUrl: string, button: string) {
   return `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:520px;margin:0 auto;color:#10233d">
-  <div style="background:#0460B5;color:#fff;padding:18px 22px;border-radius:14px 14px 0 0;font-weight:700;font-size:16px">SMR HRMS &amp; Payroll</div>
+  <div style="background:#0460B5;color:#fff;padding:18px 22px;border-radius:14px 14px 0 0;font-weight:700;font-size:16px">SMR Workplace</div>
   <div style="border:1px solid #dfe5ee;border-top:0;border-radius:0 0 14px 14px;padding:22px">
     <h2 style="margin:0 0 12px;font-size:19px">${esc(title)}</h2>
     ${lines.map((l) => `<p style="margin:6px 0;color:#34465f;font-size:14.5px;line-height:1.5">${l}</p>`).join("")}
@@ -56,7 +56,7 @@ async function send(to: string[], subject: string, html: string) {
   if (!host) throw new Error("mail_not_configured");
   const port = +(Deno.env.get("SMTP_PORT") || 465);
   const c = new SMTPClient({ connection: { hostname: host, port, tls: port === 465, auth: { username: Deno.env.get("SMTP_USER")!, password: Deno.env.get("SMTP_PASS")! } } });
-  try { await c.send({ from, to, subject, content: "Open the SMR HRMS app to see this message.", html }); } finally { await c.close(); }
+  try { await c.send({ from, to, subject, content: "Open SMR Workplace to see this message.", html }); } finally { await c.close(); }
 }
 
 Deno.serve(async (req) => {

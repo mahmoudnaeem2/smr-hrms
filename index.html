@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>SMR HRMS & Payroll</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>SMR Workplace</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
@@ -1088,12 +1088,12 @@ body.hasacct #esbar{display:none!important}
 .hubr button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 @media(max-width:560px){.hubr{display:flex!important;overflow-x:auto}.hubr button{padding:0 12px!important}}
 </style></head><body>
-<div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
+<div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">SMR Workplace</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
-<aside id="side" aria-label="Main navigation"><div class="brand"><img class="slogo" alt="SMR – savills management resources"><div class="prod">HRMS &amp; Payroll<small>Egypt</small></div></div><nav id="nav"></nav>
+<aside id="side" aria-label="Main navigation"><div class="brand"><img class="slogo" alt="SMR – savills management resources"><div class="prod">SMR Workplace<small>Egypt</small></div></div><nav id="nav"></nav>
 <div class="side-u"><div class="me"><i class="av" id="me">HR</i><select id="role" aria-label="Preview as role"></select></div></div><div class="side-f"><button class="nav" data-x="collapse" title="Collapse menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="lb">Collapse menu</span></button></div></aside>
 <div class="main">
-<header class="topbar"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button><img class="mlogo slogo" alt="SMR"><span class="mprod">HRMS</span><button class="iconbtn" id="stog" type="button" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg></button><div class="crumb" id="crumb"></div>
+<header class="topbar"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button><img class="mlogo slogo" alt="SMR"><span class="mprod">Workplace</span><button class="iconbtn" id="stog" type="button" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg></button><div class="crumb" id="crumb"></div>
 <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs" type="search" placeholder="Search employees" aria-label="Search employees"></div>
 <div class="seg" role="group" aria-label="Data source"><button data-mode="sample">Sample data</button><button data-mode="mine">My records</button></div>
 <button class="iconbtn" data-x="bell" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="bdg" hidden></span></button>
@@ -3128,7 +3128,7 @@ FORMS.mailcfg=o=>{if(![R.HRD,R.ADM].includes(role))return"Only HR Director or th
  for(const k of["cc"]){if(o[k]&&!/^\S+@\S+\.\S+$/.test(o[k]))return"The copy address is not a valid email."}
  const rm={};for(const r of[R.HRD,R.HRS,R.PAY,R.FIN]){const v=(o["rm_"+r]||"").trim();if(v&&!/^\S+@\S+\.\S+$/.test(v))return r+": the email is not valid.";rm[r]=v}
  Object.assign(c,{client:o.client,on:o.on?1:0,ev:{ap:o.ev_ap?1:0,dec:o.ev_dec?1:0,hq:o.ev_hq?1:0,wn:o.ev_wn?1:0},rm,cc:(o.cc||"").trim(),link:(o.link||"").trim(),sig:o.sig||""});sv("mailcfg",false);audit("Email settings changed","");toast("Email settings saved");draw()};
-ACTS.mail_test=()=>{const to=($("#mtest")||{}).value||"";if(!/^\S+@\S+\.\S+$/.test(to))return toast("Type a valid email for the test.");mailOpen({to,cc:"",subject:"[SMR HR] Test email",body:"This is a test message from the SMR HRMS.\n\n"+MCFG().sig})};
+ACTS.mail_test=()=>{const to=($("#mtest")||{}).value||"";if(!/^\S+@\S+\.\S+$/.test(to))return toast("Type a valid email for the test.");mailOpen({to,cc:"",subject:"[SMR HR] Test email",body:"This is a test message from SMR Workplace.\n\n"+MCFG().sig})};
 NAV.forEach(g=>{if(g[0]==="Administration"){g[1].push(["Email Outbox","mail_out"],["Email Settings","mail_set"])}});
 
 /* ===== m22: final settlement worksheet for leavers ===== */
