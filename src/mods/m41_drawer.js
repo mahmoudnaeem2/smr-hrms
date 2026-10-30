@@ -17,7 +17,7 @@
   else{
    const tbl=`<div class="wrap drt"><table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===0?' class="f"':""}>${cell(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
    const cards=`<div class="drl">${rows.map(r=>{const t=r.findIndex(c=>String(c).trim()!=="");const head=t<0?"":cell(r[t]);return`<div class="drc"><div class="drh">${head}</div>${r.map((c,i)=>i===t||String(c).trim()===""?"":`<div class="drk"><span>${esc(cols[i]||"")}</span><b>${cell(c)}</b></div>`).join("")}</div>`}).join("")}</div>`;
-   $("#db").innerHTML=(rows.length>8?`<div class="drn">${rows.length} records</div>`:"")+tbl+cards}
+   $("#db").innerHTML=rows.length>=8&&typeof tfBar==="function"?`<div class="tfw">${tfBar(rows.length)}${tbl}${cards}</div>`:tbl+cards}
   $("#dx").hidden=!rows.length;$("#drawer").classList.add("open");$("#dcl").focus()};
  /* the side panel closes when you click anywhere outside it, or press Escape */
  document.addEventListener("click",ev=>{const d=document.getElementById("drawer");if(!d||!d.classList.contains("open"))return;const t=ev.target;if(!t||!t.closest)return;if(t.closest("#drawer,#confirm,.scrim,.rmo,.toast,#toast,#cg"))return;if(!document.contains(t))return;closeDr()},true);

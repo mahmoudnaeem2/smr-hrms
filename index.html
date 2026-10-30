@@ -1016,6 +1016,33 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 /* a group with a single entry needs no heading */
 #nav .grp2:has(.gl>.nav:only-child) .gh{display:none!important}
 #nav .grp2:has(.gl>.nav:only-child){margin-top:var(--sp-3)!important}
+/* breadcrumb in the top bar: where you are, not the product name */
+.crumb nav{display:flex;align-items:center;gap:10px;min-width:0}
+.crumb nav span{color:var(--mu)!important;font-size:var(--fs-base)!important;font-weight:var(--fw-med)!important}
+.crumb nav span::after{content:"/"!important;margin-inline-start:10px;color:var(--bd)}
+.crumb nav b{color:var(--tx)!important;font-size:var(--fs-base)!important;font-weight:var(--fw-semi)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* list search: one compact field above any list with 4 or more rows */
+.tsr{display:flex;align-items:center;gap:var(--sp-3);margin:0 0 var(--sp-3);flex-wrap:wrap}
+.tsrf{position:relative;display:flex;align-items:center;flex:0 1 360px;min-width:200px;margin:0}
+.tsrf svg{position:absolute;inset-inline-start:12px;width:17px;height:17px;color:var(--mu);pointer-events:none}
+.tsrf input{width:100%;padding-inline-start:38px!important;margin:0!important;background:var(--surf)}
+.tsrn{font-size:var(--fs-sm);color:var(--mu)}
+.tsr0{padding:var(--sp-5)!important}
+tr[hidden]{display:none}
+.tfw [hidden]{display:none!important}.tfe{margin-top:var(--sp-3)}
+/* long text cells (marked .wr by the app) always wrap inside their column instead of running over the next one */
+.card.wrap td.wr{white-space:normal!important;overflow-wrap:anywhere;min-width:220px;max-width:420px}
+/* collapsed menu (rail): only icons. Account text and save status hide; the expand button stays visible at the bottom */
+@media(min-width:901px){
+ body.rail #esbar,body.rail #cst,body.rail #bst{display:none!important}
+ body.rail #side .side-u{padding:8px 0!important;display:flex;justify-content:center}
+ body.rail #side .side-f{display:flex!important;justify-content:center;padding:8px 0 12px!important;border-top:1px solid rgba(255,255,255,.14)}
+ body.rail #side .side-f .nav{width:44px!important;height:40px!important;padding:0!important;justify-content:center;border-radius:var(--r-md);background:rgba(255,255,255,.1)}
+ body.rail #side .side-f .nav:hover{background:rgba(255,255,255,.2)}
+ body.rail #side .side-f .nav .lb{display:none!important}
+ body.rail #side #nav{overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+}
+@media(min-width:901px){body.rail .rmb{width:48px!important;height:48px;padding:0!important;justify-content:center;border-radius:var(--r-lg)!important;margin:0 auto}body.rail .rmb .rmt,body.rail .rmb>svg{display:none!important}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -1330,9 +1357,16 @@ const META=new Proxy({},{get:(_,k)=>PAGES[k]?[PAGES[k].title,PAGES[k].desc]:["",
 
 /* ----- tables, tabs, paging ----- */
 const PGS={},TAB={},CSVS={};
-function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${CPY(o.empty||"Nothing here yet. Records will show up in this table once they are added.")}</div></div>`;return`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`}
-function ptbl(key,cols,rows,o={}){const ps=o.ps||15,n=Math.max(1,Math.ceil(rows.length/ps));let p=PGS[key]||0;if(p>=n)p=n-1;PGS[key]=p;const ck=o.csv||key;CSVS[ck]={cols,rows};
- return tbl(cols,rows.slice(p*ps,p*ps+ps),{...o,csv:ck})+(n>1?`<div class="bar" style="margin-top:10px"><button class="b" data-pgk="${key}:-1" ${p?"":"disabled"}>Previous</button><span>Page ${p+1} of ${n} · ${rows.length} records</span><button class="b" data-pgk="${key}:1" ${p>=n-1?"disabled":""}>Next</button></div>`:"")}
+function tbl(cols,rows,o={}){if(!rows.length)return`<div class="card"><div class="empty">${CPY(o.empty||"Nothing here yet. Records will show up in this table once they are added.")}</div></div>`;const t=`<div class="card wrap"${o.csv?` data-csv="${o.csv}"`:""}><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+ /* every full list of 8+ rows (or one that asks for it) gets a search box that filters the rows on screen; paged lists use ptbl's own search */
+ return !o._p&&(o.search||rows.length>=8)&&typeof tfBar==="function"?`<div class="tfw">${tfBar(rows.length)}${t}</div>`:t}
+const TQ={},tqTxt=v=>String(v==null?"":v).replace(/<[^>]*>/g," ").replace(/&amp;/g,"&").toLowerCase();
+function ptbl(key,cols,rows,o={}){const all=rows.length,q=(TQ[key]||"").trim().toLowerCase();if(q)rows=rows.filter(r=>r.some(c=>tqTxt(c).includes(q)));
+ const sb=all>=6||q?`<div class="tsr"><label class="tsrf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input type="search" data-tq="${key}" value="${esc(TQ[key]||"")}" placeholder="Search in this list" aria-label="Search in this list"></label><span class="tsrn" aria-live="polite">${q?rows.length+" of "+all:all+" records"}</span></div>`:"";
+ if(q&&!rows.length)return sb+`<div class="card"><div class="empty">Nothing matches "${esc(TQ[key])}". Try a name, number or department.</div></div>`;
+ return sb+ptbl0(key,cols,rows,o)}
+function ptbl0(key,cols,rows,o={}){const ps=o.ps||15,n=Math.max(1,Math.ceil(rows.length/ps));let p=PGS[key]||0;if(p>=n)p=n-1;PGS[key]=p;const ck=o.csv||key;CSVS[ck]={cols,rows};
+ return tbl(cols,rows.slice(p*ps,p*ps+ps),{...o,csv:ck,_p:1}).replace('<div class="card wrap"','<div class="card wrap" data-tqk="1"')+(n>1?`<div class="bar" style="margin-top:10px"><button class="b" data-pgk="${key}:-1" ${p?"":"disabled"}>Previous</button><span>Page ${p+1} of ${n} · ${rows.length} records</span><button class="b" data-pgk="${key}:1" ${p>=n-1?"disabled":""}>Next</button></div>`:"")}
 const csvBtn=(name,cols,rows)=>{CSVS[name]={cols,rows};return`<button class="b" data-act="xlsx:${name}">Export Excel</button> <button class="b" data-act="csv:${name}">Copy as CSV</button>`};
 function tabs(key,items,def){const cur=TAB[key]||def||items[0][0];return`<div class="tabs" role="tablist">${items.map(([k,l])=>`<button role="tab" aria-selected="${k===cur}" class="tab ${k===cur?"on":""}" data-tab="${key}:${k}">${l}</button>`).join("")}</div>`}
 const tab=(key,def)=>TAB[key]||def;
@@ -1380,7 +1414,7 @@ function openNotif(){if(!canSee("dash"))return;const m=build(),order={high:0,med
  $("#db").innerHTML=m.alerts.filter(a=>a[3]).sort((a,b)=>order[a[0]]-order[b[0]]).map(([sv,t,id,n])=>`<button class="al" data-d="${id}"><i class="sv ${sv}"></i><span>${t}</span><span class="badge ${sv==="high"?"s-er":sv==="med"?"s-wn":"s-mu"}">${n}</span></button>`).join("")||`<div class="empty">Nothing needs attention right now.</div>`;$("#dx").hidden=true;$("#drawer").classList.add("open");$("#dcl").focus()}
 const PACT={dash:()=>`${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")} Payroll run</button>`:""}<button class="b" id="rf"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-15-6.7L3 8M3 3v5h5M3 12a9 9 0 0 0 15 6.7L21 16M21 21v-5h-5"/></svg> Refresh</button>`};
 function draw(){if(!canSee(page))page=homeFor(role);document.body.classList.toggle("pdash",page==="dash");const pg=PAGES[page];$("#title").textContent=pg.title;$("#desc").textContent=pg.desc;nav();
- $("#crumb").innerHTML=`<b>SMR HRMS &amp; Payroll</b><span>· Savills Management Resources Egypt</span>`;$("#pact").innerHTML=PACT[page]?PACT[page]():"";trackNav();
+ $("#crumb").innerHTML=(()=>{const h=typeof hubOf==="function"&&role!==R.EMP?hubOf(page):null,t=esc(pg.title);if(h&&h.p.length===1&&h.p[0][1]===page)return`<nav aria-label="Breadcrumb"><b aria-current="page">${esc(h.n)}</b></nav>`;return h&&h.n!==pg.title&&page!=="settings"?`<nav aria-label="Breadcrumb"><span>${esc(h.n)}</span><b aria-current="page">${t}</b></nav>`:`<nav aria-label="Breadcrumb"><b aria-current="page">${t}</b></nav>`})();$("#pact").innerHTML=PACT[page]?PACT[page]():"";trackNav();
  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===MODE;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
  $("#me").textContent=ini(typeof SSES!=="undefined"&&SSES?SSES.name:typeof ESES!=="undefined"&&ESES?(empBy(ESES.no)||{name:role}).name:role);$("#gs").disabled=!canSee("emp");$("#gs").placeholder=canSee("emp")?"Search employees":"Search not available";
  $("#strip").innerHTML=(MODE==="sample"?`<span class="chip">Sample data</span><span>Generated for demonstration. These are not real SMR employees or records.</span>`:`<span class="chip">My records</span><span>Only what you entered. Modules without data show empty states.</span>`)+`<span class="grow"></span>`;
@@ -1631,7 +1665,7 @@ function att_m(){const m=monthsBack(4)[-ATM.off<4?-ATM.off:0]||monthsBack(1)[0];
  const rows=L.map(e=>{const cs=days.map(d=>{const dt=new Date(d+"T00:00:00");return dt>T0||!empAt(e,d)?-2:isWk(dt)?-3:attCode(e,d)});const cnt=c=>cs.filter(x=>x===c).length;
   return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button>`,...cs.map(c=>c>0?`<span class="mc c${c}">${sym[c]}</span>`:c===-3?'<span class="mc w"></span>':'<span class="mu">·</span>'),cnt(1)+cnt(2),cnt(2),cnt(3),cnt(4)]});
  return`<div class="bar"><div class="tabs">${monthsBack(4).map((x,i)=>`<button class="tab ${-ATM.off===i?"on":""}" data-act="atm:${-i}">${x.label}</button>`).join("")}</div><select data-act-change="atmd" id="atmd" aria-label="Department">${opts(DEPTS,ATM.dept,"All departments")}</select>${csvBtn("attm",head,rows)}</div>
- <div class="card wrap"><table class="mx"><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div><div class="leg" style="margin-top:8px"><span><i class="mc c1"></i>P on time</span><span><i class="mc c2"></i>L late</span><span><i class="mc c3"></i>A absent</span><span><i class="mc c4"></i>V leave</span><span>Grey cells are weekend (Fri–Sat)</span></div>${note("The P total counts on-time and late arrivals as present.")}`}
+ <div class="tfw">${typeof tfBar==="function"&&rows.length>=8?tfBar(rows.length):""}<div class="card wrap"><table class="mx"><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div></div><div class="leg" style="margin-top:8px"><span><i class="mc c1"></i>P on time</span><span><i class="mc c2"></i>L late</span><span><i class="mc c3"></i>A absent</span><span><i class="mc c4"></i>V leave</span><span>Grey cells are weekend (Fri–Sat)</span></div>${note("The P total counts on-time and late arrivals as present.")}`}
 ACTS.atm=r=>{ATM.off=+r;draw()};
 reg("att_m","Monthly Attendance","A month at a glance for every employee, one cell per day.",A("HRD","HRS","DM","PAY"),att_m);
 
@@ -1748,7 +1782,7 @@ function comp(){const can=canPrep(),canAppr=[R.HRD,R.FIN].includes(role),cur=tab
  const demoBtn=can?`<button class="b p" data-act="load26demo">Load 2026 rules for trial use</button> `:"",testBtn=MODE==="sample"&&can&&!L.some(r=>r.test)?`<button class="b" data-act="testrules">Load illustrative TEST rules</button>`:"";
  const state=RKEYS.map(([k,l])=>{const a=L.filter(r=>r.key===k&&r.status==="approved"&&!r.test&&r.eff<=today).sort((x,y)=>x.eff<y.eff?1:-1)[0],t=L.find(r=>r.key===k&&r.test);
   return[esc(l),a?esc(fmtRV(k,a.value)):'<span class="mu">None approved</span>',a?a.eff:"–",a?(a.demo?bd("Demo, unverified","s-wn"):bd("Approved","s-ok")):t&&MODE==="sample"?bd("Test values only","s-wn"):bd("Missing","s-er"),a?esc(a.demo?"Approved for trial use on "+a.verDate+". Not checked by a person against the official source.":a.srcUrl?"Verified by "+a.verifier+" on "+a.verDate:""):""]});
- const hist=L.slice().sort((a,b)=>a.key===b.key?(a.eff<b.eff?1:-1):a.key<b.key?-1:1).map(r=>[esc(RKEYS.find(x=>x[0]===r.key)[1]),esc(fmtRV(r.key,r.value)),r.eff,r.test?bd("Test – not law","s-wn"):r.demo?bd("Trial, unverified","s-wn"):bd(r.status[0].toUpperCase()+r.status.slice(1),r.status==="approved"?"s-ok":r.status==="review"?"s-wn":"s-mu"),esc(r.createdBy),r.status==="approved"&&!r.test?esc(r.verifier+", "+r.verDate)+(r.srcUrl?`<br><a href="${esc(r.srcUrl)}" target="_blank" rel="noopener">Source</a> · ${esc(r.legalRef)}`:""):"–",
+ const hist=L.slice().sort((a,b)=>a.key===b.key?(a.eff<b.eff?1:-1):a.key<b.key?-1:1).map(r=>[esc(RKEYS.find(x=>x[0]===r.key)[1]),esc(fmtRV(r.key,r.value)).replace(/; /g,"<br>"),r.eff,r.test?bd("Test – not law","s-wn"):r.demo?bd("Trial, unverified","s-wn"):bd(r.status[0].toUpperCase()+r.status.slice(1),r.status==="approved"?"s-ok":r.status==="review"?"s-wn":"s-mu"),esc(r.createdBy),r.status==="approved"&&!r.test?esc(r.verifier+", "+r.verDate)+(r.srcUrl?`<br><a href="${esc(r.srcUrl)}" target="_blank" rel="noopener">Source</a> · ${esc(r.legalRef)}`:""):"–",
   (r.demo&&can?`<button class="b" data-act="rver:${r.id}">Verify properly</button> `:"")+(r.status==="draft"&&can?`<button class="b" data-act="rsub:${r.id}">Submit for review</button> `:"")+(r.status==="review"&&canAppr&&role!==r.createdBy?`<button class="b p" data-act="rapp:${r.id}">Review and approve</button> <button class="b" data-act="rrej:${r.id}">Return</button>`:r.status==="review"&&canAppr?'<span class="mu">Needs a different approver role</span>':"")+(r.status!=="approved"&&can?` <button class="b" data-act="rdel:${r.id}">Delete</button>`:"")]);
  return`${note("<b>No statutory value is built into this system.</b> Insurance limits and rates, exemptions and tax brackets are entered as dated records. Each record must be reviewed and approved by a different role, with the verifier, date, official source link and legal reference, before payroll can use it.","")}
  ${tabs("rl",[["rules","Rules in force"],["hist","All versions"],["new","New rule version"]],"rules")}<div style="margin-top:12px">
@@ -3590,7 +3624,7 @@ ACTS.lrmore=()=>{TAB.lrall=1;draw()};
   else{
    const tbl=`<div class="wrap drt"><table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===0?' class="f"':""}>${cell(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
    const cards=`<div class="drl">${rows.map(r=>{const t=r.findIndex(c=>String(c).trim()!=="");const head=t<0?"":cell(r[t]);return`<div class="drc"><div class="drh">${head}</div>${r.map((c,i)=>i===t||String(c).trim()===""?"":`<div class="drk"><span>${esc(cols[i]||"")}</span><b>${cell(c)}</b></div>`).join("")}</div>`}).join("")}</div>`;
-   $("#db").innerHTML=(rows.length>8?`<div class="drn">${rows.length} records</div>`:"")+tbl+cards}
+   $("#db").innerHTML=rows.length>=8&&typeof tfBar==="function"?`<div class="tfw">${tfBar(rows.length)}${tbl}${cards}</div>`:tbl+cards}
   $("#dx").hidden=!rows.length;$("#drawer").classList.add("open");$("#dcl").focus()};
  /* the side panel closes when you click anywhere outside it, or press Escape */
  document.addEventListener("click",ev=>{const d=document.getElementById("drawer");if(!d||!d.classList.contains("open"))return;const t=ev.target;if(!t||!t.closest)return;if(t.closest("#drawer,#confirm,.scrim,.rmo,.toast,#toast,#cg"))return;if(!document.contains(t))return;closeDr()},true);
@@ -3658,6 +3692,32 @@ function hubStrip(){const main=document.querySelector("main"),ph=main&&main.quer
  const on=s.querySelector(".on");if(on&&on.scrollIntoView)try{on.scrollIntoView({block:"nearest",inline:"nearest"})}catch(e){}}
 (function(){const go=()=>{const v=document.getElementById("view");if(!v)return setTimeout(go,50);hubStrip();new MutationObserver(hubStrip).observe(v,{childList:true})};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
 try{IC.settings=IC.mail_set||IC.company;IC.paydash=IC.pay_proc||IC.paydash}catch(e){}
+
+/* ===== m46: find things fast. A search box on every full list (tables and drill-down lists) that filters the rows on screen. ===== */
+const TF={};
+function tfBar(n){return`<div class="tsr tfb"><label class="tsrf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input type="search" data-tf placeholder="Search in this list" aria-label="Search in this list" autocomplete="off"></label><span class="tsrn" aria-live="polite" data-n="${n}">${n} records</span></div>`}
+function tfRows(w){return[...w.querySelectorAll("table tr")].filter(r=>!r.querySelector("th")).concat([...w.querySelectorAll(".drc")])}
+function tfApply(inp){const w=inp.closest(".tfw");if(!w)return;const q=inp.value.trim().toLowerCase(),words=q.split(/\s+/).filter(Boolean),rows=tfRows(w);let shown=0;
+ rows.forEach(r=>{const t=r.textContent.toLowerCase(),ok=!words.length||words.every(x=>t.includes(x));r.hidden=!ok;if(ok&&r.tagName==="TR")shown++});
+ const n=w.querySelector(".tsrn"),all=+((n&&n.dataset.n)||0);if(n)n.textContent=q?shown+" of "+all:all+" records";
+ let e=w.querySelector(".tfe");if(q&&!shown){if(!e){w.insertAdjacentHTML("beforeend",'<div class="empty tfe"></div>');e=w.querySelector(".tfe")}e.textContent='Nothing matches "'+inp.value.trim()+'". Try part of a name, a number or a department.'}else if(e)e.remove()}
+function tfKey(inp){const v=inp.closest("#db")?"drawer":(typeof page!=="undefined"?page:"");const all=[...document.querySelectorAll(v==="drawer"?"#db [data-tf]":"#view [data-tf]")];return v+"|"+all.indexOf(inp)}
+document.addEventListener("input",e=>{const i=e.target.closest&&e.target.closest("[data-tf]");if(!i)return;TF[tfKey(i)]=i.value;tfApply(i)});
+document.addEventListener("keydown",e=>{const i=e.target.closest&&e.target.closest("[data-tf]");if(i&&e.key==="Escape"&&i.value){e.stopPropagation();i.value="";TF[tfKey(i)]="";tfApply(i)}},true);
+/* keep what was typed when the page re-renders (saving, syncing, switching tabs inside the page) */
+(function(){const re=root=>root.querySelectorAll("[data-tf]").forEach(i=>{const v=TF[tfKey(i)];if(v){i.value=v;tfApply(i)}});
+ const go=()=>{const v=document.getElementById("view"),d=document.getElementById("db");if(!v)return setTimeout(go,50);new MutationObserver(()=>re(v)).observe(v,{childList:true});if(d)new MutationObserver(()=>{Object.keys(TF).forEach(k=>{if(k.startsWith("drawer|"))delete TF[k]})}).observe(d,{childList:true})};
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
+/* global search (top bar, Ctrl+K): people first, then pages (including hub tabs and settings), departments, projects and sign-in accounts. Every word must match. */
+function palResults(q){q=q.trim().toLowerCase();const out=[],W=q.split(/\s+/).filter(Boolean),M=t=>{t=String(t||"").toLowerCase();return W.every(w=>t.includes(w))};
+ if(!q){const seen=new Set();HIST.slice().reverse().forEach(h=>{if(seen.has(h.page)||h.page===page||!PAGES[h.page]||!canSee(h.page))return;seen.add(h.page);out.push({g:"Recent",t:PAGES[h.page].title,s:"Page",a:()=>go(h.page)})});return out.slice(0,6)}
+ if(canSee("profile")||canSee("emp")){allEmps().filter(typeof inScope==="function"?inScope:()=>true).filter(e=>M([e.name,e.no,e.pos,e.dept,e.project,e.email,e.mobile,e.mgr,e.loc,e.status].join(" "))).slice(0,6).forEach(e=>out.push({g:"Employees",t:e.name+" ("+e.no+")",s:[e.pos,e.dept,e.status].filter(Boolean).join(" · "),a:()=>canSee("profile")?ACTS.prof(e.no):(Q=e.no,go("emp"))}))}
+ const hubTxt=k=>{try{const h=hubOf(k);if(!h)return"";const tab=(h.p.find(x=>x[1]===k)||[])[0]||"";const st=typeof SETG!=="undefined"?(SETG.flatMap(g=>g[1].map(x=>[x[0],g[0]+" "+x[1]])).find(x=>x[0]===k)||[])[1]||"":"";return h.n+" "+tab+" "+st}catch(e){return""}};
+ Object.keys(PAGES).filter(k=>!(typeof HIDE_NAV!=="undefined"&&HIDE_NAV.includes(k))&&canSee(k)&&M(PAGES[k].title+" "+PAGES[k].desc+" "+hubTxt(k))).slice(0,6).forEach(k=>{const h=typeof hubOf==="function"?hubOf(k):null;out.push({g:"Pages",t:PAGES[k].title,s:(h&&h.n!==PAGES[k].title?h.n+" · ":"")+PAGES[k].desc,a:()=>go(k)})});
+ if(canSee("rep_dp")){DEPTS.filter(d=>M(d)).forEach(d=>out.push({g:"Departments",t:d,s:"Open the department and project report",a:()=>{F.dept=d;F.project="";TAB.rdp="dept";go("rep_dp")}}));
+  try{[...new Set([...ccNames(""),...PROJL()])].filter(p=>M(p)).slice(0,4).forEach(p=>out.push({g:"Projects and cost centers",t:p,s:"Open the project report",a:()=>{F.project=p;F.dept="";TAB.rdp="project";go("rep_dp")}}))}catch(e){}}
+ try{if(typeof UP!=="undefined"&&Array.isArray(UP)&&canSee("users"))UP.filter(u=>M([u.full_name,u.email,u.role].join(" "))).slice(0,4).forEach(u=>out.push({g:"Sign-in accounts",t:u.full_name||u.email,s:[u.email,u.role].join(" · "),a:()=>go("users")}))}catch(e){}
+ return out.slice(0,16)}
 
 /* ===== m44: motion layer (GSAP). One entrance per page change, dashboard draw-in, drawer content, count-up. See docs/ANIMATION_GUIDELINES.md ===== */
 const MO=(function(){
@@ -3730,7 +3790,7 @@ document.addEventListener("keydown",ev=>{if(ev.key!=="Escape")return;document.qu
   return`${UPERR?note(esc(UPERR),"er"):""}
   <div class="card" style="margin-bottom:12px"><h2>Add an account</h2><form class="g" data-form="cuser">${fld("Work email","email","email",{req:1})}${fld("Role","role","select",{req:1,opts:rolesFor(),val:"Employee"})}${fld("Employee (for the Employee role)","emp_no","select",{opts:empOpts()})}${fld("Full name (staff roles)","full_name","text")}<button class="b p" type="submit">Create account</button></form><div class="err"></div><div class="mu" style="margin-top:6px">An employee account shows that person's own data only. You get a temporary password to hand over, and they choose their own at first sign-in.</div></div>
   <div class="bar" style="margin-bottom:8px"><button class="b" data-act="ua_ref">Refresh</button><span class="mu">${UP.length} account(s)</span></div>
-  <div class="uatb">${tbl(["Account","Role","Employee","Status","Last sign-in",""],rows,{empty:"No accounts yet."})}</div>`}
+  <div class="uatb">${tbl(["Account","Role","Employee","Status","Last sign-in",""],rows,{empty:"No accounts yet.",search:true})}</div>`}
  ["users","emp_access"].forEach(k=>{if(PAGES[k]){PAGES[k].fn=usersPage;PAGES[k].title="Users & Access";PAGES[k].desc="Create sign-ins, set roles, and turn accounts on or off."}});
  ACTS.ua_ref=()=>{UP=null;draw()};
  ACTS.ua_role=id=>{const u=(UP||[]).find(x=>x.id===id);if(!u)return;openDr2("Change role",u.full_name+" · "+u.email,`<form class="g1" data-form="uarole"><input type="hidden" name="id" value="${esc(id)}">${fld("Role","role","select",{req:1,opts:rolesFor(),val:u.role==="Pending"?"Employee":u.role})}${fld("Employee (for the Employee role)","emp_no","select",{opts:empOpts(),val:u.emp_no||""})}<button class="b p" type="submit">Save role</button></form><div class="err"></div>`)};
@@ -3811,10 +3871,11 @@ function wire(){const ws=$("#wsel");if(ws)ws.onchange=e=>{WSNO=e.target.value;dr
 const acc=o.access;delete o.access;E.push(o);save();draw();if(acc)mkAccess(o.no).then(pw=>showCred([{no:o.no,name:o.name,pw}]))}}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-x]");if(!t)return;const x=t.dataset.x;
  if(x==="more"){FM=!FM;draw()}
- if(x==="collapse"){const r=document.body.classList.toggle("rail");try{localStorage.setItem("smr_rail",r?"1":"0")}catch(e){}}
+ if(x==="collapse"){const r=document.body.classList.toggle("rail");try{localStorage.setItem("smr_rail",r?"1":"0")}catch(e){}railLbl()}
  if(x==="bell")openNotif()});
 $("#gs").onkeydown=e=>{if(e.key==="Enter"&&canSee("emp")){Q=e.target.value;page="emp";PG=0;closeDr();draw()}};
 try{if(localStorage.getItem("smr_rail")==="1")document.body.classList.add("rail")}catch(e){}
+function railLbl(){const r=document.body.classList.contains("rail"),t=r?"Expand menu":"Collapse menu";document.querySelectorAll('[data-x="collapse"]').forEach(b=>{b.title=t;b.setAttribute("aria-label",t);const l=b.querySelector(".lb");if(l)l.textContent=t})}railLbl();
 draw();
 
 </script><script>window.SMR_CLOUD={"url": "https://ppnppyxikxbdzpuzwbht.supabase.co", "key": "sb_publishable_MM0UPZbzOLVd-0AJd4qVsg_wasGE3yK"};

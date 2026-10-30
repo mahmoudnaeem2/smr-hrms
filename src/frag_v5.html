@@ -407,9 +407,10 @@ function wire(){const ws=$("#wsel");if(ws)ws.onchange=e=>{WSNO=e.target.value;dr
   E.push(o);save();draw()}}
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-x]");if(!t)return;const x=t.dataset.x;
  if(x==="more"){FM=!FM;draw()}
- if(x==="collapse"){const r=document.body.classList.toggle("rail");try{localStorage.setItem("smr_rail",r?"1":"0")}catch(e){}}
+ if(x==="collapse"){const r=document.body.classList.toggle("rail");try{localStorage.setItem("smr_rail",r?"1":"0")}catch(e){}railLbl()}
  if(x==="bell")openNotif()});
 $("#gs").onkeydown=e=>{if(e.key==="Enter"&&canSee("emp")){Q=e.target.value;page="emp";PG=0;closeDr();draw()}};
 try{if(localStorage.getItem("smr_rail")==="1")document.body.classList.add("rail")}catch(e){}
+function railLbl(){const r=document.body.classList.contains("rail"),t=r?"Expand menu":"Collapse menu";document.querySelectorAll('[data-x="collapse"]').forEach(b=>{b.title=t;b.setAttribute("aria-label",t);const l=b.querySelector(".lb");if(l)l.textContent=t})}railLbl();
 draw();
 </script>

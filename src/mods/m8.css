@@ -188,3 +188,30 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 /* a group with a single entry needs no heading */
 #nav .grp2:has(.gl>.nav:only-child) .gh{display:none!important}
 #nav .grp2:has(.gl>.nav:only-child){margin-top:var(--sp-3)!important}
+/* breadcrumb in the top bar: where you are, not the product name */
+.crumb nav{display:flex;align-items:center;gap:10px;min-width:0}
+.crumb nav span{color:var(--mu)!important;font-size:var(--fs-base)!important;font-weight:var(--fw-med)!important}
+.crumb nav span::after{content:"/"!important;margin-inline-start:10px;color:var(--bd)}
+.crumb nav b{color:var(--tx)!important;font-size:var(--fs-base)!important;font-weight:var(--fw-semi)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* list search: one compact field above any list with 4 or more rows */
+.tsr{display:flex;align-items:center;gap:var(--sp-3);margin:0 0 var(--sp-3);flex-wrap:wrap}
+.tsrf{position:relative;display:flex;align-items:center;flex:0 1 360px;min-width:200px;margin:0}
+.tsrf svg{position:absolute;inset-inline-start:12px;width:17px;height:17px;color:var(--mu);pointer-events:none}
+.tsrf input{width:100%;padding-inline-start:38px!important;margin:0!important;background:var(--surf)}
+.tsrn{font-size:var(--fs-sm);color:var(--mu)}
+.tsr0{padding:var(--sp-5)!important}
+tr[hidden]{display:none}
+.tfw [hidden]{display:none!important}.tfe{margin-top:var(--sp-3)}
+/* long text cells (marked .wr by the app) always wrap inside their column instead of running over the next one */
+.card.wrap td.wr{white-space:normal!important;overflow-wrap:anywhere;min-width:220px;max-width:420px}
+/* collapsed menu (rail): only icons. Account text and save status hide; the expand button stays visible at the bottom */
+@media(min-width:901px){
+ body.rail #esbar,body.rail #cst,body.rail #bst{display:none!important}
+ body.rail #side .side-u{padding:8px 0!important;display:flex;justify-content:center}
+ body.rail #side .side-f{display:flex!important;justify-content:center;padding:8px 0 12px!important;border-top:1px solid rgba(255,255,255,.14)}
+ body.rail #side .side-f .nav{width:44px!important;height:40px!important;padding:0!important;justify-content:center;border-radius:var(--r-md);background:rgba(255,255,255,.1)}
+ body.rail #side .side-f .nav:hover{background:rgba(255,255,255,.2)}
+ body.rail #side .side-f .nav .lb{display:none!important}
+ body.rail #side #nav{overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+}
+@media(min-width:901px){body.rail .rmb{width:48px!important;height:48px;padding:0!important;justify-content:center;border-radius:var(--r-lg)!important;margin:0 auto}body.rail .rmb .rmt,body.rail .rmb>svg{display:none!important}}

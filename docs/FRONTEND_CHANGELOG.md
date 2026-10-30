@@ -1,5 +1,22 @@
 # Frontend changelog
 
+## 30 Oct 2026: finding things, breadcrumb, fixes
+
+- **Search in every list:**
+  - Every full table of 8 or more rows has a "Search in this list" box. So do Users & Access (always), Monthly Attendance and the drill-down lists in the side panel.
+  - The box filters the rows on screen and matches every word you type, in any column. It shows "6 of 52", a clear message when nothing matches, and Esc clears it.
+  - What you typed stays when the page re-renders.
+  - Paged lists keep their own search, which covers all pages. The code is `src/mods/m46_find.js`.
+- **Global search (Ctrl+K, or the box in the menu):**
+  - Matches every word, and shows people first (name, number, job, department, project, email, mobile, manager, location, status).
+  - Pages now also match their hub name, tab label and settings description, so "balances" or "tax" finds the right page.
+  - Sign-in accounts appear in cloud mode.
+- **Top bar:** the product name was replaced with a breadcrumb that shows where you are ("Leave / Leave Balances", "Settings / Company Settings").
+- **Long text in tables now wraps inside its column** instead of running over the next column (Tax & Insurance Settings). Tax brackets show one bracket per line.
+- **Collapsed menu:** the expand button is always visible at the bottom, the account box shrinks to the avatar, and the account and save-status text hide. The button label switches between "Collapse menu" and "Expand menu".
+- Checks: all 21 local suites passed (audit_all 0 issues, sweep 532), and cloud_e2e had 37 PASS.
+
+
 ## 30 Oct 2026: simpler navigation (hubs)
 
 - The side menu went from 47 entries to about 9 (exact numbers depend on the role). Related pages are now tabs inside one hub:
