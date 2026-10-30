@@ -1,5 +1,15 @@
 # Frontend changelog
 
+## 30 Oct 2026: account menu, hub tabs
+
+- **Account menu at the top right:** shows the avatar and first name, and opens a menu with the full name, role, My profile (when allowed), the manager view switch (when relevant) and **Sign out**.
+  - The sign-out block at the bottom of the side menu is hidden.
+  - On phones the button shows only the avatar.
+  - The code is `src/mods/m47_account.js`.
+- **Hub tabs are now a segmented control:** a soft track, with the current page raised on white in the brand colour. On phones the tabs scroll sideways.
+- Checks: smoke, audit_all (0 issues), valid, flow, cycle, sweep (532), a11y, mob, t_portal and rm all passed, and cloud_e2e had 37 PASS.
+
+
 ## 30 Oct 2026: finding things, breadcrumb, fixes
 
 - **Search in every list:**

@@ -1043,6 +1043,50 @@ tr[hidden]{display:none}
  body.rail #side #nav{overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 }
 @media(min-width:901px){body.rail .rmb{width:48px!important;height:48px;padding:0!important;justify-content:center;border-radius:var(--r-lg)!important;margin:0 auto}body.rail .rmb .rmt,body.rail .rmb>svg{display:none!important}}
+/* ===== account menu (top right) ===== */
+.acc{position:relative;order:20}
+.accb{display:flex;align-items:center;gap:10px;height:44px;padding:0 10px 0 4px;border:1px solid var(--bd);border-radius:var(--r-pill);background:var(--surf);color:var(--tx);cursor:pointer;font:inherit;transition:background-color var(--dur-1),border-color var(--dur-1)}
+.accb:hover,.accb[aria-expanded="true"]{background:var(--soft);border-color:color-mix(in srgb,var(--brand) 30%,var(--bd))}
+.accb .av{width:34px!important;height:34px!important;font-size:12px!important}
+.acct{display:flex;flex-direction:column;line-height:1.15;text-align:start}.acct b{font-size:var(--fs-sm);font-weight:var(--fw-semi);white-space:nowrap}.acct small{font-size:11.5px;color:var(--mu);white-space:nowrap}
+.accb>.ic{width:16px;height:16px;color:var(--mu)}
+.accm{position:absolute;inset-inline-end:0;top:calc(100% + 8px);width:280px;background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--e-3);padding:6px;z-index:var(--z-menu)}
+.acch{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid var(--bd);margin-bottom:6px}.acch .av{width:40px!important;height:40px!important;flex:none}
+.acch span{display:flex;flex-direction:column;min-width:0}.acch b{font-weight:var(--fw-semi)}.acch small{color:var(--mu);font-size:var(--fs-sm);overflow-wrap:anywhere}
+.accm [role=menuitem]{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:0;border-radius:var(--r-md);background:none;color:var(--tx);font:inherit;font-size:var(--fs-md);text-align:start;cursor:pointer}
+.accm [role=menuitem]:hover,.accm [role=menuitem]:focus-visible{background:var(--soft)}.accm [role=menuitem] .ic{width:18px;height:18px;color:var(--mu)}
+.accm .accout{color:var(--er)}.accm .accout .ic{color:var(--er)}
+.topbar #cst{order:10;margin:0;font-size:var(--fs-sm);color:var(--mu);opacity:1;white-space:nowrap}.topbar #cst.off{color:var(--wn)}
+/* the side menu no longer carries the account: hide the old signed-in block and, when signed in, the role box */
+#esbar{display:none!important}
+body.hasacc .side-u{display:none!important}
+@media(max-width:900px){.acct,.accb>.ic,.topbar #cst{display:none!important}.accb{padding:0;width:44px;justify-content:center;border:0;background:none}.acc{order:7}}
+@media(min-width:901px){.topbar [data-x="bell"]{order:11}#thm{order:12}}
+/* ---- account menu, top right ---- */
+body.hasacct #esbar{display:none!important}
+.acct{position:relative;order:20}
+.acct summary{list-style:none}.acct summary::-webkit-details-marker{display:none}
+.acb{display:flex;align-items:center;gap:8px;height:42px;padding:0 10px 0 4px;border:1px solid var(--bd);border-radius:var(--r-pill);background:var(--surf);cursor:pointer;color:var(--tx);font-weight:var(--fw-semi);font-size:var(--fs-md);transition:background-color var(--dur-1),border-color var(--dur-1)}
+.acb:hover,.acct[open] .acb{background:var(--soft);border-color:color-mix(in srgb,var(--brand) 30%,var(--bd))}
+.acb .av{width:32px!important;height:32px!important;font-size:12px!important}.acb .ic{width:16px;height:16px;color:var(--mu)}
+.acm{position:absolute;inset-inline-end:0;top:calc(100% + 8px);min-width:260px;background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--e-3);padding:6px;z-index:var(--z-menu)}
+.ach{display:flex;align-items:center;gap:12px;padding:10px 10px 12px;border-bottom:1px solid var(--bd);margin-bottom:6px}.ach .av{width:40px!important;height:40px!important;font-size:14px!important;flex:none}
+.ach b{display:block;font-size:var(--fs-md)}.ach small{display:block;color:var(--mu);font-size:var(--fs-sm);margin-top:2px}
+.acm button{display:block;width:100%;text-align:start;padding:10px;border:0;background:none;border-radius:var(--r-md);font:inherit;font-size:var(--fs-md);color:var(--tx);cursor:pointer}
+.acm button:hover,.acm button:focus-visible{background:var(--soft)}
+.acm .acx{color:var(--er);margin-top:4px;border-top:1px solid var(--bd);border-radius:0 0 var(--r-md) var(--r-md)}
+@media(max-width:900px){.acn,.acb .ic{display:none}.acb{padding:0 4px;width:42px;justify-content:center}.acct{order:7}}
+.topbar .acct{display:block!important}
+@media(max-width:430px){body.hasacct .mprod{display:none!important}body.hasacct .topbar #stog{margin-inline-start:auto}}
+/* hub tabs as a segmented control: a soft track with the current page raised */
+.hubt{border-bottom:0!important;margin:var(--sp-2) 0 var(--sp-5)!important}
+.hubr{display:inline-flex!important;max-width:100%;gap:2px!important;padding:4px;background:color-mix(in srgb,var(--soft) 85%,var(--bg));border:1px solid color-mix(in srgb,var(--bd) 70%,transparent);border-radius:14px}
+.hubr button{height:38px;padding:0 16px!important;border-radius:10px!important;font-size:var(--fs-md)!important;font-weight:var(--fw-semi)!important;color:var(--mu)!important;background:transparent!important;white-space:nowrap;transition:background-color var(--dur-1),color var(--dur-1),box-shadow var(--dur-2)}
+.hubr button:hover{color:var(--tx)!important;background:color-mix(in srgb,var(--surf) 60%,transparent)!important}
+.hubr button.on{color:var(--brand)!important;background:var(--surf)!important;box-shadow:0 1px 2px rgba(16,35,61,.08),0 2px 8px rgba(16,35,61,.06)}
+.hubr button.on::after{display:none!important}
+.hubr button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+@media(max-width:560px){.hubr{display:flex!important;overflow-x:auto}.hubr button{padding:0 12px!important}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3718,6 +3762,24 @@ function palResults(q){q=q.trim().toLowerCase();const out=[],W=q.split(/\s+/).fi
   try{[...new Set([...ccNames(""),...PROJL()])].filter(p=>M(p)).slice(0,4).forEach(p=>out.push({g:"Projects and cost centers",t:p,s:"Open the project report",a:()=>{F.project=p;F.dept="";TAB.rdp="project";go("rep_dp")}}))}catch(e){}}
  try{if(typeof UP!=="undefined"&&Array.isArray(UP)&&canSee("users"))UP.filter(u=>M([u.full_name,u.email,u.role].join(" "))).slice(0,4).forEach(u=>out.push({g:"Sign-in accounts",t:u.full_name||u.email,s:[u.email,u.role].join(" · "),a:()=>go("users")}))}catch(e){}
  return out.slice(0,16)}
+
+/* ===== m47: account menu at the top right (name, role, my profile, sign out). Replaces the sign-out block at the bottom of the menu. ===== */
+function acctInfo(){const C=window.SMR_CLOUD_ON;
+ if(typeof ESES!=="undefined"&&ESES){const e=allEmps().find(x=>x.no===ESES.no);return{n:e?e.name:ESES.no,s:e&&e.pos?e.pos:"Employee",e,mgr:ESES.lvl==="mgr"}}
+ if(typeof SSES!=="undefined"&&SSES)return{n:SSES.name,s:SSES.role};
+ if(C&&(C.name||C.email))return{n:C.name||C.email,s:[C.role,C.name?C.email:""].filter(Boolean).join(" · ")};
+ return null}
+function acctUI(){const tb=document.querySelector(".topbar");if(!tb)return;const a=acctInfo();let w=document.getElementById("acct");
+ if(!a){if(w)w.remove();document.body.classList.remove("hasacct");return}
+ document.body.classList.add("hasacct");
+ const sw=a.mgr?`<button type="button" role="menuitem" data-act="esview">${ESES.view==="mgr"?"Switch to my own workspace":"Switch to my work role"}</button>`:"";
+ const key=[a.n,a.s,sw.length,role].join("|");if(w&&w.dataset.k===key)return;
+ const av=a.e&&typeof avi==="function"?avi(a.e):`<i class="av">${esc(ini(a.n))}</i>`;
+ const html=`<details id="acct" class="acct" data-k="${esc(key)}"><summary class="acb" aria-label="Account menu for ${esc(a.n)}">${av}<span class="acn">${esc(String(a.n).split(/\s+/)[0])}</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="acm" role="menu"><div class="ach">${av}<div><b>${esc(a.n)}</b><small>${esc(a.s||"")}</small></div></div>${canSee("myprofile")?`<button type="button" role="menuitem" data-go="myprofile">My profile</button>`:""}${sw}<button type="button" role="menuitem" class="acx" data-act="esout">Sign out</button></div></details>`;
+ if(w)w.outerHTML=html;else tb.insertAdjacentHTML("beforeend",html)}
+document.addEventListener("click",ev=>{const d=document.getElementById("acct");if(d&&d.open&&(!d.contains(ev.target)||ev.target.closest(".acm button")))d.removeAttribute("open")});
+document.addEventListener("keydown",ev=>{const d=document.getElementById("acct");if(ev.key==="Escape"&&d&&d.open){d.removeAttribute("open");d.querySelector("summary").focus()}});
+(function(){const go=()=>{const v=document.getElementById("view");if(!v)return setTimeout(go,50);acctUI();new MutationObserver(acctUI).observe(v,{childList:true});setInterval(acctUI,1500)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
 
 /* ===== m44: motion layer (GSAP). One entrance per page change, dashboard draw-in, drawer content, count-up. See docs/ANIMATION_GUIDELINES.md ===== */
 const MO=(function(){
