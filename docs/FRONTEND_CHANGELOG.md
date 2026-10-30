@@ -1,5 +1,17 @@
 # Frontend changelog
 
+## 30 Oct 2026: job titles and grades
+
+- **Grade:** every employee can now have a grade.
+  - It is set in Add employee, Edit details and Promote / transfer. A grade change in Promote / transfer is recorded in Career history like a position change.
+  - It shows as a "Grade G5" chip in the profile header and in the Job grade field, and global search finds it.
+- **Job title is now a list instead of free text** in all three forms. The current value is kept even if it was removed from the list.
+- **Every Department, Job title and Grade list ends with "+ New …"** for HR roles (My records). The new value is added, selected, and available in every form and open tab at once.
+- **Managing the lists:** the Job Positions page is now "Job Titles & Grades" (tab "Titles & grades"), with a Grades list for add, rename (updates everyone holding it) and remove (blocked while in use).
+- The code is `src/mods/m50_grades.js`. The inline add in `m49_live.js` is now generic for the three lists.
+- Checks: 16 local suites passed (audit_all 0 issues, sweep 532).
+
+
 ## 30 Oct 2026: live data (no refresh needed)
 
 - **Other tabs in the same browser:** a change made in one tab (a new department, employee or leave request, for example) appears in every other open tab within a second.
