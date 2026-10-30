@@ -288,7 +288,7 @@
       } else { sessionStorage.setItem("smr_ss", JSON.stringify({ id: s.uid, name: prof.full_name || s.email, role: prof.role })); sessionStorage.removeItem("smr_es"); }
     } catch (e) { }
     window.SMR_CLOUD_ON = {
-      uid: s.uid, email: s.email, name: prof.full_name || s.email, role: prof.role,
+      uid: s.uid, email: s.email, name: prof.full_name || s.email, role: prof.role, emp: prof.emp_no || "",
       signOut: function () { flush(); var t = sess(); (t ? authCall("logout", {}, "POST", t.access) : Promise.resolve()).catch(function () { }).then(signedOut); },
       rpc: function (name, body) { return rest("rpc/" + name, { method: "POST", body: body || {} }); },
       fn: function (name, body) {
