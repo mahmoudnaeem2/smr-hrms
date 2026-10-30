@@ -46,6 +46,6 @@ function dash(){
  const prob=now.filter(e=>e.probend&&e.probend>=T&&e.probend<=iso(addD(T0,30))).length,docs=(m.alerts.find(a=>a[2]==="a_docs")||[])[3];
  const crow=(l,n,id,warn)=>`<li><button ${id?`data-d="${id}"`:"disabled"}><span>${l}</span><b class="${warn&&n?"warn":""}">${n==null?"—":n}</b></button></li>`;
  const comp=sec("Contracts and compliance","Items that need a decision before they lapse.",`<ul class="xlist xrows">${crow("Contracts already expired",m.exp0.length,"a_exp",1)}${crow("Contracts ending in 30 days",m.e30.length,"a_e30",1)}${crow("Contracts ending in 31 to 90 days",m.cx.filter(x=>x.d>30&&x.d<=90).length,"a_e90")}${crow("Probation ending in 30 days",prob,null)}${crow("Employees with missing documents",docs,"a_docs")}</ul>`,"xc",lk("contracts","Contracts"));
- return`${hdr}${band}<div class="xg2">${wf}${pay}</div><div class="xg2">${att}${comp}</div><p class="xfoot">${MODE==="sample"?"Sample data generated for demonstration. ":""}Select any figure, bar or row to see the employees behind it.</p>`}
+ return`${hdr}${band}<div class="xg2">${wf}${pay}</div><div class="xg2">${att}${comp}</div>${typeof bdStrip==="function"?`<div class="xbd">${bdStrip()}</div>`:""}<p class="xfoot">${MODE==="sample"?"Sample data generated for demonstration. ":""}Select any figure, bar or row to see the employees behind it.</p>`}
 
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-print]"))window.print()});

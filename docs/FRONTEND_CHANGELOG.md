@@ -1,5 +1,17 @@
 # Frontend changelog
 
+## 30 Oct 2026: modern icons, menu order, birthdays on the dashboard
+
+- **Icons:** the whole app now uses the Phosphor duotone icon set (MIT license). It appears in the menu, settings, the New menu, quick tiles, request tiles and the employee portal tiles.
+  - The icons are vendored in `src/mods/m48_icons.js`, generated from the Phosphor `core` repository.
+  - `ic()`, `ipath()` and `zIc()` read them first, and fall back to the old line icons.
+- **Menu groups:** Home, People, Time & pay (Attendance, Leave, Payroll), Manage (Reports, Settings). Employees see Home and Time & pay.
+- **Birthdays:** the upcoming birthdays panel moved from the Employees page to the bottom of the dashboard.
+- **Employee profile:** the employee switcher dropdown was replaced by an "All employees" button. To open another person, use the search or the directory.
+- **Account:** the role box no longer shows initials over the profile picture.
+- Checks: smoke, audit_all (0 issues), a11y, mob, sweep (528), t_portal, rolebox, prof, ph, flow and cycle all passed, and cloud_e2e had 37 PASS.
+
+
 ## 30 Oct 2026: account menu, hub tabs
 
 - **Account menu at the top right:** shows the avatar and first name, and opens a menu with the full name, role, My profile (when allowed), the manager view switch (when relevant) and **Sign out**.

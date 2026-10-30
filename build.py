@@ -22,7 +22,7 @@ a=next(i for i,l in enumerate(L) if l.startswith('function nav()'));b=next(i for
 del L[a:b]
 drop(sw('function ask('))
 i=next(i for i,l in enumerate(L) if l.startswith('$("#role").innerHTML='))
-mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m41_drawer','m42_photo','m45_hubs','m46_find','m47_account','m44_motion','m39_cloud','m5_boot'])
+mods=''.join(open(f'src/mods/{f}.js').read()+'\n' for f in ['m48_icons','m0_core','payroll_engine','m1_people','m2_time','m3_payroll','m4_talent_admin','m8_io','m9_files','m10_projects','m13_reports','m11_edit','m12_access','m14_nav','m15_requests','m16_portal','m17_login','m18_seed','m19_notify','m20_extra','m21_mail','m22_settle','m23_slip','m24_dp','m25_loan','m26_rolemenu','m27_leavebal','m28_leavereport','m29_sidesearch','m30_icons','m31_home','m32_positions','m33_build','m34_reporting','m35_ia','m36_reports2','m37_a11y','m38_emp','m40_track','m41_drawer','m42_photo','m45_hubs','m46_find','m47_account','m44_motion','m39_cloud','m5_boot'])
 mods=mods.replace('if(typeof module!=="undefined")module.exports={pe_calc,pe_annualTaxNum,pe_micro};','')
 L[i:i]=mods.split('\n')
 js='\n'.join(L)
@@ -99,7 +99,7 @@ R_('&&(!F.project||e.project===F.project)).filter(e=>!Q||[e.name,e.no,e.email,e.
 R_('<select data-k="project">${opts(PROJL(),F.project,"All projects")}</select>','<select data-k="project">${opts(PROJL(),F.project,"All projects")}</select><select data-k="mgr" aria-label="Direct manager">${opts(uniq("mgr"),F.mgr,"All direct managers")}</select><select data-k="loc" aria-label="Location">${opts(uniq("loc"),F.loc,"All locations")}</select>')
 R_('<th>Position</th><th>Project</th>','<th>Position</th><th>Direct manager</th><th>Project</th>')
 R_('<td>${esc(e.pos||"–")}</td><td>${esc(e.project||"–")}</td>','<td>${esc(e.pos||"–")}</td><td>${esc(e.mgr||"–")}</td><td>${esc(e.project||"–")}</td>')
-R_('return`${S?form:""}<div class="bar"><input id="q" type="search"','return`${S?form:""}${bdStrip()}<div class="bar"><input id="q" type="search"')
+# birthdays strip moved from the Employees page to the dashboard (30 Oct 2026)
 # --- employee editing ---
 R_('const allEmps=()=>MODE==="sample"?SAMPLE.emps:E.map(normE);','const allEmps=()=>MODE==="sample"?(typeof applyOvr==="function"&&applyOvr(),SAMPLE.emps):E.map(normE);')
 R_('${S?"":"<th></th>"}</tr>${L.map(e=>','<th></th></tr>${L.map(e=>')

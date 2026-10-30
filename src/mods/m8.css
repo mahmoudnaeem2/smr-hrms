@@ -259,3 +259,8 @@ body.hasacct #esbar{display:none!important}
 .hubr button.on::after{display:none!important}
 .hubr button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 @media(max-width:560px){.hubr{display:flex!important;overflow-x:auto}.hubr button{padding:0 12px!important}}
+.xbd{margin-bottom:var(--sp-5)}.xbd .card.bds{padding:var(--sp-5) var(--sp-6)!important;margin:0!important}.xbd .bdh b{font-size:var(--fs-lg)}
+/* duotone icons: same box as the old line icons */
+svg.ic.phd{stroke:none;overflow:visible}
+#side .nav svg.ic.phd{width:22px!important;height:22px!important;padding:6px!important}
+.sti>svg.ic.phd:first-child,.dnm svg.ic.phd{width:22px;height:22px;padding:8px}

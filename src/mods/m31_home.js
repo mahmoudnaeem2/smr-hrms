@@ -1,6 +1,6 @@
 /* Employee home (ZenHR-style): welcome, balances, colourful tiles, pending requests */
 const ZT=[["rq","Requests","overtime","#14a39a","#dff5f2"],["ps","Payslips","payslips","#e5484d","#fde8e8"],["dc","Documents","docs","#f0a020","#fff1d6"],["at","Attendance","att_d","#ee6c3a","#ffe9df"],["to","Time off","leave_cal","#2f80ed","#e2eefd"],["ln","Loans","loans","#2fa66a","#e0f5e9"],["wn","Warnings","warns","#d9822b","#fdebd6"],["ct","Contract","contracts","#5b5bd6","#e8e8fb"],["pf","Profile","profile","#8a5cd1","#efe6fb"]];
-const zIc=(k,c)=>`<svg viewBox="0 0 24 24" fill="${c}" fill-opacity=".13" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]||IC.dash}"/></svg>`;
+const zIc=(k,c)=>window.PHI&&PHI[k]?`<svg viewBox="0 0 256 256" fill="${c}" aria-hidden="true">${PHI[k]}</svg>`:`<svg viewBox="0 0 24 24" fill="${c}" fill-opacity=".13" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]||IC.dash}"/></svg>`;
 function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
  if(!e)return portalBase(initial);if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}if((TAB.pt||"ov")!=="ov")return portalBase(initial);
  const b=balances(e),fx=v=>(+v).toFixed(2),first=esc((e.name||"").split(" ")[0]),nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length,

@@ -15,7 +15,7 @@ chg:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M
 exp:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13l2 2 4-4"});
 const IPC={leave:["#0f9d8a","#dff5f1"],trip:["#5b5bd6","#e8e8fb"],tickets:["#1d8fe1","#e0f0fd"],visa:["#0b7fbf","#dcf0fa"],cert:["#8a5cd1","#efe6fb"],defl:["#8a5cd1","#efe6fb"],exp:["#8a5cd1","#efe6fb"],slip:["#8a5cd1","#efe6fb"],sassign:["#d98324","#fdf0dc"],sclear:["#e5484d","#fde8e8"],bank:["#d98324","#fdf0dc"],adv:["#2e9e5b","#e0f5e8"],loan:["#2e9e5b","#e0f5e8"],resign:["#e5484d","#fde8e8"],chg:["#e0568d","#fde6ef"],data:["#e0568d","#fde6ef"],perm:["#0f9d8a","#dff5f1"],asset:["#5b5bd6","#e8e8fb"],train:["#d98324","#fdf0dc"],ask:["#1d8fe1","#e0f0fd"],other:["#6b7a90","#edf0f5"]};
 const ipc=k=>{const c=IPC[k]||IPC.other;return`--ic:${c[0]};--ib:${c[1]}`};
-const ipath=k=>`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IP[k]||IP.other}"/></svg>`;
+const ipath=k=>window.PHIP&&(PHIP[k]||PHIP.other)?`<svg viewBox="0 0 256 256" width="28" height="28" fill="currentColor" aria-hidden="true">${PHIP[k]||PHIP.other}</svg>`:`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IP[k]||IP.other}"/></svg>`;
 const LANG=["English","Arabic"];
 const HRQ=[
  {k:"trip",t:"Business trip",d:"Request a domestic or international trip.",kind:"dec",f:[["tt","Trip type","select",1,["Domestic","International"]],["dest","Destination","text",1],["from","Departure date","date",1],["to","Return date","date",1],["purpose","Purpose","text",1]]},
