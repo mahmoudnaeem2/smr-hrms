@@ -918,76 +918,76 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 #cg button[aria-busy="true"]{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #cg button[aria-busy="true"]::after{content:"";width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
 
-/* ===== Home dashboard v4: work first (queue, today, payroll, coming up, workforce) ===== */
+/* ===== Home dashboard v5: executive HR summary (report style, printable) ===== */
 .pdash main>.ph{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);margin:0!important;padding:0!important;border:0!important}
-.dhd{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-4);flex-wrap:wrap;margin:var(--sp-2) 0 var(--sp-6)}
-.dh1{font-size:clamp(26px,2.6vw,32px);font-weight:var(--fw-x);letter-spacing:-.025em;line-height:1.15;margin:0;color:var(--tx)}
-.dsub{margin:6px 0 0;color:var(--mu);font-size:var(--fs-base)}.dsub b{color:var(--tx);font-weight:var(--fw-semi)}
-.dact{display:flex;gap:var(--sp-2);align-items:center}
-.dnew{position:relative}.dnew summary{list-style:none}.dnew summary::-webkit-details-marker{display:none}
-.dnm{position:absolute;inset-inline-end:0;top:calc(100% + 6px);width:300px;background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-lg);box-shadow:var(--e-3);padding:6px;z-index:var(--z-menu)}
-.dnm button{display:flex;gap:var(--sp-3);align-items:center;width:100%;padding:10px;border:0;background:none;border-radius:var(--r-md);color:var(--tx);text-align:start;cursor:pointer;font:inherit}
-.dnm button:hover,.dnm button:focus-visible{background:var(--soft)}.dnm .ic{width:20px;height:20px;padding:8px;box-sizing:content-box;border-radius:var(--r-md);background:var(--soft);color:var(--brand)}
-.dnm b{display:block;font-weight:var(--fw-semi);font-size:var(--fs-md)}.dnm small{color:var(--mu);font-size:var(--fs-sm)}
-.dgr{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:var(--sp-5);align-items:start}
-.dgl,.dgs{display:flex;flex-direction:column;gap:var(--sp-5);min-width:0}
-.dgr .card{padding:var(--sp-5) var(--sp-6)!important;margin:0!important}
-.dch{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3);margin-bottom:var(--sp-3)}.dch h2{margin:0;font-size:var(--fs-lg);font-weight:var(--fw-bold)}
-.dch .mu{font-size:var(--fs-sm)}
-/* queue */
-.dql{display:flex;flex-direction:column;margin:0 calc(-1 * var(--sp-3))}
-.dq{display:grid;grid-template-columns:10px minmax(0,1fr) auto 18px;align-items:center;gap:var(--sp-3);padding:14px var(--sp-3);border:0;border-radius:var(--r-md);background:none;color:var(--tx);text-align:start;cursor:pointer;font:inherit;transition:background-color var(--dur-1)}
-.dq+.dq{box-shadow:0 -1px 0 color-mix(in srgb,var(--bd) 60%,transparent)}
-.dq:hover,.dq:focus-visible{background:var(--soft)}
-.dqd{width:10px;height:10px;border-radius:50%;background:var(--mu)}.dq.high .dqd{background:var(--er)}.dq.med .dqd{background:#d98a00}
-.dqt{font-weight:var(--fw-semi);font-size:var(--fs-base);min-width:0}.dqt small{display:block;font-weight:var(--fw-reg);font-size:var(--fs-sm);color:var(--mu);margin-top:2px}
-.dqn{font-size:var(--fs-xl);font-weight:var(--fw-x);letter-spacing:-.02em;color:var(--tx)}.dq.high .dqn{color:var(--er)}
-.dq .ic{width:18px;height:18px;color:var(--mu)}
-.dclear{display:flex;flex-direction:column;gap:4px;padding:var(--sp-4);border-radius:var(--r-lg);background:var(--soft)}.dclear b{font-size:var(--fs-base)}.dclear span{color:var(--mu);font-size:var(--fs-sm)}
-/* today */
-.dtg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2)}
-.dtt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:var(--sp-3);border:1px solid var(--bd);border-radius:var(--r-lg);background:var(--surf);color:var(--tx);cursor:pointer;font:inherit;transition:border-color var(--dur-1),background-color var(--dur-1)}
-.dtt:hover{border-color:var(--brand);background:var(--soft)}.dtt b{font-size:var(--fs-2xl);font-weight:var(--fw-x);line-height:1.1}.dtt span{font-size:var(--fs-sm);color:var(--mu)}
-.dtt.wn b{color:var(--wn)}.dtt.er b{color:var(--er)}
-.dout{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-4)}.dout .mu{font-size:var(--fs-sm)}
-.davs{display:flex}.davs>span{margin-inline-start:-8px}.davs>span:first-child{margin:0}.davs .av{width:32px!important;height:32px!important;border:2px solid var(--surf);font-size:11px!important}
-.dmore{font-style:normal;font-size:var(--fs-xs);font-weight:var(--fw-bold);margin-inline-start:6px;color:var(--mu);align-self:center}
-.dlink{display:block;width:100%;margin-top:var(--sp-3);padding:10px var(--sp-3);border:0;border-radius:var(--r-md);background:var(--soft);color:var(--brand);font:inherit;font-weight:var(--fw-semi);font-size:var(--fs-sm);text-align:start;cursor:pointer}
-/* payroll */
-.dpay-g{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(0,2fr);gap:var(--sp-6);align-items:center}
-.dpay-m{display:flex;flex-direction:column;gap:2px}.dpay-m b{font-size:var(--fs-2xl);font-weight:var(--fw-x);letter-spacing:-.02em;color:var(--tx)}.dpay-m .mu{font-size:var(--fs-sm)}
-.dstp{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));list-style:none;margin:0;padding:0}
-.dstp li{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:var(--fs-xs);color:var(--mu);text-align:center}
-.dstp li::before{content:"";position:absolute;top:7px;inset-inline-start:-50%;width:100%;height:2px;background:var(--bd);z-index:0}.dstp li:first-child::before{display:none}
-.dstp li i{position:relative;z-index:1;width:16px;height:16px;border-radius:50%;background:var(--surf);border:2px solid var(--bd)}
-.dstp li.done i{background:var(--brand);border-color:var(--brand)}.dstp li.done::before,.dstp li.cur::before{background:var(--brand)}
-.dstp li.cur i{border-color:var(--brand);box-shadow:var(--ring)}.dstp li.cur{color:var(--tx);font-weight:var(--fw-semi)}
-.dpay-n{margin:var(--sp-3) 0 0;font-size:var(--fs-sm)}
-/* coming up */
-.dul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.dul li{display:flex;align-items:center;gap:var(--sp-3);padding:10px 0}.dul li+li{border-top:1px solid color-mix(in srgb,var(--bd) 60%,transparent)}
-.dul time{flex:none;width:46px;height:46px;border-radius:var(--r-md);background:var(--soft);color:var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
-.dul time b{font-size:var(--fs-lg);font-weight:var(--fw-x)}.dul time small{font-size:11px;font-weight:var(--fw-semi);margin-top:2px}
-.dul li>span{display:flex;flex-direction:column;min-width:0}.dul .lnk{font-weight:var(--fw-semi);font-size:var(--fs-md);text-align:start;padding:0;background:none;border:0;cursor:pointer;color:var(--tx)}.dul .lnk:hover{color:var(--brand);text-decoration:underline}
-.dul small{color:var(--mu);font-size:var(--fs-sm)}
-/* workforce */
-.dwn{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--sp-4)}
-.dwk{display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0;cursor:pointer;color:var(--tx);font:inherit}.dwk b{font-size:var(--fs-3xl);font-weight:var(--fw-x);line-height:1;letter-spacing:-.03em}.dwk span{font-size:var(--fs-sm);color:var(--mu)}
-.dwm{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-sm)}.dwm b{font-weight:var(--fw-bold)}
-.dws{width:110px;height:36px}.dws svg{width:100%;height:100%}
-.dwd{margin-top:var(--sp-4)}
-.dgr .lnk{background:none;border:0;padding:0;color:var(--brand);font:inherit;font-weight:var(--fw-semi);font-size:var(--fs-sm);cursor:pointer}.dgr .lnk:hover{text-decoration:underline}
-@media(max-width:1100px){.dgr{grid-template-columns:minmax(0,1fr)}.dpay-g{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:560px){.dtg{grid-template-columns:repeat(2,minmax(0,1fr))}.dstp li span{font-size:10.5px}.dgr .card{padding:var(--sp-4)!important}.dact{width:100%}.dact .b.p{flex:1}}
-.dtl{margin:-6px 0 var(--sp-3);font-size:var(--fs-sm)}
-@media(min-width:1101px){.dgs{position:sticky;top:var(--sp-5)}}
+.xhd{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-4);flex-wrap:wrap;margin:var(--sp-2) 0 var(--sp-5)}
+.xorg{margin:0 0 6px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--brand)}
+.xtt{margin:0;font-size:clamp(26px,2.6vw,34px);font-weight:var(--fw-x);letter-spacing:-.025em;line-height:1.15;color:var(--tx)}
+.xsub{margin:8px 0 0;color:var(--mu);font-size:var(--fs-base)}
+.xact{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.xband{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-xl);box-shadow:var(--e-1);margin-bottom:var(--sp-5);overflow:hidden}
+.xf{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:var(--sp-5) var(--sp-6);border:0;background:none;text-align:start;cursor:pointer;color:var(--tx);font:inherit;min-width:0;transition:background-color var(--dur-1)}
+.xf+.xf{box-shadow:inset 1px 0 0 var(--bd)}
+.xf:hover,.xf:focus-visible{background:color-mix(in srgb,var(--soft) 70%,var(--surf))}
+.xl{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mu)}
+.xf b{font-size:clamp(26px,2.4vw,34px);font-weight:var(--fw-x);letter-spacing:-.025em;line-height:1.15;white-space:nowrap}
+.xd{font-size:var(--fs-sm);color:var(--mu)}.xd.up{color:var(--ok)}.xd.dn{color:var(--er)}.xd.warn{color:var(--wn);font-weight:var(--fw-semi)}
+.xd.up::before{content:"▲ ";font-size:10px}.xd.dn::before{content:"▼ ";font-size:10px}
+.xg2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-5);margin-bottom:var(--sp-5)}
+.card.xs{padding:var(--sp-6)!important;margin:0!important;display:flex;flex-direction:column;gap:var(--sp-4)}
+.xsh{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-3)}
+.xsh h3{margin:0;font-size:var(--fs-lg);font-weight:var(--fw-bold)}.xsh p{margin:4px 0 0;font-size:var(--fs-sm);color:var(--mu);max-width:56ch}
+.xlk{flex:none;border:0;background:none;padding:2px 0;color:var(--brand);font:inherit;font-weight:var(--fw-semi);font-size:var(--fs-sm);cursor:pointer}.xlk:hover{text-decoration:underline}
+.xchart svg{width:100%;height:auto;max-height:230px}
+.xsplit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--sp-6);border-top:1px solid var(--bd);padding-top:var(--sp-4)}
+.xsplit h4{margin:0 0 var(--sp-2);font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mu)}
+.xlist{list-style:none;margin:0;padding:0}
+.xlist li{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3);padding:9px 0;font-size:var(--fs-md)}
+.xlist li+li{border-top:1px solid color-mix(in srgb,var(--bd) 70%,transparent)}
+.xlist b{font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}.xlist li.tot{border-top:1.5px solid var(--tx)}.xlist li.tot span,.xlist li.tot b{font-weight:var(--fw-x)}
+.xleg li span{display:flex;align-items:center;gap:8px}.xleg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.xbar{display:flex;height:14px;border-radius:var(--r-pill);overflow:hidden;background:var(--soft)}.xbar i{display:block;height:100%}
+.xrows li{padding:0}.xrows button{display:flex;justify-content:space-between;align-items:baseline;width:100%;padding:11px 0;border:0;background:none;color:var(--tx);font:inherit;text-align:start;cursor:pointer}
+.xrows button:disabled{cursor:default}.xrows button:not(:disabled):hover span{color:var(--brand);text-decoration:underline}
+.xrows b{font-size:var(--fs-lg)}.xrows b.warn{color:var(--er)}
+.xfoot{margin:0 0 var(--sp-6);font-size:var(--fs-sm);color:var(--mu)}
+@media(max-width:1100px){.xg2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:560px){.xf{padding:var(--sp-4)}.xf+.xf{box-shadow:inset 0 1px 0 var(--bd)}.xband{grid-template-columns:repeat(2,minmax(0,1fr))}.xf:nth-child(2n+1){box-shadow:inset 0 1px 0 var(--bd)}.xf:first-child{box-shadow:none}.xsplit{grid-template-columns:minmax(0,1fr)}.card.xs{padding:var(--sp-4)!important}.xact{width:100%}.xact .b{flex:1}}
+@media print{
+ #side,.topbar,.strip,.xact,.qa,#drawer,#toast,.backl,body::after{display:none!important}
+ body,.main,main{background:#fff!important}main{padding:0!important;max-width:none!important}
+ .card,.xband{box-shadow:none!important;break-inside:avoid}.xg2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .xf,.xrows button{cursor:default}
+}
+
+/* ---- top bar: icon buttons everywhere; compact one-row bar on phones with search behind an icon ---- */
+.topbar .iconbtn{width:42px;height:42px;border-radius:var(--r-md)!important;padding:0;color:var(--tx);transition:background-color var(--dur-1),border-color var(--dur-1)}
+.topbar .iconbtn:hover{background:var(--soft);border-color:color-mix(in srgb,var(--brand) 30%,var(--bd))}
+.topbar .iconbtn svg{width:20px;height:20px}
+#stog,.mprod{display:none!important}
+@media(max-width:900px){
+ .topbar{flex-wrap:wrap!important;gap:var(--sp-2)!important;padding-block:10px!important;row-gap:var(--sp-3)!important}
+ #menu{display:grid!important;order:1;border:0;background:transparent;margin-inline-start:-6px}
+ .topbar .mlogo{order:2;width:34px;height:34px;border-radius:var(--r-sm)}
+ .mprod{display:block!important;order:3;font-weight:var(--fw-bold);font-size:var(--fs-base);color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+ #stog{display:grid!important;order:4}
+ .topbar [data-x="bell"]{order:5}
+ #thm{order:6}
+ .topbar .search{display:none!important;order:9;flex:1 1 100%!important}
+ .topbar.sopen .search{display:flex!important}
+ #stog[aria-expanded="true"]{background:var(--soft);border-color:var(--brand)}
+}
+@media(max-width:340px){.mprod{display:none!important}}
+/* summary charts keep the size they were drawn for, so labels stay small */
+.xchart svg{height:210px;max-height:none;width:100%}
+@media(max-width:560px){.xf,.xf+.xf,.xf:nth-child(2n+1),.xf:first-child{box-shadow:none}.xf:nth-child(n+3){box-shadow:inset 0 1px 0 var(--bd)}.xf:nth-child(2n){box-shadow:inset 1px 0 0 var(--bd)}.xf:nth-child(2n):nth-child(n+3){box-shadow:inset 1px 0 0 var(--bd),inset 0 1px 0 var(--bd)}.xf:last-child:nth-child(odd){grid-column:1/-1}}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">HRMS &amp; Payroll</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
 <aside id="side" aria-label="Main navigation"><div class="brand"><img class="slogo" alt="SMR – savills management resources"><div class="prod">HRMS &amp; Payroll<small>Egypt</small></div></div><nav id="nav"></nav>
 <div class="side-u"><div class="me"><i class="av" id="me">HR</i><select id="role" aria-label="Preview as role"></select></div></div><div class="side-f"><button class="nav" data-x="collapse" title="Collapse menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="lb">Collapse menu</span></button></div></aside>
 <div class="main">
-<header class="topbar"><button class="b" id="menu" aria-label="Open menu">Menu</button><img class="mlogo slogo" alt="SMR"><div class="crumb" id="crumb"></div>
+<header class="topbar"><button class="iconbtn" id="menu" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button><img class="mlogo slogo" alt="SMR"><span class="mprod">HRMS</span><button class="iconbtn" id="stog" type="button" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg></button><div class="crumb" id="crumb"></div>
 <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14"/></svg><input id="gs" type="search" placeholder="Search employees" aria-label="Search employees"></div>
 <div class="seg" role="group" aria-label="Data source"><button data-mode="sample">Sample data</button><button data-mode="mine">My records</button></div>
 <button class="iconbtn" data-x="bell" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="bdg" hidden></span></button>
@@ -1170,45 +1170,38 @@ function dash(){
  const hr=new Date().getHours(),greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening",ord={high:0,med:1,low:2},hot=m.alerts.filter(a=>a[3]&&a[0]!=="low").sort((a,b)=>ord[a[0]]-ord[b[0]]);
  const sel=(l,k,arr)=>`<label class="fp"><span>${l}</span><select data-k="${k}">${opts(arr,F[k],"All")}</select></label>`;
  const nm=role,sel2=(l,k,arr)=>sel(l,k,arr),FUN='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>';
- /* ---- v4: a work-first home for HR. What needs me, what is happening today, where payroll stands, what is coming. Charts live in HR Analytics. ---- */
- const K=id=>m.k.find(x=>x[0]===id),nOf=id=>{const k=K(id);return k?k[2]:"–"},kd=id=>{const k=K(id);return k?(k[4]||k[3]):""};
- const C0=window.SMR_CLOUD_ON,who=(C0&&C0.name)||(typeof SSES!=="undefined"&&SSES&&SSES.name)||"",first=String(who).trim().split(/\s+/)[0]||"";
- const T=iso(T0),D0=new Date(T+"T00:00:00"),dayN=D0.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
- const dn=d=>Math.round((new Date(d+"T00:00:00")-D0)/864e5),nice=d=>new Date(d+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});
- const run=canSee("pay_proc")?RUNS().filter(r=>r.results.length||r.status!=="draft").sort((a,b)=>a.period<b.period?1:-1)[0]:null;
- const ST=["draft","under_review","pending_approval","approved","finalized","paid","reconciled"],STL=["Draft","Review","Approval","Approved","Finalised","Paid","Reconciled"],ix=run?Math.max(0,ST.indexOf(run.status==="validation_required"?"draft":run.status==="reconciliation_required"?"paid":run.status)):-1;
+ /* ---- v5: executive HR summary. A one-page monthly report people can read, share and print. Detail opens on click. ---- */
+ const K=id=>m.k.find(x=>x[0]===id),nOf=id=>{const k=K(id);return k?k[2]:"–"},kd=id=>{const k=K(id);return k?(k[4]||""):""};
+ const T=iso(T0),D0=new Date(T+"T00:00:00"),dayN=D0.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),monN=D0.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
  try{const d=$("#desc");if(d)d.textContent=""}catch(e){}
- /* header: greeting, date, payroll state, one primary action and a New menu */
- const QA=typeof qaList==="function"?qaList().filter(x=>["emp","lv","att","hrq"].includes(x.k)):[];
- const newMenu=QA.length?`<details class="dnew"><summary class="b">${ic("plus")}<span>New</span></summary><div class="dnm" role="menu">${QA.map(x=>`<button type="button" role="menuitem" data-q="${x.t[2]}">${ic(x.t[2].slice(3).split("+")[0])}<span><b>${esc(x.t[0])}</b><small>${esc(x.t[1])}</small></span></button>`).join("")}</div></details>`:"";
- const hdr=`<header class="dhd"><div><h2 class="dh1">${greet}${first?", "+esc(first):""}</h2><p class="dsub">${esc(dayN)}${run?` · ${esc(runLabel(run))}: <b>${esc(RS[run.status]||run.status)}</b>`:canSee("pay_proc")?" · No payroll run started for this month":""}</p></div><div class="dact">${newMenu}${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")}<span>${run?"Open payroll":"Start payroll"}</span></button>`:""}</div></header>`;
- /* queue: everything waiting on HR, most urgent first */
- const nAp=canSee("appr")?apprItems().filter(canAct).length:0,svl={high:"Urgent",med:"Soon",low:"When you can"};
- const q=[];if(nAp)q.push(["high","Approvals waiting for your decision",null,nAp,"appr"]);
- m.alerts.filter(a=>a[3]&&a[2]!=="a_leave").sort((a,b)=>ord[a[0]]-ord[b[0]]).forEach(a=>q.push([a[0],a[1],a[2],a[3],null]));
- const qRow=([sv,t,id,n,go])=>`<button class="dq ${sv}" ${go?`data-go="${go}"`:`data-d="${id}"`}><i class="dqd" aria-hidden="true"></i><span class="dqt">${esc(t)}<small>${svl[sv]}</small></span><b class="dqn">${n}</b>${ic("chev")}</button>`;
- const queue=`<section class="card dqc" aria-labelledby="dqh"><div class="dch"><h2 id="dqh">Needs you</h2><span class="mu">${q.length?q.reduce((s,x)=>s+(+x[3]||0),0)+" open items":""}</span></div>${q.length?`<div class="dql">${q.slice(0,7).map(qRow).join("")}</div>${q.length>7?`<button class="b ghost sm" data-x="bell">Show all ${q.length}</button>`:""}`:`<div class="dclear"><b>You're all caught up.</b><span>New approvals, missing documents and expiring contracts will show here.</span></div>`}</section>`;
- /* today */
- let AD=T,tc=[0,0,0,0,0];for(let k=0;k>=-7;k--){const d=iso(addD(T0,k)),c=[0,0,0,0,0];now.forEach(e=>{const v=attCode(e,d);if(v>0)c[v]++});if(c[1]+c[2]+c[3]+c[4]){AD=d;tc=c;break}if(k===0&&typeof isWk==="function"&&!isWk(T0))break}
- const rec=tc[1]+tc[2]+tc[3]+tc[4],out=now.filter(e=>attCode(e,T)===4),wk=typeof isWk==="function"&&isWk(T0),adL=AD===T?"":"Last working day, "+new Date(AD+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
- const lrUp=(typeof LR!=="undefined"?LR:[]).filter(r=>r.mode===MODE&&r.status!=="Rejected"&&r.status!=="Cancelled"&&dn(r.start)>0&&dn(r.start)<=14).length;
- const tile=(l,v,d,cls)=>`<button class="dtt ${cls||""}" data-go="att_d"><b class="scn">${v}</b><span>${l}</span></button>`;
- const today=`<section class="card dtc" aria-labelledby="dth"><div class="dch"><h2 id="dth">Today</h2><button class="lnk" data-go="att_d">Attendance</button></div>${adL?`<p class="dtl mu">${esc(adL)}${wk?" · today is a weekend":""}</p>`:""}${rec?`<div class="dtg">${tile("Present",tc[1])}${tile("Late",tc[2],0,tc[2]?"wn":"")}${tile("Absent",tc[3],0,tc[3]?"er":"")}${tile("On leave",tc[4])}</div>`:`<div class="dclear sm"><b>${wk?"Weekend, no attendance expected today.":"No clock-ins yet today."}</b><span>${now.length} employee${now.length===1?"":"s"} in service.</span></div>`}<div class="dout"><span class="mu">${out.length?"Out today":"Nobody is out today"}</span>${out.length?`<div class="davs">${out.slice(0,6).map(e=>`<span title="${esc(e.name)}">${typeof avi==="function"?avi(e):""}</span>`).join("")}${out.length>6?`<i class="dmore">+${out.length-6}</i>`:""}</div>`:""}</div>${lrUp?`<button class="dlink" data-go="leave_cal">${lrUp} leave request${lrUp===1?"":"s"} starting in the next 14 days</button>`:""}</section>`;
- /* payroll cycle */
- const pay=!canSee("pay_proc")?"":`<section class="card dpay" aria-labelledby="dph"><div class="dch"><h2 id="dph">Payroll</h2>${run?rsb(run.status):""}</div><div class="dpay-g"><div class="dpay-m">${m.canS?`<span class="mu">Monthly cost</span><b class="scn">${nOf("pay")}</b><span class="mu">${esc(kd("pay"))}</span>`:`<span class="mu">Salary figures are restricted for your role.</span>`}</div><ol class="dstp" aria-label="Payroll steps">${STL.map((l,i)=>`<li class="${!run?"":i<ix?"done":i===ix?"cur":""}"><i aria-hidden="true"></i><span>${l}</span></li>`).join("")}</ol></div>${run?"":`<p class="mu dpay-n">Start this month's run to calculate pay, then review and approve it.</p>`}</section>`;
- /* coming up in the next 30 days */
- const up=[];const md=d=>{if(!d)return null;const y=+T.slice(0,4);let x=y+d.slice(4);if(x<T)x=(y+1)+d.slice(4);return x};
- now.forEach(e=>{if(e.end&&dn(e.end)>=0&&dn(e.end)<=30&&(typeof cxCat!=="function"||cxCat(e)!=="renewed"))up.push([e.end,"Contract ends",e,"contracts"]);
-  if(e.probend&&dn(e.probend)>=0&&dn(e.probend)<=30)up.push([e.probend,"Probation ends",e,"prob"]);
-  const b=md(e.dob);if(b&&dn(b)<=30)up.push([b,"Birthday",e,null]);
-  const a=md(e.hire);if(a&&e.hire<T&&a.slice(0,4)>e.hire.slice(0,4)&&dn(a)<=30)up.push([a,(+a.slice(0,4)-+e.hire.slice(0,4))+" years at SMR",e,null])});
- up.sort((a,b)=>a[0]<b[0]?-1:1);
- const coming=`<section class="card duc" aria-labelledby="duh"><div class="dch"><h2 id="duh">Coming up</h2><span class="mu">Next 30 days</span></div>${up.length?`<ul class="dul">${up.slice(0,6).map(([d,t,e,g])=>`<li><time datetime="${d}"><b>${nice(d).split(" ")[0]}</b><small>${nice(d).split(" ")[1]}</small></time><span><button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button><small>${esc(t)}</small></span></li>`).join("")}</ul>`:`<div class="dclear sm"><b>Nothing in the next 30 days.</b><span>Contract ends, probation reviews, birthdays and work anniversaries appear here.</span></div>`}</section>`;
- /* workforce */
- const hcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length),mk=iso(T0).slice(0,7),hiresM=L.filter(e=>e.hire.slice(0,7)===mk).length,leftM=L.filter(e=>e.term&&e.term.slice(0,7)===mk).length;
+ const hcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length),ml=months.map(x=>x.label),mk=T.slice(0,7);
+ const hiresM=L.filter(e=>e.hire.slice(0,7)===mk).length,leftM=L.filter(e=>e.term&&e.term.slice(0,7)===mk).length;
+ const y1=iso(addD(T0,-365)),left12=L.filter(e=>e.term&&e.term>=y1&&e.term<=T).length,avgHc=hcS.reduce((a,b)=>a+b,0)/Math.max(1,hcS.length),turn=avgHc?Math.round(left12/avgHc*1000)/10:0;
+ const pN=+nOf("pres"),late=+nOf("late"),pres=isNaN(pN)?null:pN,attR=pres!=null&&now.length?Math.min(100,Math.round(pres/now.length*100)):null;
+ const nAp=canSee("appr")?apprItems().filter(canAct).length:+nOf("apr")||0;
+ const run=canSee("pay_proc")?RUNS().filter(r=>r.results.length||r.status!=="draft").sort((a,b)=>a.period<b.period?1:-1)[0]:null;
+ const delta=t=>{t=String(t||"").replace(/<[^>]*>/g,"").trim();if(!t)return"";return`<span class="xd ${/▲/.test(t)?"up":/▼/.test(t)?"dn":""}">${esc(t.replace(/^[^A-Za-z0-9+−-]+/,""))}</span>`};
+ const fig=(id,l,v,d,go)=>`<button class="xf" ${go?`data-go="${go}"`:`data-d="${id}"`}><span class="xl">${l}</span><b class="scn">${v}</b>${d||'<span class="xd">&nbsp;</span>'}</button>`;
+ const band=`<section class="xband" aria-label="Key figures">${fig("hc","Headcount",nOf("hc"),delta(kd("hc"))||`<span class="xd">${hiresM} joined, ${leftM} left this month</span>`)}${m.canS?fig("pay","Monthly payroll cost",nOf("pay"),delta(kd("pay"))):""}${fig("pres","Attendance",attR!=null?attR+"%":"—",`<span class="xd">${attR!=null?"present on the last working day":"no attendance recorded yet"}</span>`)}${fig("hc","Turnover, 12 months",turn+"%",`<span class="xd">${left12} leaver${left12===1?"":"s"} in the last year</span>`,"rep_hr")}${fig("apr","Open approvals",nAp,`<span class="xd ${nAp?"warn":""}">${nAp?"waiting for a decision":"nothing waiting"}</span>`,canSee("appr")?"appr":null)}</section>`;
+ const hdr=`<header class="xhd"><div><p class="xorg">Savills Management Resources, Egypt</p><h2 class="xtt">HR summary, ${esc(monN)}</h2><p class="xsub">As of ${esc(dayN)} · ${now.length} employee${now.length===1?"":"s"} in service${run?" · Payroll: "+esc(RS[run.status]||run.status):""}</p></div><div class="xact"><button class="b" type="button" data-print>${'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>'}<span>Print or save as PDF</span></button>${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")}<span>${run?"Open payroll":"Start payroll"}</span></button>`:""}</div></header>`;
+ const sec=(t,sub,body,cls,link)=>`<section class="card xs ${cls||""}"><div class="xsh"><div><h3>${t}</h3>${sub?`<p>${sub}</p>`:""}</div>${link||""}</div>${body}</section>`;
+ const lk=(g,t)=>canSee(g)?`<button class="xlk" data-go="${g}">${t}</button>`:"";
  const byDept=DEPTS.map(n=>({name:n,v:now.filter(e=>e.dept===n).length,d:"ch:dept:"+n})).filter(x=>x.v).sort((a,b)=>b.v-a.v);
- const wf=`<section class="card dwc" aria-labelledby="dwh"><div class="dch"><h2 id="dwh">Workforce</h2>${canSee("rep_hr")?`<button class="lnk" data-go="rep_hr">HR analytics</button>`:""}</div><div class="dwn"><button class="dwk" data-d="hc"><b class="scn">${nOf("hc")}</b><span>in service</span></button><div class="dwm"><span><b>+${hiresM}</b> joined</span><span><b>−${leftM}</b> left</span><small class="mu">this month</small></div>${typeof spark==="function"?`<div class="dws" title="Headcount, last 12 months">${spark(hcS,"var(--brand)")}</div>`:""}</div>${byDept.length?`<div class="dwd">${hbars(byDept.slice(0,6))}</div>`:""}</section>`;
- return`${hdr}<div class="dgr"><div class="dgl">${queue}${pay}${wf}</div><div class="dgs">${today}${coming}</div></div>`}
+ const types=[...new Set(now.map(e=>e.type).filter(Boolean))].map(t=>[t,now.filter(e=>e.type===t).length]).sort((a,b)=>b[1]-a[1]);
+ const wf=sec("Workforce","Employees in service at each month end, last 12 months.",`<div class="xchart">${none?'<div class="empty">No employees yet.</div>':line([{name:"Headcount",vals:hcS,color:"var(--brand)"}],ml,{aria:"Headcount, last 12 months",k:K_("hc")})}</div><div class="xsplit"><div><h4>By department</h4>${byDept.length?hbars(byDept.slice(0,6)):'<p class="mu">No data.</p>'}</div><div><h4>By employment type</h4><ul class="xlist">${types.map(([t,n])=>`<li><span>${esc(t)}</span><b>${n}</b></li>`).join("")||'<li class="mu">No data.</li>'}<li><span>Joined this month</span><b>${hiresM}</b></li><li><span>Left this month</span><b>${leftM}</b></li></ul></div></div>`,"xw",lk("rep_hr","HR analytics"));
+ const gB=m.canS?now.reduce((s,e)=>s+(+e.basic||0),0):0,gA=m.canS?now.reduce((s,e)=>s+(+e.allow||0),0):0;
+ const pay=!m.canS?sec("Payroll cost","",`<p class="mu">Salary figures are restricted for your role.</p>`,"xp"):sec("Payroll cost","Gross pay (basic plus fixed allowances) at each month end. Excludes overtime, bonuses, tax and insurance.",`<div class="xchart">${cols(m.gSeries,ml,{aria:"Payroll cost, last 12 months",fmt:fk,k:K_("pc")})}</div><ul class="xlist"><li><span>Basic salaries</span><b>EGP ${fk(gB)}</b></li><li><span>Allowances</span><b>EGP ${fk(gA)}</b></li><li class="tot"><span>Gross this month</span><b>EGP ${fk(gB+gA)}</b></li></ul>`,"xp",lk("pay_reg","Payroll register"));
+ const days=[];for(let k=-29;k<=0;k++){const d=addD(T0,k);if(!isWk(d))days.push(iso(d))}
+ const ac=[0,0,0,0,0];days.forEach(d=>now.forEach(e=>{const v=attCode(e,d);if(v>0)ac[v]++}));const at=ac[1]+ac[2]+ac[3]+ac[4],pc=v=>at?Math.round(v/at*100):0;
+ const lr=(typeof LR!=="undefined"?LR:[]).filter(r=>r.mode===MODE),lvPend=lr.filter(r=>r.status==="Pending").length,lvUp=lr.filter(r=>r.status==="Approved"&&r.start>T&&r.start<=iso(addD(T0,14))).length;
+ const attBar=at?`<div class="xbar" role="img" aria-label="On time ${pc(ac[1])}%, late ${pc(ac[2])}%, on leave ${pc(ac[4])}%, absent ${pc(ac[3])}%"><i style="width:${pc(ac[1])}%;background:var(--brand)"></i><i style="width:${pc(ac[2])}%;background:#d98a00"></i><i style="width:${pc(ac[4])}%;background:var(--c3,#7aa7d9)"></i><i style="width:${pc(ac[3])}%;background:var(--er)"></i></div>`:"";
+ const att=sec("Attendance and leave","Working days in the last 30 days.",`${at?`${attBar}<ul class="xlist xleg"><li><span><i style="background:var(--brand)"></i>On time</span><b>${pc(ac[1])}%</b></li><li><span><i style="background:#d98a00"></i>Late</span><b>${pc(ac[2])}%</b></li><li><span><i style="background:var(--c3,#7aa7d9)"></i>On leave</span><b>${pc(ac[4])}%</b></li><li><span><i style="background:var(--er)"></i>Absent</span><b>${pc(ac[3])}%</b></li></ul>`:'<p class="mu">No attendance recorded in the last 30 days.</p>'}<ul class="xlist"><li><span>Leave requests waiting</span><b>${lvPend}</b></li><li><span>Approved leave starting in 14 days</span><b>${lvUp}</b></li></ul>`,"xa",lk("att_m","Monthly attendance"));
+ const prob=now.filter(e=>e.probend&&e.probend>=T&&e.probend<=iso(addD(T0,30))).length,docs=(m.alerts.find(a=>a[2]==="a_docs")||[])[3];
+ const crow=(l,n,id,warn)=>`<li><button ${id?`data-d="${id}"`:"disabled"}><span>${l}</span><b class="${warn&&n?"warn":""}">${n==null?"—":n}</b></button></li>`;
+ const comp=sec("Contracts and compliance","Items that need a decision before they lapse.",`<ul class="xlist xrows">${crow("Contracts already expired",m.exp0.length,"a_exp",1)}${crow("Contracts ending in 30 days",m.e30.length,"a_e30",1)}${crow("Contracts ending in 31 to 90 days",m.cx.filter(x=>x.d>30&&x.d<=90).length,"a_e90")}${crow("Probation ending in 30 days",prob,null)}${crow("Employees with missing documents",docs,"a_docs")}</ul>`,"xc",lk("contracts","Contracts"));
+ return`${hdr}${band}<div class="xg2">${wf}${pay}</div><div class="xg2">${att}${comp}</div><p class="xfoot">${MODE==="sample"?"Sample data generated for demonstration. ":""}Select any figure, bar or row to see the employees behind it.</p>`}
+
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-print]"))window.print()});
 
 function emp(){const S=MODE==="sample",base=allEmps().filter(inScope).filter(e=>(!F.dept||e.dept===F.dept)&&(!F.status||e.status===F.status)&&(!F.project||e.project===F.project)&&(!F.mgr||e.mgr===F.mgr)&&(!F.loc||e.loc===F.loc)).filter(e=>!Q||[e.name,e.no,e.email,e.dept,e.pos,e.mgr,e.loc].join(" ").toLowerCase().includes(Q.toLowerCase()));
  const PS=15,pages=Math.max(1,Math.ceil(base.length/PS));if(PG>=pages)PG=pages-1;const L=base.slice(PG*PS,PG*PS+PS);
@@ -2520,7 +2513,8 @@ document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 const CMF=["light","soft","dark"];let CMFV="light";try{CMFV=localStorage.getItem("smr_comfort")||"light"}catch(e){}
 function cmfApply(){const r=document.documentElement;r.setAttribute("data-comfort",CMFV);r.setAttribute("data-theme",CMFV==="dark"?"dark":"light")}
 cmfApply();
-function cmfUI(){let b=$("#thm");if(!b){const t=document.querySelector(".topbar");if(!t)return;t.insertAdjacentHTML("beforeend",'<button id="thm" type="button" data-act="thm"></button>');b=$("#thm")}b.textContent=({light:"Light",soft:"Soft",dark:"Dark"})[CMFV];b.title="Change screen colors to be easier on the eyes";b.setAttribute("aria-label","Screen colors: "+CMFV)}
+function cmfUI(){let b=$("#thm");if(!b){const t=document.querySelector(".topbar");if(!t)return;t.insertAdjacentHTML("beforeend",'<button id="thm" type="button" data-act="thm"></button>');b=$("#thm")}const IK={light:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',soft:'<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 3v9h9"/>',dark:'<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/>'},NX={light:"soft",soft:"dark",dark:"light"};b.className="iconbtn";b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IK[CMFV]+'</svg>';b.title="Screen colors: "+CMFV+". Switch to "+NX[CMFV];b.setAttribute("aria-label","Screen colors: "+CMFV+". Switch to "+NX[CMFV])}
+document.addEventListener("click",e=>{const t=e.target.closest("#stog");if(!t)return;const tb=document.querySelector(".topbar"),on=!tb.classList.contains("sopen");tb.classList.toggle("sopen",on);t.setAttribute("aria-expanded",on);if(on){const g=$("#gs");if(g)setTimeout(()=>g.focus(),30)}});
 ACTS.thm=()=>{CMFV=CMF[(CMF.indexOf(CMFV)+1)%3];try{localStorage.setItem("smr_comfort",CMFV)}catch(e){}cmfApply();cmfUI()};
 
 /* ===== m15: employee requests to HR (self-service) and the HR inbox ===== */

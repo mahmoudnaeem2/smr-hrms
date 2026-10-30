@@ -1,25 +1,19 @@
 # Frontend changelog
 
-## 30 Oct 2026: home dashboard v4 (work first)
+## 30 Oct 2026: home dashboard v5 (executive HR summary)
 
-- The HR dashboard was rebuilt around the questions HR asks each morning. The new layout, from top to bottom:
-  - A greeting with today's date and where payroll stands, plus a **New** menu (add employee, add leave, record attendance, HR request) and **Start payroll** or **Open payroll**.
-  - **Needs you:** one prioritized queue of approvals, expired and ending contracts, attendance exceptions, overtime, documents and onboarding. Each row shows its count and opens the records.
-  - **Today:** present, late, absent and on leave. On a weekend or before any clock-in it falls back to the last working day. Shows who is out and the leave starting in the next 14 days.
-  - **Payroll:** monthly cost and a seven-step cycle tracker.
-  - **Coming up (next 30 days):** contract ends, probation ends, birthdays and work anniversaries.
-  - **Workforce:** headcount, joiners and leavers this month, a 12-month sparkline, and headcount by department.
-- Removed from the home page:
-  - The big header banner.
-  - The quick-action strip, replaced by the New menu.
-  - Dashboard filters.
-  - The four KPI cards.
-  - Charts with no data.
-  - The duplicate contract-expiry panel.
-  - Recent activity.
-- The trend charts remain in HR Analytics.
-- The classes are new (`.dhd`, `.dq`, `.dtt`, `.dpay*`, `.dstp`, `.dul`, `.dwk`) and their styles live in `m8.css`. The v3 dashboard CSS was deleted from `m7.css`.
-- Checks: smoke, audit_all (0 issues), neg, valid, flow, flow2, cycle, cycle3, sweep (520), a11y, mob (no overflow), stat_test, t_portal, drw and rolebox all passed, and cloud_e2e had 37 PASS.
+- The dashboard is now a one-page monthly HR summary that can be shown to management and printed. It has these parts:
+  - **Header:** "HR summary, October 2026", the as-of date, the employees in service and the payroll state.
+  - **Actions:** **Print or save as PDF**, and **Start payroll** or **Open payroll**.
+  - **Key figures band:** headcount (vs last month), monthly payroll cost (vs last month), attendance on the last working day, 12-month turnover, open approvals.
+  - **Workforce:** the 12-month headcount line, headcount by department, employment type, and joiners and leavers this month.
+  - **Payroll cost:** 12 months of gross pay, with basic, allowances and gross for this month.
+  - **Attendance and leave:** the on-time, late, on-leave and absent split for the last 30 working days, leave waiting, and approved leave in the next 14 days.
+  - **Contracts and compliance:** expired, ending in 30 days, ending in 31 to 90 days, probation ending, missing documents.
+- Every figure, bar and row opens the employees behind it.
+- A print stylesheet hides the navigation and keeps the cards whole on the page.
+- Replaces the v3 KPI cards and the short-lived v4 work-queue layout (CSS for both removed). The quick-action strip is no longer on the dashboard.
+- Phone top bar: a menu icon, logo, search icon (opens the search row), notifications and a theme icon. The theme button shows an icon (sun, half circle or moon) on every screen size instead of the word "Light".
 
 ## 30 Oct 2026: design system layer and motion
 

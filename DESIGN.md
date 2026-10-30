@@ -8,7 +8,7 @@ The audience is HR, payroll and finance staff who use the app for hours every da
 
 - **Calm and dense enough to work in.** One brand colour, white surfaces and a light blue-grey page. There is no decoration that does not carry information.
 - **Numbers first.** Figures use tabular numerals so money and counts line up. A KPI shows the number large, with one short line of context under it.
-- **Work first.** The home page is a queue of what needs HR, not a wall of charts. The "Needs you" list is the hero; counts are large and red only when urgent. Analysis lives in HR Analytics.
+- **A summary people can read.** The home page is a one-page monthly HR summary, laid out like a short report: key figures in one band, then four sections. It prints cleanly. Red is used only for items that need action.
 - **Motion explains change.** Content enters once when the page changes. Panels slide from where they come from. Nothing loops and nothing moves on its own.
 - **Accessible by default.** The target is WCAG 2.2 AA:
   - Visible focus on every control.
