@@ -1,5 +1,21 @@
 # Frontend changelog
 
+## 30 Oct 2026: live data (no refresh needed)
+
+- **Other tabs in the same browser:** a change made in one tab (a new department, employee or leave request, for example) appears in every other open tab within a second.
+- **Other people and devices (cloud):**
+  - The app checks for newer data every 15 seconds and whenever the tab comes back into view.
+  - It takes the changed records in quietly instead of showing "Newer data is available. Reload".
+  - Records you are still saving are never overwritten. The version check on save still blocks a real conflict.
+- **No jumping:** while you are typing in the page, the redraw waits until you leave the field. Open side-panel forms keep what you typed; only their lists, such as Department, are refreshed. A short "Updated just now" note shows in the top bar.
+- **New department from inside any form:**
+  - HR roles see "+ New department…" at the end of every Department list. Picking it opens a name box under the field.
+  - Enter adds the department, selects it, and makes it available in every form and tab at once.
+- The code is in `src/mods/m49_live.js`, with `adopt()` and the faster check in `src/cloud_loader.js`.
+- `tests/cloud_e2e.py` now checks that the second session picks up the change live and shows no stale banner (38 PASS).
+- All 20 local suites passed (audit_all 0 issues, sweep 532).
+
+
 ## 30 Oct 2026: modern icons, menu order, birthdays on the dashboard
 
 - **Icons:** the whole app now uses the Phosphor duotone icon set (MIT license). It appears in the menu, settings, the New menu, quick tiles, request tiles and the employee portal tiles.

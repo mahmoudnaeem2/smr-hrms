@@ -264,3 +264,9 @@ body.hasacct #esbar{display:none!important}
 svg.ic.phd{stroke:none;overflow:visible}
 #side .nav svg.ic.phd{width:22px!important;height:22px!important;padding:6px!important}
 .sti>svg.ic.phd:first-child,.dnm svg.ic.phd{width:22px;height:22px;padding:8px}
+/* live update note */
+#livepill{order:3;font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surf));border-radius:var(--r-pill);padding:4px 10px;opacity:0;transform:translateY(-2px);transition:opacity var(--dur-2),transform var(--dur-2);pointer-events:none;white-space:nowrap}
+#livepill.on{opacity:1;transform:none}
+@media(max-width:900px){#livepill{display:none}}
+.ndept{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:calc(-1 * var(--sp-1)) 0 var(--sp-3);padding:var(--sp-3);background:var(--soft);border-radius:var(--r-md)}
+.ndept input{flex:1 1 180px;min-height:var(--h-ctl-sm)!important}.ndept .err{flex-basis:100%;margin:0}

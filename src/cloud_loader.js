@@ -168,15 +168,32 @@
     if (!portal) return;  /* staff keep the manual "Reload latest data" button so a report is never refreshed under them */
     var tries = 0, t = setInterval(function () { if (++tries > 40) return clearInterval(t); if (idleNow()) { clearInterval(t); location.reload(); } }, 3000);
   }
+  /* live updates: take newer data from the server into this tab without a reload, then tell the app which keys changed.
+     Keys with unsaved local edits are never overwritten (the version check on save still guards them). */
+  function adopt(list) {
+    var keys = [];
+    list.forEach(function (r) {
+      if (!syncable(r.k) || pend[r.k] !== undefined) return;
+      var c = canon(r.v); if (r.ver !== undefined) ver[r.k] = r.ver;
+      if (last[r.k] === c) return;
+      try { rawSet.call(localStorage, r.k, JSON.stringify(r.v)); } catch (e) { }
+      last[r.k] = c; keys.push(r.k);
+    });
+    if (keys.length) try { window.dispatchEvent(new CustomEvent("smr-data", { detail: keys })); } catch (e) { }
+  }
   function check() {
     if (stale || busy || Object.keys(pend).length) return;
-    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) markStale(); }).catch(function () { }); return; }
+    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { adopt(Object.keys(d || {}).map(function (k) { return { k: k, v: d[k] }; })); }).catch(function () { }); return; }
     rest("app_store?select=k,ver").then(function (rows) {
-      var changed = rows.some(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver; }) || Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); });
-      if (changed) markStale();
+      if (Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); })) return markStale();
+      var ch = rows.filter(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver && pend[r.k] === undefined; }).map(function (r) { return r.k; });
+      if (!ch.length) return;
+      return rest("app_store?select=k,v,ver&k=in.(" + ch.map(encodeURIComponent).join(",") + ")").then(adopt);
     }).catch(function () { });
   }
-  setInterval(check, 45000);
+  setInterval(check, 15000);
+  /* another tab of this browser saved: pick up the new version soon, so this tab's next save does not conflict */
+  window.addEventListener("storage", function (e) { if (e.key && syncable(e.key)) { clearTimeout(window.__smrChk); window.__smrChk = setTimeout(check, 1200); } });
 
   function install() {
     Storage.prototype.setItem = function (k, v) { rawSet.call(this, k, v); if (this === localStorage && syncable(k)) queue(k, v); };

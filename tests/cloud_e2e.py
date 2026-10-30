@@ -105,7 +105,9 @@ with sync_playwright() as p:
     # 6 stale detection
     pg.evaluate("E[2].name='Changed again';save()");pg.wait_for_timeout(1500)
     pg2.evaluate("window.dispatchEvent(new Event('focus'));document.dispatchEvent(new Event('visibilitychange'))");pg2.wait_for_timeout(800)
-    ok('Newer data' in (pg2.evaluate("document.querySelector('#cst')?.textContent")or''),'stale banner on the other session')
+    pg2.wait_for_timeout(1500)
+    ok(pg2.evaluate("E[2].name")=='Changed again','other session picks up the change live, without a reload')
+    ok('Newer data' not in (pg2.evaluate("document.querySelector('#cst')?.textContent")or''),'no stale banner when the change could be taken in')
     # 7 pending user
     c3,pg3,e3=ctx();pg3.goto('file:///tmp/full_cloud.html');pg3.wait_for_selector('#cgf');login(pg3,'new@x.com','Passw0rd1');pg3.wait_for_timeout(800)
     ok('Waiting for access' in pg3.inner_text('#cg') and pg3.evaluate("typeof E==='undefined'"),'pending user blocked, app never starts')

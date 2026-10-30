@@ -1092,6 +1092,12 @@ body.hasacct #esbar{display:none!important}
 svg.ic.phd{stroke:none;overflow:visible}
 #side .nav svg.ic.phd{width:22px!important;height:22px!important;padding:6px!important}
 .sti>svg.ic.phd:first-child,.dnm svg.ic.phd{width:22px;height:22px;padding:8px}
+/* live update note */
+#livepill{order:3;font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surf));border-radius:var(--r-pill);padding:4px 10px;opacity:0;transform:translateY(-2px);transition:opacity var(--dur-2),transform var(--dur-2);pointer-events:none;white-space:nowrap}
+#livepill.on{opacity:1;transform:none}
+@media(max-width:900px){#livepill{display:none}}
+.ndept{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:calc(-1 * var(--sp-1)) 0 var(--sp-3);padding:var(--sp-3);background:var(--soft);border-radius:var(--r-md)}
+.ndept input{flex:1 1 180px;min-height:var(--h-ctl-sm)!important}.ndept .err{flex-basis:100%;margin:0}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">SMR Workplace</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3795,6 +3801,47 @@ document.addEventListener("click",ev=>{const d=document.getElementById("acct");i
 document.addEventListener("keydown",ev=>{const d=document.getElementById("acct");if(ev.key==="Escape"&&d&&d.open){d.removeAttribute("open");d.querySelector("summary").focus()}});
 (function(){const go=()=>{const v=document.getElementById("view");if(!v)return setTimeout(go,50);acctUI();new MutationObserver(acctUI).observe(v,{childList:true});setInterval(acctUI,1500)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
 
+/* ===== m49: live data. When records change in another tab (same browser) or on the server (another person, another device),
+   this tab picks them up without a reload: caches are dropped, lists redraw when you are not typing, and open forms get fresh choices. ===== */
+const LIVE={t:0,due:false,at:0};
+const LIVE_SKIP=/^smr_(rail|gopen|comfort|sb|live|mode|cloud_init|localbak|seed_pending|seed2|staff|acct|users)$/;
+function liveRead(k,def){try{const s=localStorage.getItem(k);return s?JSON.parse(s):def}catch(e){return def}}
+function liveApply(keys){keys=(keys||[]).filter(k=>k&&k.indexOf("smr_")===0&&!LIVE_SKIP.test(k));if(!keys.length)return;
+ keys.forEach(k=>{delete DB[k];
+  if(k==="smr_emp")E=liveRead(k,[]);
+  if(k==="smr_lr")LR=liveRead(k,[]);
+  if(k==="smr_punch")PUNCH=liveRead(k,{});
+  if(k==="smr_depts")db("depts",[],false).forEach(d=>{if(!DEPTS.includes(d))DEPTS.push(d)})});
+ LIVE.at=Date.now();liveSoon()}
+/* typing, choosing in a list or an open confirm box: wait, so nothing jumps under the person */
+function liveBusy(){const a=document.activeElement,cf=document.getElementById("confirm");return(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!!a.closest("#view"))||(cf&&!cf.hidden)}
+function liveSoon(){clearTimeout(LIVE.t);LIVE.t=setTimeout(()=>{liveForms();if(liveBusy()){LIVE.due=true;return}LIVE.due=false;try{draw()}catch(e){}liveToast()},150)}
+/* open side-panel forms keep what the person typed; only the choice lists are refreshed */
+function liveForms(){const d=document.getElementById("drawer");if(!d||!d.classList.contains("open"))return;
+ d.querySelectorAll('select[name="dept"]').forEach(s=>{const v=s.value,have=[...s.options].map(o=>o.value).filter(x=>x!=="__new");const want=DEPTS.slice();if(want.join("|")===have.join("|"))return;
+  const nw=!!s.querySelector('option[value="__new"]');s.innerHTML=want.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("")+(nw?'<option value="__new">+ New department…</option>':"");if(!want.includes(v)&&v&&v!=="__new"){s.insertAdjacentHTML("afterbegin",`<option selected>${esc(v)}</option>`)}})}
+function liveToast(){const n=document.getElementById("livepill");if(n){n.classList.add("on");clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove("on"),2200)}}
+document.addEventListener("focusout",()=>setTimeout(()=>{if(LIVE.due&&!liveBusy()){LIVE.due=false;try{draw()}catch(e){}liveToast()}},60));
+window.addEventListener("storage",ev=>{if(ev.key)liveApply([ev.key])});
+window.addEventListener("smr-data",ev=>liveApply(ev.detail));
+/* a small "Updated" note in the top bar so a change never looks like a glitch */
+(function(){const go=()=>{const t=document.querySelector(".topbar");if(!t)return setTimeout(go,80);if(!document.getElementById("livepill"))t.insertAdjacentHTML("beforeend",'<span id="livepill" role="status" aria-live="polite">Updated just now</span>')};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
+/* add a department without leaving the form: every department list in a form ends with "+ New department…" (HR roles) */
+const canNewDept=()=>[R.HRD,R.HRS,R.ADM].includes(role)&&MODE==="mine";
+function deptAddOpt(root){if(!canNewDept())return;(root||document).querySelectorAll('form select[name="dept"]').forEach(s=>{if(s.querySelector('option[value="__new"]'))return;s.insertAdjacentHTML("beforeend",'<option value="__new">+ New department…</option>');s.dataset.prev=s.value})}
+document.addEventListener("focusin",e=>{const s=e.target.closest&&e.target.closest('form select[name="dept"]');if(s&&!s.querySelector('option[value="__new"]'))deptAddOpt(s.closest("form"));if(s&&s.value!=="__new")s.dataset.prev=s.value});
+document.addEventListener("change",e=>{const s=e.target.closest&&e.target.closest('form select[name="dept"]');if(!s||s.value!=="__new")return;
+ s.value=s.dataset.prev||s.options[0].value;const lab=s.closest("label")||s.parentElement;if(lab.nextElementSibling&&lab.nextElementSibling.classList.contains("ndept"))return lab.nextElementSibling.querySelector("input").focus();
+ lab.insertAdjacentHTML("afterend",'<div class="ndept"><input type="text" placeholder="New department name" aria-label="New department name" maxlength="60"><button type="button" class="b p sm" data-nd="add">Add</button><button type="button" class="b ghost sm" data-nd="x">Cancel</button><p class="err" role="alert"></p></div>');
+ lab.nextElementSibling.querySelector("input").focus()});
+function ndeptAdd(box){const i=box.querySelector("input"),n=i.value.trim(),er=box.querySelector(".err");if(!n){er.textContent="Type the department name.";return i.focus()}
+ const ex=DEPTS.find(d=>d.toLowerCase()===n.toLowerCase());if(!ex){DEPTS.push(n);db("depts",[],false).push(n);sv("depts",false);audit("Department added",n);toast("Department added: "+n)}
+ const s=box.previousElementSibling.querySelector('select[name="dept"]')||box.previousElementSibling;
+ document.querySelectorAll('form select[name="dept"]').forEach(x=>{if(![...x.options].some(o=>o.value===(ex||n)))x.querySelector('option[value="__new"]').insertAdjacentHTML("beforebegin",`<option>${esc(ex||n)}</option>`)});
+ if(s&&s.tagName==="SELECT"){s.value=ex||n;s.dataset.prev=s.value;s.dispatchEvent(new Event("change",{bubbles:true}))}box.remove()}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-nd]");if(!b)return;const box=b.closest(".ndept");if(b.dataset.nd==="x")return box.remove();ndeptAdd(box)});
+document.addEventListener("keydown",e=>{const i=e.target.closest&&e.target.closest(".ndept input");if(!i)return;if(e.key==="Enter"){e.preventDefault();ndeptAdd(i.closest(".ndept"))}if(e.key==="Escape"){e.stopPropagation();i.closest(".ndept").remove()}},true);
+
 /* ===== m44: motion layer (GSAP). One entrance per page change, dashboard draw-in, drawer content, count-up. See docs/ANIMATION_GUIDELINES.md ===== */
 const MO=(function(){
  const G=typeof window!=="undefined"&&window.gsap;if(!G)return{on:false};
@@ -4125,15 +4172,32 @@ draw();
     if (!portal) return;  /* staff keep the manual "Reload latest data" button so a report is never refreshed under them */
     var tries = 0, t = setInterval(function () { if (++tries > 40) return clearInterval(t); if (idleNow()) { clearInterval(t); location.reload(); } }, 3000);
   }
+  /* live updates: take newer data from the server into this tab without a reload, then tell the app which keys changed.
+     Keys with unsaved local edits are never overwritten (the version check on save still guards them). */
+  function adopt(list) {
+    var keys = [];
+    list.forEach(function (r) {
+      if (!syncable(r.k) || pend[r.k] !== undefined) return;
+      var c = canon(r.v); if (r.ver !== undefined) ver[r.k] = r.ver;
+      if (last[r.k] === c) return;
+      try { rawSet.call(localStorage, r.k, JSON.stringify(r.v)); } catch (e) { }
+      last[r.k] = c; keys.push(r.k);
+    });
+    if (keys.length) try { window.dispatchEvent(new CustomEvent("smr-data", { detail: keys })); } catch (e) { }
+  }
   function check() {
     if (stale || busy || Object.keys(pend).length) return;
-    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { if (Object.keys(d || {}).some(function (k) { return canon(d[k]) !== last[k]; })) markStale(); }).catch(function () { }); return; }
+    if (portal) { rest("rpc/portal_data", { method: "POST", body: {} }).then(function (d) { adopt(Object.keys(d || {}).map(function (k) { return { k: k, v: d[k] }; })); }).catch(function () { }); return; }
     rest("app_store?select=k,ver").then(function (rows) {
-      var changed = rows.some(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver; }) || Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); });
-      if (changed) markStale();
+      if (Object.keys(ver).some(function (k) { return !rows.some(function (r) { return r.k === k; }); })) return markStale();
+      var ch = rows.filter(function (r) { return syncable(r.k) && (ver[r.k] || 0) !== r.ver && pend[r.k] === undefined; }).map(function (r) { return r.k; });
+      if (!ch.length) return;
+      return rest("app_store?select=k,v,ver&k=in.(" + ch.map(encodeURIComponent).join(",") + ")").then(adopt);
     }).catch(function () { });
   }
-  setInterval(check, 45000);
+  setInterval(check, 15000);
+  /* another tab of this browser saved: pick up the new version soon, so this tab's next save does not conflict */
+  window.addEventListener("storage", function (e) { if (e.key && syncable(e.key)) { clearTimeout(window.__smrChk); window.__smrChk = setTimeout(check, 1200); } });
 
   function install() {
     Storage.prototype.setItem = function (k, v) { rawSet.call(this, k, v); if (this === localStorage && syncable(k)) queue(k, v); };
