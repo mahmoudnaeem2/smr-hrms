@@ -28,3 +28,6 @@ const MO=(function(){
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
  return{get on(){return st.on},reveal,countUp,gsap:G}
 })();
+/* menus built on <details> (dashboard New menu): close on outside click and Esc */
+document.addEventListener("click",ev=>{document.querySelectorAll("details.dnew[open]").forEach(d=>{if(!d.contains(ev.target)||ev.target.closest("[data-q]"))d.removeAttribute("open")})});
+document.addEventListener("keydown",ev=>{if(ev.key!=="Escape")return;document.querySelectorAll("details.dnew[open]").forEach(d=>{d.removeAttribute("open");const s=d.querySelector("summary");if(s)s.focus()})});

@@ -1,5 +1,26 @@
 # Frontend changelog
 
+## 30 Oct 2026: home dashboard v4 (work first)
+
+- The HR dashboard was rebuilt around the questions HR asks each morning. The new layout, from top to bottom:
+  - A greeting with today's date and where payroll stands, plus a **New** menu (add employee, add leave, record attendance, HR request) and **Start payroll** or **Open payroll**.
+  - **Needs you:** one prioritized queue of approvals, expired and ending contracts, attendance exceptions, overtime, documents and onboarding. Each row shows its count and opens the records.
+  - **Today:** present, late, absent and on leave. On a weekend or before any clock-in it falls back to the last working day. Shows who is out and the leave starting in the next 14 days.
+  - **Payroll:** monthly cost and a seven-step cycle tracker.
+  - **Coming up (next 30 days):** contract ends, probation ends, birthdays and work anniversaries.
+  - **Workforce:** headcount, joiners and leavers this month, a 12-month sparkline, and headcount by department.
+- Removed from the home page:
+  - The big header banner.
+  - The quick-action strip, replaced by the New menu.
+  - Dashboard filters.
+  - The four KPI cards.
+  - Charts with no data.
+  - The duplicate contract-expiry panel.
+  - Recent activity.
+- The trend charts remain in HR Analytics.
+- The classes are new (`.dhd`, `.dq`, `.dtt`, `.dpay*`, `.dstp`, `.dul`, `.dwk`) and their styles live in `m8.css`. The v3 dashboard CSS was deleted from `m7.css`.
+- Checks: smoke, audit_all (0 issues), neg, valid, flow, flow2, cycle, cycle3, sweep (520), a11y, mob (no overflow), stat_test, t_portal, drw and rolebox all passed, and cloud_e2e had 37 PASS.
+
 ## 30 Oct 2026: design system layer and motion
 
 **Added**

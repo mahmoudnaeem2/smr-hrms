@@ -91,7 +91,7 @@ function qaList(){const n=canSee("appr")?apprItems().filter(canAct).length:0;
  const by={[R.HRD]:["emp","lv","att","appr","hrq","mail"],[R.HRS]:["emp","lv","att","appr","hrq","mail"],[R.DM]:["appr","tl","ta","org"],[R.PAY]:["run","inp","je","slip","appr"],[R.FIN]:["reg","je","rec","cost","appr"]}[role]||[];
  return by.map(k=>({k,t:T[k]})).filter(x=>{const g=x.t[2].slice(3).split("+")[0];return canSee(g)})}
 function uxUI(){try{if(typeof mailScan==="function")mailScan()}catch(e){}const v=$("#view");if(!v)return;const old=v.querySelector(".qa");if(old)old.remove();
- if(page!=="dash"&&page!=="paydash")return;const L=qaList();if(!L.length)return;
+ if(page!=="paydash")return;const L=qaList();if(!L.length)return;
  const h=`<div class="qa" style="--qn:${L.length}" role="group" aria-label="Quick actions">${L.map(x=>`<button type="button" class="qt" data-q="${x.t[2]}">${ic(x.t[2].slice(3).split("+")[0])}<span class="qx"><b>${esc(x.t[0])}</b><small>${esc(x.t[1])}</small></span>${x.t[3]?`<i class="qn">${x.t[3]}</i>`:""}</button>`).join("")}</div>`;
  v.insertAdjacentHTML("afterbegin",h)}
 document.addEventListener("click",ev=>{const q=ev.target.closest("[data-q]");if(!q)return;const[a,b]=q.dataset.q.slice(3).split("+");go(a);if(b)setTimeout(()=>ACTS[b]&&ACTS[b](),60)});
