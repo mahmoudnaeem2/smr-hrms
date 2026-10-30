@@ -5,11 +5,11 @@ const HUBS=[
  {g:"Home",n:"My portal",ic:"work",p:[["My portal","work"],["My profile","myprofile"]]},
  {g:"People",n:"Employees",ic:"emp",p:[["Directory","emp"],["Organization chart","org"],["Reporting lines","reporting"],["Departments","depts"],["Job positions","positions"]]},
  {g:"People",n:"Contracts & records",ic:"contracts",p:[["Contracts","contracts"],["Probation","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]},
- {g:"Time & Leave",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
- {g:"Time & Leave",n:"Leave",ic:"leave_req",p:[["Requests","leave_req"],["Balances","leave_bal"],["Calendar","leave_cal"],["Policies","leave_pol"]]},
- {g:"Payroll",n:"Payroll",ic:"pay_proc",p:[["Overview","paydash"],["Run payroll","pay_proc"],["Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Final settlements","settle"]]},
- {g:"Reports",n:"Reports",ic:"reports",p:[["All reports","reports"]]},
- {g:"Settings",n:"Settings",ic:"company",p:[["Settings","settings"]]}];
+ {g:"Time & pay",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
+ {g:"Time & pay",n:"Leave",ic:"leave_req",p:[["Requests","leave_req"],["Balances","leave_bal"],["Calendar","leave_cal"],["Policies","leave_pol"]]},
+ {g:"Time & pay",n:"Payroll",ic:"pay_proc",p:[["Overview","paydash"],["Run payroll","pay_proc"],["Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Final settlements","settle"]]},
+ {g:"Manage",n:"Reports",ic:"reports",p:[["All reports","reports"]]},
+ {g:"Manage",n:"Settings",ic:"company",p:[["Settings","settings"]]}];
 const SETG=[["Organization",[["company","Company details, logo and work week"],["cost_centers","Projects and cost centers used in payroll"],["holidays","Official holidays for the year"]]],
  ["People and access",[["users","Sign-in accounts and roles"],["perms","Which pages each role can open"],["emp_access","Employee self-service sign-in"],["wf","Who approves leave, overtime and requests"]]],
  ["Payroll",[["pay_periods","Open and close payroll months"],["pay_comp","Allowances and deductions"],["comp","Tax and social insurance rules"]]],
@@ -20,7 +20,7 @@ const SETK=SETG.flatMap(g=>g[1].map(x=>x[0]));
 function hubOf(k){if(SETK.includes(k))return HUBS.find(h=>h.n==="Settings");return HUBS.find(h=>h.p.some(x=>x[1]===k))||null}
 function hubKey(h){const x=h.p.find(x=>canSee(x[1]));return x?x[1]:null}
 /* menu: one entry per hub, pointing to the first page this role can open */
-function NAVV(){if(role===R.EMP){return[["Home",[["My portal","work"],["My profile","myprofile"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & Leave",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"]].filter(i=>canSee(i[1]))],["Payroll",[["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
+function NAVV(){if(role===R.EMP){return[["Home",[["My portal","work"],["My profile","myprofile"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & pay",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"],["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
  const out=[];HUBS.forEach(h=>{const k=hubKey(h);if(!k)return;let G=out.find(x=>x[0]===h.g);if(!G){G=[h.g,[]];out.push(G)}G[1].push([h.n,k])});
  try{out.forEach(([g])=>{GOPEN[g]=true})}catch(e){}return out}
 function NAVACT(k){if(k===page)return true;if(role===R.EMP)return false;const a=hubOf(k),b=hubOf(page);if(a&&b&&a===b)return true;return k==="reports"&&typeof REPKEYS!=="undefined"&&REPKEYS.includes(page)&&page!=="auditlog"}
