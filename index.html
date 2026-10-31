@@ -2506,21 +2506,200 @@ function pay_fs(){const L=allEmps().filter(e=>e.status==="Terminated"&&inScope(e
 reg("pay_fs","Final Settlements","Leavers awaiting settlement. Calculation stays blocked until the legal rules are approved.",A("HRD","PAY","FIN"),pay_fs);
 
 /* ----- payroll dashboard ----- */
-function paydash(){const runs=RUNS(),ms=monthsBack(6).slice().reverse(),sal=canSalV();if(!sal)return forbid("Salary data is restricted for your role.");
- const last=runs.filter(r=>r.results.length).sort((a,b)=>a.period<b.period?1:-1)[0],rr=resolveRules(iso(T0)),pend=runs.filter(r=>r.status==="pending_approval").length,open=runs.reduce((s,r)=>s+r.exc.filter(x=>x.sev==="block").length,0);
- const PDL=(t,f)=>()=>({title:t,desc:"Payroll runs.",cols:["Run","Period","Status","Employees"],rows:runs.filter(f).map(r=>[runLabel(r),r.period,RS[r.status],String(r.results.length)])}),PDR=(x,t,k)=>({title:t+": "+runLabel(x),desc:"Per employee.",cols:["No.","Name","Department",t],rows:x.results.map(y=>[y.no,y.name,y.dept||"",fmtC(y[k])])});
- const bars=ms.map(m=>{const r=runs.find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return{l:m.label.split(" ")[0].slice(0,3),v:r?tot(r,"net"):0}}),mx=Math.max(1,...bars.map(b=>b.v));
- const actEmps=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0))),ccData=buildCostCenterData(actEmps,last),ccRows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows;
- const totB=ccRows.reduce((s,r)=>s+r.b,0),totA=ccRows.reduce((s,r)=>s+r.a,0),totG=ccRows.reduce((s,r)=>s+r.g,0),totEr=ccRows.reduce((s,r)=>s+r.er,0),totCost=ccRows.reduce((s,r)=>s+r.cost,0);
- const ccColors=["#0460B5","#0284c7","#0d9488","#7c3aed","#d97706","#e11d48"];
- return`<div class="grid kpis">${stat("Latest run",last?esc(runLabel(last)):"None",last?RS[last.status]:"Create one in Payroll Processing",PDL("All payroll runs",()=>true),"pay_proc")}${stat("Net pay",last?fmtC(tot(last,"net")):money(Math.round(totG*0.84)),last?"From latest run":"Est. from current salaries",last?()=>PDR(last,"Net pay","net"):null)}${stat("Employer cost",last?fmtC(tot(last,"cost")):money(Math.round(totCost)),last?"Gross + employer insurance":"Est. gross + social insurance",last?()=>PDR(last,"Employer cost","cost"):null)}${stat("Awaiting approval",pend,"",PDL("Runs awaiting approval",r=>r.status==="pending_approval"),"pay_proc")}${stat("Blocking exceptions",open,"",()=>({title:"Blocking exceptions",desc:"Problems that stop a run from being finalized.",cols:["Run","No.","Name","Problem"],rows:runs.flatMap(r=>r.exc.filter(x=>x.sev==="block").map(x=>[runLabel(r),x.no,(empBy(x.no)||{}).name||"",x.msg]))}),"pay_proc")}${stat("Rules",rr.rules?(rr.unver?"Test values":"Approved"):"Incomplete",rr.rules?"":rr.missing.length+" rule(s) missing",()=>({title:"Tax and insurance rules",desc:"Value in force for today.",cols:["Rule","Status"],rows:RKEYS.map(([k,l])=>[l,rr.missing&&rr.missing.includes(k)?"Missing":rr.unver?"Test value":"Approved"])}),"comp")}</div>
- <div class="card xs xcc" style="margin-top:14px"><div class="xsh"><div><h3>Payroll Summary by Cost Center &amp; Project</h3><p>${last?"Actual figures from "+esc(runLabel(last)):"Current monthly fixed payroll & estimated statutory cost by cost center"}.</p></div><div class="bar" style="gap:8px">${canSee("cost_centers")?`<button class="xlk" data-go="cost_centers">Manage Cost Centers</button>`:""}${canSee("rep_cost")?`<button class="xlk" data-go="rep_cost">Full Cost Analysis →</button>`:""}</div></div>
- <div class="xcc-top"><div class="xseg"><button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Department Cost Center (${ccData.deptRows.length})</button><button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button></div><div class="xcc-kpis"><span>Active CCs: <b>${ccRows.length}</b></span><span>Total Gross: <b>${money(Math.round(totG))}</b></span><span class="hi">Total Employer Cost: <b>${money(Math.round(totCost))}</b></span></div></div>
- <div class="wrap xcc-tbl"><table><thead><tr><th>Cost Center</th><th>Department / Project</th><th>Headcount</th><th>Basic Salary</th><th>Allowances</th><th>Monthly Gross</th><th>Est. Employer Ins.</th><th>Total Employer Cost</th><th>Share</th></tr></thead><tbody>
- ${ccRows.map((r,idx)=>{const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];return`<tr><td><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span></td><td><b>${esc(r.name)}</b> <small class="mu">· ${esc(r.type)}</small></td><td><b>${r.hc}</b></td><td>${money(Math.round(r.b))}</td><td>${money(Math.round(r.a))}</td><td><b>${money(Math.round(r.g))}</b></td><td>${money(Math.round(r.er))}</td><td><b style="color:var(--brand)">${money(Math.round(r.cost))}</b></td><td style="min-width:120px"><div class="xcc-sh"><span class="t"><div class="f" style="width:${pct}%;background:${col}"></div></span><b>${pct}%</b></div></td></tr>`}).join("")}
- </tbody><tfoot><tr class="xcc-tot"><td><b>TOTAL</b></td><td><b>${ccRows.length} Cost Centers</b></td><td><b>${actEmps.length}</b></td><td><b>${money(Math.round(totB))}</b></td><td><b>${money(Math.round(totA))}</b></td><td><b>${money(Math.round(totG))}</b></td><td><b>${money(Math.round(totEr))}</b></td><td><b style="color:var(--brand)">${money(Math.round(totCost))}</b></td><td><b>100%</b></td></tr></tfoot></table></div></div>
- <div class="card" style="margin-top:14px"><h2>Net pay by month</h2><div class="hbars">${bars.map(b=>`<div class="hbr"><span>${b.l}</span><i style="width:${b.v/mx*100}%"></i><b>${b.v?fmtC(b.v):"No run"}</b></div>`).join("")}</div></div>
- <div class="card" style="margin-top:14px"><h2>Pipeline</h2>${tbl(["Status","Runs"],Object.keys(RS).map(s=>[RS[s],runs.filter(r=>r.status===s).length]))}</div>`}
+function paydash(){
+  const runs=RUNS(),sal=canSalV();
+  if(!sal)return forbid("Salary data is restricted for your role.");
+  const last=runs.filter(r=>r.results.length).sort((a,b)=>a.period<b.period?1:-1)[0];
+  const rr=resolveRules(iso(T0));
+  const pend=runs.filter(r=>r.status==="pending_approval").length;
+  const open=runs.reduce((s,r)=>s+r.exc.filter(x=>x.sev==="block").length,0);
+  const actEmps=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0)));
+  const ccData=buildCostCenterData(actEmps,last);
+  const ccRows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows;
+  const totB=ccRows.reduce((s,r)=>s+r.b,0);
+  const totA=ccRows.reduce((s,r)=>s+r.a,0);
+  const totG=ccRows.reduce((s,r)=>s+r.g,0);
+  const totEr=ccRows.reduce((s,r)=>s+r.er,0);
+  const totCost=ccRows.reduce((s,r)=>s+r.cost,0);
+  const estNet=last?tot(last,"net"):Math.round(totG*0.84);
+  const ccColors=["#0460B5","#0284c7","#0d9488","#7c3aed","#d97706","#e11d48"];
+  
+  const ms=monthsBack(6).slice().reverse();
+  const bars=ms.map(m=>{const r=runs.find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return r?tot(r,"net"):Math.round(totG*0.84);});
+  const ml=ms.map(x=>x.label.split(" ")[0].slice(0,3));
+  const fk=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"k":String(Math.round(v));
+  const T=iso(T0),D0=new Date(T+"T00:00:00"),monN=D0.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  
+  const IC_GROSS='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 10h20"/><circle cx="16" cy="15" r="2"/></svg>';
+  const IC_NET='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><path d="M16 12h.01"/><path d="M18 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>';
+  const IC_INS='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+  const IC_COST='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>';
+  
+  const estEmpSI=Math.round(actEmps.reduce((s,e)=>s+Math.round(Math.min(+e.basic||0,16700)*0.11),0));
+  const estTax=Math.max(0,Math.round(totG - estNet - estEmpSI));
+
+  return `<div class="pyd-wrap">
+  <header class="xhd">
+    <div>
+      <p class="xorg"><span class="ldot"></span> Payroll &amp; Direct Cost Summary</p>
+      <h2 class="xtt">Payroll Operations &amp; Budget</h2>
+      <p class="xsub">Current monthly fixed payroll &amp; statutory cost across ${actEmps.length} active employee${actEmps.length===1?'':'s'} in ${ccRows.length} cost center${ccRows.length===1?'':'s'}${last?' · Latest run: '+esc(runLabel(last)):''}</p>
+    </div>
+    <div class="xact">
+      <button class="b" type="button" data-go="pay_reg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Salary Register</span></button>
+      <button class="b" type="button" data-go="rep_cost"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 4 4 5-6"/></svg><span>Cost Analysis</span></button>
+      ${canSee("pay_proc")?`<button class="b p" type="button" data-go="pay_proc">${ic("pay_proc")}<span>${last?"Payroll Processing":"Run Monthly Payroll"}</span></button>`:""}
+    </div>
+  </header>
+
+  <section class="xband" aria-label="Payroll key figures" style="margin-bottom:14px">
+    <button class="xf" data-go="pay_reg">
+      <div class="xf-top"><span class="xl">Monthly Gross Pay</span><span class="xf-ic" style="background:#dcfce7;color:#16a34a">${IC_GROSS}</span></div>
+      <div class="xf-mid"><b class="scn">${money(Math.round(totG))}</b></div>
+      <div class="xf-bot"><span class="xd up">${actEmps.length} active staff · Basic + allowances</span></div>
+    </button>
+    <button class="xf" data-go="pay_proc">
+      <div class="xf-top"><span class="xl">Net Salaries Payable</span><span class="xf-ic" style="background:#e0f2fe;color:#0284c7">${IC_NET}</span></div>
+      <div class="xf-mid"><b class="scn">${money(Math.round(estNet))}</b></div>
+      <div class="xf-bot"><span class="xd">${last?"Actual from "+last.period:"Est. 84% net transfer"}</span></div>
+    </button>
+    <button class="xf" data-go="comp">
+      <div class="xf-top"><span class="xl">Est. Employer Insurance</span><span class="xf-ic" style="background:#fef3c7;color:#d97706">${IC_INS}</span></div>
+      <div class="xf-mid"><b class="scn">${money(Math.round(totEr))}</b></div>
+      <div class="xf-bot"><span class="xd">~18.75% NOSI statutory contribution</span></div>
+    </button>
+    <button class="xf" data-go="rep_cost">
+      <div class="xf-top"><span class="xl">Total Monthly Cost</span><span class="xf-ic" style="background:#ede9fe;color:#7c3aed">${IC_COST}</span></div>
+      <div class="xf-mid"><b class="scn" style="color:var(--brand)">${money(Math.round(totCost))}</b></div>
+      <div class="xf-bot"><span class="xd up">Gross + Employer Statutory</span></div>
+    </button>
+  </section>
+
+  <div class="dg2" style="margin-bottom:14px">
+    <section class="card xs xp">
+      <div class="xsh">
+        <div>
+          <h3>Monthly Payroll Cost Trend</h3>
+          <p>Net &amp; gross pay progression over the last 6 periods.</p>
+        </div>
+        <button class="xlk" data-go="pay_reg">Payroll register →</button>
+      </div>
+      <div class="xchart">
+        ${cols(bars, ml, { aria: "Payroll cost last 6 months", fmt: fk, tip: v => money(Math.round(v)) })}
+      </div>
+    </section>
+    <section class="card xs">
+      <div class="xsh">
+        <div>
+          <h3>Payroll Breakdown</h3>
+          <p>Current active monthly wages and estimated deductions.</p>
+        </div>
+        <button class="xlk" data-go="pay_comp">Components →</button>
+      </div>
+      <ul class="xlist">
+        <li><span>Basic salaries (${actEmps.length} staff)</span><b>${money(Math.round(totB))}</b></li>
+        <li><span>Fixed allowances</span><b>${money(Math.round(totA))}</b></li>
+        <li><span>Monthly Gross Pay</span><b>${money(Math.round(totG))}</b></li>
+        <li><span>Employer Social Insurance (~18.75%)</span><b>${money(Math.round(totEr))}</b></li>
+        <li><span>Est. Employee Insurance (11%)</span><b>${money(Math.round(estEmpSI))}</b></li>
+        <li><span>Est. Monthly Salary Tax</span><b>${money(Math.round(estTax))}</b></li>
+        <li class="tot"><span>Total Employer Direct Cost</span><b style="color:var(--brand)">${money(Math.round(totCost))}</b></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card xs xcc" style="margin-top:14px">
+    <div class="xsh">
+      <div>
+        <h3>Payroll Allocation by Cost Center &amp; Project</h3>
+        <p>Departmental cost centers, headcount allocation, and statutory cost burden.</p>
+      </div>
+      <div class="bar" style="gap:8px">
+        ${canSee("cost_centers")?`<button class="xlk" data-go="cost_centers">Manage Cost Centers</button>`:""}
+        ${canSee("rep_cost")?`<button class="xlk" data-go="rep_cost">Full Cost Analysis →</button>`:""}
+      </div>
+    </div>
+    <div class="xcc-top">
+      <div class="xseg">
+        <button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Department Cost Center (${ccData.deptRows.length})</button>
+        <button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button>
+      </div>
+      <div class="xcc-kpis">
+        <span>Active CCs: <b>${ccRows.length}</b></span>
+        <span>Total Gross: <b>${money(Math.round(totG))}</b></span>
+        <span class="hi">Total Employer Cost: <b>${money(Math.round(totCost))}</b></span>
+      </div>
+    </div>
+    <div class="xcc-grid" style="margin-bottom:14px">
+      ${ccRows.map((r,idx)=>{
+        const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];
+        return`<button type="button" class="xcc-card" data-d="ch:cc:${esc(r.name)}" title="Click to inspect employees in ${esc(r.code)}">
+          <div class="xcc-chd"><div class="xcc-cid"><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span><div><b>${esc(r.name)}</b><small>${r.hc} employee${r.hc===1?"":"s"}${r.fte!==r.hc?` (${r.fte.toFixed(1)} FTE)`:""}</small></div></div><span class="xcc-cpct" style="color:${col};background:color-mix(in srgb,${col} 10%,transparent)">${pct}%</span></div>
+          <div class="xcc-cbar"><i style="width:${pct}%;background:${col}"></i></div>
+          <div class="xcc-cmet"><div><span>Monthly Gross</span><b>${money(Math.round(r.g))}</b></div><div><span>Employer Ins.</span><b>${money(Math.round(r.er))}</b></div><div><span>Total Cost</span><b class="hi">${money(Math.round(r.cost))}</b></div></div>
+        </button>`;
+      }).join("")}
+    </div>
+    <div class="wrap xcc-tbl">
+      <table>
+        <thead>
+          <tr><th>Cost Center</th><th>Department / Project</th><th>Headcount</th><th>Basic Salary</th><th>Allowances</th><th>Monthly Gross</th><th>Est. Employer Ins.</th><th>Total Employer Cost</th><th>Cost Share</th></tr>
+        </thead>
+        <tbody>
+          ${ccRows.map((r,idx)=>{
+            const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];
+            return`<tr><td><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span></td><td><b>${esc(r.name)}</b> <small class="mu">· ${esc(r.type)}</small></td><td><b>${r.hc}</b></td><td>${money(Math.round(r.b))}</td><td>${money(Math.round(r.a))}</td><td><b>${money(Math.round(r.g))}</b></td><td>${money(Math.round(r.er))}</td><td><b style="color:var(--brand)">${money(Math.round(r.cost))}</b></td><td style="min-width:130px"><div class="xcc-sh"><span class="t"><div class="f" style="width:${pct}%;background:${col}"></div></span><b>${pct}%</b></div></td></tr>`;
+          }).join("")}
+        </tbody>
+        <tfoot>
+          <tr class="xcc-tot"><td><b>TOTAL</b></td><td><b>${ccRows.length} Cost Centers</b></td><td><b>${actEmps.length}</b></td><td><b>${money(Math.round(totB))}</b></td><td><b>${money(Math.round(totA))}</b></td><td><b>${money(Math.round(totG))}</b></td><td><b>${money(Math.round(totEr))}</b></td><td><b style="color:var(--brand)">${money(Math.round(totCost))}</b></td><td><b>100%</b></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <div class="dg2b" style="margin-top:14px">
+    <div class="card xs">
+      <div class="xsh">
+        <div>
+          <h3>Payroll Runs &amp; Approvals Pipeline</h3>
+          <p>Status of prepared runs and pending approval requests.</p>
+        </div>
+        <button class="xlk" data-go="pay_proc">Open Processing →</button>
+      </div>
+      <div class="pipe-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px">
+        ${Object.keys(RS).map(s=>{
+          const cnt=runs.filter(r=>r.status===s).length;
+          return`<div class="stat-box" style="background:var(--soft);padding:10px 12px;border-radius:12px;border:1px solid var(--bd)"><small class="mu" style="font-size:11px;display:block;text-transform:uppercase">${RS[s]}</small><b style="font-size:18px;color:${cnt>0?'var(--brand)':'var(--mu)'}">${cnt}</b></div>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class="card xs">
+      <div class="xsh">
+        <div>
+          <h3>Tax &amp; Insurance Rules Status</h3>
+          <p>Effective statutory rates and tax bracket validation.</p>
+        </div>
+        <button class="xlk" data-go="comp">Rules Settings →</button>
+      </div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--soft);border-radius:10px">
+          <span>Statutory Rules Status</span>
+          ${rr.rules?(rr.unver?bd("Trial / Test Rules","s-wn"):bd("Verified & Approved","s-ok")):bd(rr.missing.length+" Missing Rules","s-er")}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--soft);border-radius:10px">
+          <span>Blocking Payroll Exceptions</span>
+          ${open>0?bd(open+" Blocking Issue(s)","s-er"):bd("0 Issues (Clear)","s-ok")}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--soft);border-radius:10px">
+          <span>Runs Awaiting Approval</span>
+          ${pend>0?bd(pend+" Pending Approval","s-wn"):bd("All Approved","s-ok")}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
 reg("paydash","Payroll Dashboard","Where payroll stands: latest run, cost center summary, approvals, exceptions and rules.",A("PAY","FIN","HRD"),paydash);
 
 /* ----- payroll inputs (Odoo other inputs) ----- */
@@ -3524,9 +3703,7 @@ function qaList(){const n=canSee("appr")?apprItems().filter(canAct).length:0;
  const by={[R.HRD]:["emp","lv","att","appr","hrq","mail"],[R.HRS]:["emp","lv","att","appr","hrq","mail"],[R.DM]:["appr","tl","ta","org"],[R.PAY]:["run","inp","je","slip","appr"],[R.FIN]:["reg","je","rec","cost","appr"]}[role]||[];
  return by.map(k=>({k,t:T[k]})).filter(x=>{const g=x.t[2].slice(3).split("+")[0];return canSee(g)})}
 function uxUI(){try{if(typeof mailScan==="function")mailScan()}catch(e){}const v=$("#view");if(!v)return;const old=v.querySelector(".qa");if(old)old.remove();
- if(page!=="paydash")return;const L=qaList();if(!L.length)return;
- const h=`<div class="qa" style="--qn:${L.length}" role="group" aria-label="Quick actions">${L.map(x=>`<button type="button" class="qt" data-q="${x.t[2]}">${ic(x.t[2].slice(3).split("+")[0])}<span class="qx"><b>${esc(x.t[0])}</b><small>${esc(x.t[1])}</small></span>${x.t[3]?`<i class="qn">${x.t[3]}</i>`:""}</button>`).join("")}</div>`;
- v.insertAdjacentHTML("afterbegin",h)}
+ return;}
 document.addEventListener("click",ev=>{const q=ev.target.closest("[data-q]");if(!q)return;const[a,b]=q.dataset.q.slice(3).split("+");go(a);if(b)setTimeout(()=>ACTS[b]&&ACTS[b](),60)});
 
 /* New request for an employee, from anywhere */
@@ -4047,7 +4224,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="31 Oct 2026 22:35 · build 98";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="31 Oct 2026 22:45 · build 99";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -5478,6 +5655,90 @@ html[data-theme="dark"] #confirm .dlg {
 
 .xcc-cmet b.hi {
   color: var(--brand);
+}
+
+.xcc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.xcc-kpis {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.xcc-kpis span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  color: var(--mu) !important;
+  background: var(--soft) !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--bd) !important;
+}
+
+.xcc-kpis span b {
+  color: var(--tx) !important;
+  font-weight: 700 !important;
+}
+
+.xcc-kpis span.hi {
+  background: rgba(4, 96, 181, 0.08) !important;
+  border-color: rgba(4, 96, 181, 0.22) !important;
+  color: var(--brand) !important;
+}
+
+.xcc-kpis span.hi b {
+  color: var(--brand) !important;
+}
+
+.xcc-tbl {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--bd) !important;
+  margin-top: 14px !important;
+}
+
+.xcc-tbl table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13.5px !important;
+}
+
+.xcc-tbl th {
+  background: var(--soft) !important;
+  color: var(--mu) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 11px 14px !important;
+  border-bottom: 1px solid var(--bd) !important;
+}
+
+.xcc-tbl td {
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--bd) !important;
+  color: var(--tx) !important;
+}
+
+.xcc-tbl tr:hover td {
+  background: var(--soft) !important;
+}
+
+.xcc-tot td {
+  background: rgba(4, 96, 181, 0.05) !important;
+  font-weight: 700 !important;
+  border-top: 2px solid var(--brand) !important;
+  border-bottom: none !important;
 }
 
 .xcc-foot {
