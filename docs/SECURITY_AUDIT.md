@@ -8,13 +8,21 @@
 
 The repository has a thoughtful prototype-to-cloud migration, uses Supabase Auth, separates employee portal reads/writes into database functions, and has a useful Playwright test suite. However, the current authorization model is not yet sufficient to treat the system as a production HR/payroll platform with confidential salary and employee data.
 
-**Overall assessment: High risk for production use until the high-severity access-control issue is resolved and verified against the live Supabase project.**
+**Overall assessment: Critical risk for production use until the profile privilege-escalation issue and broad staff data access are resolved and verified against the live Supabase project.**
 
 This is a static repository review. No live Supabase database, deployed Edge Function configuration, production data, or authenticated tenant was accessed. The SQL migration in this branch is a limited hardening change; it does not claim to remediate the architectural access-control issue below.
 
 ## Findings
 
-### H-01 — All active staff roles can read and write every app_store document
+### H-01 — HR Directors can bypass guarded profile-management RPCs and promote themselves
+
+**Severity: Critical**  
+**Evidence:** `supabase/001_init.sql` creates `profiles_admin_all FOR ALL` with `USING (public.is_admin())` and `WITH CHECK (public.is_admin())`. `supabase/002_portal.sql` later changes `is_admin()` to return true for both `System Administrator` and `HR Director`. The table also grants authenticated users INSERT/UPDATE/DELETE.  
+**Impact:** An authenticated HR Director can update their own `profiles.role` directly through the Data API to `System Administrator`, bypassing `set_profile()` which explicitly blocks self-edit and reserves System Administrator role changes for an existing System Administrator. This defeats the intended separation of duties.  
+**Remediation in this branch:** `supabase/007_security_hardening.sql` drops `profiles_admin_all`. Profile changes must use the guarded `set_profile()` RPC or the server-side `admin-users` Edge Function. The existing self-read policy remains.  
+**Validation required:** In staging, verify HR Director cannot directly INSERT/UPDATE/DELETE profiles or promote themselves, while the approved account-management flows still work.
+
+### H-02 — All active staff roles can read and write every app_store document
 
 **Severity: High**  
 **Evidence:** `supabase/001_init.sql` defines `store_staff_read/insert/update/delete` using only `public.is_staff()`. That helper returns true for every active non-Pending staff role. The app stores each module as a complete JSON document in `app_store`.  
@@ -75,7 +83,7 @@ This is a static repository review. No live Supabase database, deployed Edge Fun
 
 ## Remediation plan
 
-1. Apply `supabase/007_security_hardening.sql` in a staging project and run the regression checks.
+1. Apply `supabase/007_security_hardening.sql` in a staging project and run the regression checks, including HR Director direct-profile-write denial.
 2. Design a role-by-role data access matrix and replace broad staff access to `app_store` for sensitive datasets.
 3. Add pgTAP RLS/RPC tests and run them in CI.
 4. Minimize the employee portal configuration payload.
