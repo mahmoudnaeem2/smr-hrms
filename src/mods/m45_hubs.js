@@ -2,7 +2,7 @@
 const HUBS=[
  {g:"Home",n:"Dashboard",ic:"dash",p:[["Summary","dash"]]},
  {g:"Home",n:"Inbox",ic:"appr",p:[["Approvals","appr"],["HR requests","hr_req"],["Notifications","notif"]]},
- {g:"Home",n:"My portal",ic:"work",p:[["My portal","work"],["My profile","myprofile"]]},
+ {g:"Home",n:"My portal",ic:"work",p:[["My profile","myprofile"],["My portal","work"]]},
  {g:"People",n:"Employees",ic:"emp",p:[["Directory","emp"],["Organization chart","org"],["Reporting lines","reporting"],["Departments","depts"],["Titles & grades","positions"]]},
  {g:"People",n:"Contracts & records",ic:"contracts",p:[["Contracts","contracts"],["Probation","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]},
  {g:"Time & pay",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
@@ -20,7 +20,7 @@ const SETK=SETG.flatMap(g=>g[1].map(x=>x[0]));
 function hubOf(k){if(SETK.includes(k))return HUBS.find(h=>h.n==="Settings");return HUBS.find(h=>h.p.some(x=>x[1]===k))||null}
 function hubKey(h){const x=h.p.find(x=>canSee(x[1]));return x?x[1]:null}
 /* menu: one entry per hub, pointing to the first page this role can open */
-function NAVV(){if(role===R.EMP){return[["Home",[["My portal","work"],["My profile","myprofile"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & pay",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"],["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
+function NAVV(){if(role===R.EMP){return[["Home",[["My profile","myprofile"],["My portal","work"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & pay",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"],["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
  const out=[];HUBS.forEach(h=>{const k=hubKey(h);if(!k)return;let G=out.find(x=>x[0]===h.g);if(!G){G=[h.g,[]];out.push(G)}G[1].push([h.n,k])});
  try{out.forEach(([g])=>{GOPEN[g]=true})}catch(e){}return out}
 function NAVACT(k){if(k===page)return true;if(role===R.EMP)return false;const a=hubOf(k),b=hubOf(page);if(a&&b&&a===b)return true;return k==="reports"&&typeof REPKEYS!=="undefined"&&REPKEYS.includes(page)&&page!=="auditlog"}
