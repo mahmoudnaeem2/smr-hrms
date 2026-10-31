@@ -127,29 +127,29 @@ document.addEventListener("focusin",ev=>{const i=ev.target;if(i&&i.dataset&&i.da
 /* Full-page Add employee */
 function empNewPage(){
  const no=nextEmpNo(),mgrs=allEmps().filter(e=>e.status!=="Terminated"),ccs=ccOpts("").filter(x=>x[0]);
- const sec=t=>`<div class="nsec" style="font-size:15px;font-weight:700;color:var(--hd,#0b2b4f);margin:24px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--bd,#e2e8f1);text-transform:uppercase;letter-spacing:.04em">${t}</div>`;
- return `<div class="emp-add-page" style="max-width:960px;margin:0 auto 40px">
-  <div style="margin-bottom:18px">
-    <button type="button" class="b" data-go="emp" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;padding:0 16px;height:40px">
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back to Employees
-    </button>
-  </div>
-  <div class="card" style="padding:28px 32px;box-shadow:0 2px 10px rgba(15,27,45,.06)">
-    <div style="margin-bottom:20px">
-      <h2 style="font-size:24px;font-weight:700;margin:0 0 6px">Add new employee</h2>
-      <div class="mu" style="font-size:14.5px">Number <b>${no}</b> is assigned automatically. Fill the essentials now; other details can be added later from the profile.</div>
+ const sec=t=>`<div class="nsec" style="font-size:16px;font-weight:700;color:var(--hd,#0b2b4f);margin:28px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--bd,#e2e8f1);text-transform:uppercase;letter-spacing:.05em">${t}</div>`;
+ return `<div class="emp-add-page" style="width:100%;max-width:1440px;margin:0 auto 40px">
+  <div class="card" style="padding:36px 44px;border-radius:20px;box-shadow:0 4px 20px rgba(15,27,45,.06)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+      <div>
+        <h2 style="font-size:26px;font-weight:700;margin:0 0 6px">Add new employee</h2>
+        <div class="mu" style="font-size:15px">Number <b>${no}</b> is assigned automatically. Fill the essentials now; other details can be added later from the profile.</div>
+      </div>
+      <button type="button" class="b" data-go="emp" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;padding:0 18px;height:42px;border-radius:12px">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back to Employees
+      </button>
     </div>
     <form class="nf" data-form="empnew" style="display:block">
       <input type="hidden" name="no" value="${no}">
       ${sec("Who")}
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px 24px">
         ${fld("Full name","name","text",{req:1})}
         ${fld("Mobile","mobile","tel")}
         ${fld("Work email","email","email")}
         ${fld("National ID (14 digits)","nid","text")}
       </div>
       ${sec("Job")}
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px 24px">
         ${fld("Department","dept","select",{req:1,opts:DEPTS})}
         ${posSel("Job title","",1)}
         ${gradeSel("")}
@@ -164,21 +164,21 @@ function empNewPage(){
         ${ccs.length?fld("Project or cost center","project","select",{opts:ccs}):""}
       </div>
       ${sec("Pay")}
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px 24px">
         <label>Basic salary (EGP / month)*<input name="n_basic" type="number" placeholder="0" required></label>
         ${ALWT.map(([k,l])=>`<label>${l} allowance<input name="n_${k}" type="number" placeholder="0"></label>`).join("")}
       </div>
       ${sec("Bank (optional)")}
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px 24px">
         ${fld("Bank name","bankname","text")}
         ${fld("Account number","bankacct","text")}
         ${fld("IBAN","iban","text")}
       </div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:28px;padding-top:18px;border-top:1px solid var(--bd,#e2e8f1)">
-        <button class="b p" type="submit" style="height:44px;padding:0 24px;font-size:15px;font-weight:600">Add employee</button>
-        <button type="button" class="b" data-go="emp" style="height:44px;padding:0 20px">Cancel</button>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:32px;padding-top:22px;border-top:1px solid var(--bd,#e2e8f1)">
+        <button class="b p" type="submit" style="height:48px;padding:0 32px;font-size:16px;font-weight:600;border-radius:12px">Add employee</button>
+        <button type="button" class="b" data-go="emp" style="height:48px;padding:0 24px;font-size:15px;border-radius:12px">Cancel</button>
       </div>
-      <div class="err" style="margin-top:12px"></div>
+      <div class="err" style="margin-top:14px"></div>
     </form>
   </div>
  </div>`;
