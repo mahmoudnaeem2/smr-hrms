@@ -1533,7 +1533,7 @@ const MODERN_IC = {
   rq: "M22 2 11 13 M22 2l-7 20-4-9-9-4 20-7z"
 };
 Object.assign(IC, MODERN_IC);
-const ic=k=>window.PHI&&PHI[k]?`<svg class="ic phd" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${PHI[k]}</svg>`:`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[k]||IC.dash}"/></svg>`;
+const ic=k=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${(window.IC&&(IC[k]||IC.dash))||''}"/></svg>`;
 const ini=n=>{const w=String(n||"").trim().split(/\s+/).filter(Boolean),art=/^(el|al|ال)$/i;const p=[w[0]];for(let i=1;i<w.length&&p.length<2;i++)if(!art.test(w[i]))p.push(w[i]);return p.filter(Boolean).map(x=>x[0]).join("").toUpperCase()};
 let FM=false;
 const GIC={Home:"dash","Time & Leave":"timesheets",Settings:"perms",Overview:"dash",People:"emp","Time & Attendance":"timesheets",Leave:"leave_cal",Payroll:"paydash",Talent:"perf",Reports:"rep_hr",Administration:"perms"};
@@ -3565,7 +3565,7 @@ chev:"M9 6l6 6-6 6"
 
 /* Employee home (ZenHR-style): welcome, balances, colourful tiles, pending requests */
 const ZT=[["rq","Requests","overtime","#14a39a","#dff5f2"],["ps","Payslips","payslips","#e5484d","#fde8e8"],["dc","Documents","docs","#f0a020","#fff1d6"],["at","Attendance","att_d","#ee6c3a","#ffe9df"],["to","Time off","leave_cal","#2f80ed","#e2eefd"],["ln","Loans","loans","#2fa66a","#e0f5e9"],["wn","Warnings","warns","#d9822b","#fdebd6"],["ct","Contract","contracts","#5b5bd6","#e8e8fb"],["pf","Profile","profile","#8a5cd1","#efe6fb"]];
-const zIc=(k,c)=>`<svg viewBox="0 0 24 24" fill="${c}" fill-opacity=".13" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${(window.IC&&(IC[k]||IC.dash))||""""}"/></svg>`;
+const zIc=(k,c)=>`<svg viewBox="0 0 24 24" fill="${c}" fill-opacity=".13" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${(window.IC&&(IC[k]||IC.dash))||''}"/></svg>`;
 function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if(typeof ESES!=="undefined"&&ESES)WSNO=ESES.no;if(!L.some(x=>x.no===WSNO))WSNO=(L[0]||{}).no;const e=L.find(x=>x.no===WSNO);
  if(!e)return portalBase(initial);if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}if((TAB.pt||"ov")!=="ov")return portalBase(initial);
  const b=balances(e),fx=v=>(+v).toFixed(2),first=esc((e.name||"").split(" ")[0]),nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length,
