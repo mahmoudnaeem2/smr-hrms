@@ -4865,20 +4865,9 @@ body {
   min-height: 68px !important;
   display: flex !important;
   align-items: center !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
-  border-bottom: 0 !important;
-}
-
-#side .brand::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0%, rgba(125, 211, 252, 0.95) 55%, rgba(56, 189, 248, 1) 100%);
-  box-shadow: 0 1px 10px rgba(56, 189, 248, 0.45);
-  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 1px 0 rgba(2, 42, 88, 0.18) !important;
 }
 
 #side .brand .slogo {
@@ -4951,27 +4940,15 @@ body {
   border-color: rgba(255, 255, 255, 0.45) !important;
 }
 
-/* Glassy Topbar + Luminous SMR Blue Accent Divider */
+/* Glassy Topbar with Subtle Frosted Divider */
 .topbar {
   position: sticky !important;
   min-height: 68px !important;
-  background: rgba(255, 255, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.80) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border-bottom: 0 !important;
-  box-shadow: 0 6px 24px rgba(4, 96, 181, 0.07) !important;
-}
-
-.topbar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #38bdf8 0%, #0460B5 35%, #0ea5e9 70%, rgba(4, 96, 181, 0.22) 100%);
-  box-shadow: 0 1px 10px rgba(4, 96, 181, 0.28);
-  pointer-events: none;
+  border-bottom: 1px solid rgba(4, 96, 181, 0.12) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), inset 0 -1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 /* Crisp Retina Profile Avatar Rendering */
