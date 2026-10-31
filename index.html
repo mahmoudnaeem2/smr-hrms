@@ -3997,8 +3997,9 @@ function portal(initial){const L=allEmps().filter(x=>x.status!=="Terminated");if
  hq=HQL().filter(r=>r.no===e.no&&!/closed|done|rejected|approved|complete/i.test(r.status||"")).map(r=>({t:+String(r.id).replace(/\D/g,"")||0,a:(HQT(r.type)||{}).t||r.type,b:r.note||"Sent to HR",c:"HR request",s:r.status||"Pending",go:"rq"})),
  P=[...lv,...hq].sort((a,c)=>c.t-a.t).slice(0,5),
  pend=P.length?P.map(p=>`<button class="zp" data-act="pt:${p.go}"><div><b>${esc(p.a)}</b><span>${esc(p.b)}</span><em>${esc(p.c)}<i>${esc(p.s)}</i></em></div></button>`).join(""):`<div class="zp zp0">Nothing waiting. Tap Requests or Time off to send one.</div>`;
+ const hr=new Date().getHours(),greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening",gIc=hr<12?"☀️":hr<18?"🌤️":"🌙";
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
- <div class="zh"><h2 class="zw">Welcome, ${first}</h2><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}</div>
+ <div class="zh"><p class="xorg"><span class="ldot"></span> ${gIc} ${greet}</p><h2 class="zw">Hello, ${esc(e.name)} 👋</h2><div class="zsub">${esc(e.pos||"")}${e.dept?" · "+esc(e.dept):""}${e.dept?` · <span class="cc-mini">${esc(ccCodeOf(e.dept))}</span>`:""}</div>
  ${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev2"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Previewing as</span><select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}
  <div class="zrow"><span>Your remaining balance</span><button class="zlink" data-act="pt:to">Full Details</button></div><div class="zbal">${bal}</div>
  <div class="zq">What would you like to do?</div><div class="zgrid">${tiles}</div>
