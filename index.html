@@ -466,11 +466,11 @@ form.inl>button,form.g>button[type=submit]{justify-self:start;padding:0 26px}
 .lrpf .nf{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end}.lrpb{display:flex;align-items:end}.lrpb .b{height:46px}
 /* sidebar search */
 .sps{position:relative;margin:10px 14px 6px;display:flex;align-items:center}
-.sps>svg{position:absolute;left:11px;width:16px;height:16px;color:rgba(255,255,255,.7);pointer-events:none}
-.sps input{width:100%;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12);color:#fff;padding:0 54px 0 34px;font-size:13.5px;outline:0}
-.sps input::placeholder{color:rgba(255,255,255,.7)}
-.sps input:focus{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55)}
-.sps kbd{position:absolute;right:8px;font:600 10px/1 inherit;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.3);border-radius:5px;padding:3px 5px;pointer-events:none}
+.sps>svg{position:absolute;left:11px;width:16px;height:16px;color:#475569!important;pointer-events:none;z-index:2}
+.sps input{width:100%!important;height:38px!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.35)!important;background:#ffffff!important;color:#0f1b2d!important;-webkit-text-fill-color:#0f1b2d!important;caret-color:#0460B5!important;padding:0 54px 0 34px!important;font-size:13.5px!important;box-shadow:0 2px 6px rgba(0,0,0,.08)!important;outline:0!important}
+.sps input::placeholder{color:#64748b!important;-webkit-text-fill-color:#64748b!important;opacity:1!important}
+.sps input:focus{background:#ffffff!important;border-color:#38bdf8!important;box-shadow:0 0 0 3px rgba(56,189,248,.35)!important;color:#0f1b2d!important;-webkit-text-fill-color:#0f1b2d!important}
+.sps kbd{position:absolute;right:8px;font:600 10px/1 Inter,system-ui,sans-serif!important;color:#475569!important;border:1px solid #cbd5e1!important;border-radius:5px;padding:3px 5px;pointer-events:none;background:#f1f5f9!important}
 .sps input:focus~kbd,.sps input:not(:placeholder-shown)~kbd{display:none}
 #pal2{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:280px;max-height:60vh;overflow:auto;background:var(--surf);color:var(--tx);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);z-index:80;padding:6px}
 #pal2 .pg{padding:8px 10px 4px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mu)}
@@ -1993,7 +1993,7 @@ ACTS.gorun=r=>{if(r.startsWith("new:")){SELRUN="new:"+r.slice(4)}else SELRUN=r;g
 reg("pay_periods","Payroll Periods","Each month and where its payroll stands.",A("PAY","FIN","HRD"),pay_periods);
 function pay_proc(){const runs=RUNS().slice().reverse(),can=canPrep(),pre=SELRUN.startsWith("new:")?SELRUN.slice(4):"";
  const free=monthsBack(8).filter(m=>!RUNS().some(r=>r.period===m.key&&r.kind==="regular"));
- const list=runs.map(r=>[esc(runLabel(r)),rsb(r.status),String(r.results.length),canSalV()?fmtC(tot(r,"net")):"Restricted",r.test?bd("Unverified rules","s-wn"):"",`<button class="b" data-act="selrun:${r.id}">Open</button>`]);
+ const list=runs.map(r=>{const canDel=can&&(!FINAL.includes(r.status)||role===R.HRD);const delBtn=canDel?` <button class="b" data-act="rundel:${r.id}" style="color:#dc2626;border-color:rgba(220,38,38,.4);margin-left:4px" title="Delete payroll run">Delete</button>`:"";return[esc(runLabel(r)),rsb(r.status),String(r.results.length),canSalV()?fmtC(tot(r,"net")):"Restricted",r.test?bd("Unverified rules","s-wn"):"",`<button class="b" data-act="selrun:${r.id}">Open</button>${delBtn}`]});
  const rrNow=resolveRules(iso(T0)),noRules=rrNow.rules?"":`<div class="notice setup" role="status"><b>Before your first payroll run</b><ol class="steps"><li><b>Load the rules.</b> Use the first button to load the 2026 values for trial use.</li><li><b>Check and approve them.</b> Your accountant reviews the values in Tax &amp; Insurance Settings and approves them.</li><li><b>Create the run.</b> Come back here and create the run for the month.</li></ol><div class="cs">Still missing: ${rrNow.missing.map(k=>esc(RKEYS.find(x=>x[0]===k)[1])).join(", ")}.</div><div class="bar" style="margin-top:8px">${can?`<button class="b p" data-act="load26demo">Load 2026 rules for trial use</button> `:""}<button class="b" data-go="comp">Open Tax &amp; Insurance Settings</button></div></div>`;
  const sel=RUNS().find(r=>r.id===SELRUN);
  return`${noRules}${can?`<div class="card"><form class="inl" data-form="runnew"><label>Period<select name="period">${free.map(m=>`<option value="${m.key}" ${m.key===pre?"selected":""}>${m.label}</option>`).join("")}</select></label><button class="b p" type="submit" ${free.length?"":"disabled"}>Create regular run</button></form><div class="err"></div></div>`:""}
@@ -2007,7 +2007,7 @@ function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filt
  if(role===R.FIN&&s==="approved")btn.push(`<button class="b p" data-act="fin:${r.id}">Finalize payroll</button>`);
  if([R.PAY,R.FIN].includes(role)&&s==="finalized")btn.push(`<button class="b p" data-act="paid:${r.id}">Mark as paid</button>`);
  if(can&&FINAL.includes(s)&&r.kind==="regular"&&!RUNS().some(x=>x.base===r.id))btn.push(`<button class="b" data-act="adj:${r.id}">Create adjustment run</button>`);
- if(can&&s==="draft")btn.push(`<button class="b" data-act="rundel:${r.id}">Delete run</button>`);
+ if(can&&(!FINAL.includes(s)||role===R.HRD))btn.push(`<button class="b" data-act="rundel:${r.id}" style="color:#dc2626;border-color:rgba(220,38,38,.45)">Delete run</button>`);
  const gates=[[!r.test,"Rules are verified and approved (not test or trial values)"],[!nb.length,"No unresolved blocking exceptions"],[needR===0,"Every large variance has a reason"],[(perOf(r.period)||{}).fullEnd<iso(T0),"Period has ended"]];
  const RD=(t,k)=>()=>({title:t+": "+runLabel(r),desc:"Per employee, from this payroll run.",cols:["No.","Name","Department",k==="net"&&t.startsWith("Emp")?"Net pay":t],rows:r.results.map(x=>[x.no,x.name,x.dept||"",fmtC(x[k])])});
  const vpanel=nb.length&&["validation_required","under_review"].includes(s)?`<div class="card vpanel"><h2>Validate this run</h2><p class="cs">${nb.length} issue(s) block this run. Fix each one (or exclude the employee), then press Re-validate.</p>${nb.map(x=>{const em=empBy(x.no)||{};const fix=typeof canEditEmp==="function"&&canEditEmp()?`<button class="b p" data-act="eedit:${x.no}">${/bank/i.test(x.msg)?"Add bank details":/salary/i.test(x.msg)?"Fix salary":"Open employee"}</button>`:`<span class="cs">Ask HR to fix this</span>`;return`<div class="vrow"><div><b>${esc(x.no+" "+(em.name||""))}</b><div class="cs">${esc(x.msg)}</div></div><div class="vact">${fix}${can?`<button class="b" data-act="excl:${r.id}|${x.no}">Exclude from run</button>`:""}</div></div>`}).join("")}${can?`<div class="bar" style="margin-top:12px"><button class="b p" data-act="calc:${r.id}">Re-validate</button></div>`:""}</div>`:""
@@ -2020,7 +2020,7 @@ function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filt
  ${secH("History")}${tbl(["Time","Role","Event"],r.hist.slice().reverse().map(h=>[h.t.slice(0,16).replace("T"," "),esc(h.role),esc(h.a)]))}${note("Included: proration for joiners and leavers, approved overtime and payroll inputs, when their rules are approved. Not included yet: final settlement, year-to-date tax reconciliation and retroactive salary changes. Tax and insurance are worked out on each month alone.")}`}
 ACTS.calc=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||!["draft","validation_required","under_review"].includes(r.status))return;const er=calcRun(r);if(er){toast(er);$("#view").insertAdjacentHTML("afterbegin",`<div class="notice er" role="alert">${esc(er)}</div>`);return}sv("runs");audit("Payroll calculated",runLabel(r)+(r.test?" (test rules)":""));toast("Payroll calculated");draw()};
 ACTS.excl=a=>{const[id,no]=a.split("|");ask("Exclude "+no+" from this run? The reason is kept in the audit log.","Exclude",(t)=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||r.status==="finalized")return;r.excl=r.excl||{};r.excl[no]=t;calcRun(r);sv("runs");audit("Employee excluded from payroll",no+": "+t);draw()},{reason:1})};
-ACTS.rundel=id=>ask("Delete this draft run?","Delete",()=>{const i=RUNS().findIndex(x=>x.id===id);if(i<0||RUNS()[i].status!=="draft"||!canPrep())return;RUNS().splice(i,1);sv("runs");SELRUN="";draw()});
+ACTS.rundel=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep())return;if(FINAL.includes(r.status)&&role!==R.HRD){toast("Finalized payroll runs cannot be deleted.");return}ask("Delete payroll run '"+runLabel(r)+"'? This will permanently delete this run and its calculated results.","Delete",()=>{const i=RUNS().findIndex(x=>x.id===id);if(i>=0){const lbl=runLabel(RUNS()[i]);RUNS().splice(i,1);sv("runs");if(SELRUN===id)SELRUN="";audit("Payroll run deleted",lbl);toast("Payroll run deleted.");draw()}})};
 ACTS.submit=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||r.status!=="under_review")return;if(r.exc.some(x=>x.sev==="block"))return toast("Resolve blocking exceptions first.");if(varRows(r).some(v=>v.need&&!v.reason))return toast("Add a reason for each large variance first.");
  r.status="pending_approval";r.submitted=iso(T0);r.hist.push({t:new Date().toISOString(),role,a:"Submitted for approval"});sv("runs");audit("Payroll submitted",runLabel(r));toast("Submitted. Finance Manager approves it in Approvals.");draw()};
 ACTS.fin=id=>{const r=RUNS().find(x=>x.id===id);if(!r||role!==R.FIN||r.status!=="approved")return;const ap=(DEC()["P"+id]||{log:[]}).log.filter(l=>l.d==="Approved");const e=[];
@@ -4539,27 +4539,13 @@ body .empty{color:var(--mu);border-radius:16px}
 body .nav{border-radius:12px;transition:background .15s,transform .15s}
 body #drawer{box-shadow:-24px 0 60px -20px rgba(16,24,40,.35)}
 body .grid.kpis{gap:16px}
-/* smart insights */
-.smx{margin:0 0 18px;padding:22px 24px;border-radius:22px;color:#fff;background:linear-gradient(135deg,#0460B5 0%,#0a3f78 60%,#082c55 100%);box-shadow:0 18px 40px -20px rgba(4,96,181,.7);position:relative;overflow:hidden}
-.smx::after{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.07)}
-.smx-h{display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;z-index:1}
-.smx h2{margin:0;font-size:22px;font-weight:700;color:#fff}.smx p{margin:4px 0 0;color:rgba(255,255,255,.82);font-size:14px}
-.smx-score{text-align:center;min-width:92px;padding:8px 14px;border-radius:16px;background:rgba(255,255,255,.14)}
-.smx-score b{display:block;font-size:26px;line-height:1.1}.smx-score span{font-size:11.5px;opacity:.85;text-transform:uppercase;letter-spacing:.05em}
-.smx-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px;position:relative;z-index:1}
-.smx-i{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:12px 14px;border:0;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;transition:background .15s,transform .15s}
-.smx-i:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
-.smx-i i{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.18);font-style:normal}
-.smx-i i svg{width:18px;height:18px}
-.smx-i.wn i{background:#f5b53a;color:#4a3000}.smx-i.er i{background:#ff7b6e;color:#4a0a05}.smx-i.ok i{background:#5fd08f;color:#053a1d}
-.smx-i b{display:block;font-size:14px;font-weight:700}.smx-i small{display:block;font-size:12.5px;opacity:.82}
-.smx-q{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1}
-.smx-q button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:7px 15px;font-weight:600;cursor:pointer;transition:background .15s}
-.smx-q button:hover{background:#fff;color:#0460B5}
-@media(max-width:640px){.smx{padding:18px}.smx-h{flex-direction:column;align-items:flex-start}}
+body .sps input{background:#ffffff!important;color:#0f1b2d!important;-webkit-text-fill-color:#0f1b2d!important;caret-color:#0460B5!important;border:1px solid rgba(255,255,255,.35)!important}
+body .sps input::placeholder{color:#64748b!important;-webkit-text-fill-color:#64748b!important;opacity:1!important}
+body .sps>svg{color:#475569!important}
+body .sps kbd{color:#475569!important;background:#f1f5f9!important;border-color:#cbd5e1!important}
 </style>
 <script>
-/* ===== UX2 smart layer: insights on the dashboard, quick actions + typo-tolerant search in the search boxes ===== */
+/* ===== Quick actions + typo-tolerant search in the search boxes ===== */
 (function(){
  var started=false;
  function ready(){try{return typeof draw==="function"&&typeof ACTS!=="undefined"&&typeof allEmps==="function"&&typeof go==="function"&&typeof role!=="undefined"&&typeof ic==="function"&&document.getElementById("view")}catch(e){return false}}
@@ -4584,35 +4570,6 @@ body .grid.kpis{gap:16px}
    var res=acts.concat(base);
    if(!base.length&&t.length>=3){var q2=t.replace(/\s+/g,"");try{allEmps().filter(function(e){return typeof inScope!=="function"||inScope(e)}).filter(function(e){return sub(String(e.name||"").toLowerCase().replace(/\s+/g,""),q2)}).slice(0,5).forEach(function(e){res.push({g:"Did you mean",t:e.name+" ("+e.no+")",s:[e.pos,e.dept].filter(Boolean).join(" · "),a:function(){can("profile")?ACTS.prof(e.no):go("emp")}})})}catch(x){}}
    return res.slice(0,16)};
-  /* insights */
-  function insights(){var out=[],L=[];try{
-   L=ALLE().filter(function(e){return e.status!=="Terminated"});
-   var today=iso(T0),dd=function(d){return Math.round((new Date(d+"T00:00:00")-new Date(today+"T00:00:00"))/864e5)};
-   if(can("appr")&&typeof apprItems==="function"&&typeof canAct==="function"){var n=apprItems().filter(canAct).length;if(n)out.push({tone:"wn",ic:"appr",t:n+" approval"+(n>1?"s":"")+" waiting for you",s:"Decide now to keep requests moving",go:"appr"})}
-   if(can("hr_req")&&typeof hqOpen==="function"){var h=hqOpen();if(h)out.push({tone:"wn",ic:"hr_req",t:h+" employee request"+(h>1?"s":"")+" for HR",s:"Letters, data changes and more",go:"hr_req"})}
-   if(can("contracts")){var ex=L.filter(function(e){return e.end&&dd(e.end)<0}).length,soon=L.filter(function(e){return e.end&&dd(e.end)>=0&&dd(e.end)<=30}).length;
-    if(ex)out.push({tone:"er",ic:"contracts",t:ex+" contract"+(ex>1?"s":"")+" expired",s:"Renew or end them",go:"contracts"});
-    if(soon)out.push({tone:"wn",ic:"contracts",t:soon+" contract"+(soon>1?"s":"")+" end within 30 days",s:"Plan renewals early",go:"contracts"})}
-   if(can("probation")){var pr=L.filter(function(e){return e.probend&&dd(e.probend)>=0&&dd(e.probend)<=14}).length;if(pr)out.push({tone:"wn",ic:"probation",t:pr+" probation"+(pr>1?"s":"")+" ending in 14 days",s:"Confirm or extend",go:"probation"})}
-   if(can("completeness")||can("emp")){var miss=L.filter(function(e){return !e.email||!e.nid||!e.mobile||!e.dob}).length;if(miss)out.push({tone:"er",ic:"completeness",t:miss+" record"+(miss>1?"s":"")+" with missing data",s:"Email, ID, mobile or birth date",go:can("completeness")?"completeness":"emp"})}
-   var bd=L.filter(function(e){if(!e.dob)return false;var m=e.dob.slice(5),y=+today.slice(0,4),d=y+"-"+m;if(d<today)d=(y+1)+"-"+m;return dd(d)<=7}).length;
-   if(bd)out.push({tone:"ok",ic:"holidays",t:bd+" birthday"+(bd>1?"s":"")+" this week",s:"A nice moment to say thanks",go:can("r_bday")?"r_bday":"emp"});
-  }catch(e){}
-  if(!out.length)out.push({tone:"ok",ic:"settle",t:"All clear",s:"Nothing needs your attention right now",go:""});
-  var tot=L.length*4,ok=0;L.forEach(function(e){ok+=(e.email?1:0)+(e.nid?1:0)+(e.mobile?1:0)+(e.dob?1:0)});
-  return{items:out,score:tot?Math.round(ok/tot*100):100}}
-  function card(){var r=insights(),a=null;try{a=typeof acctInfo==="function"?acctInfo():null}catch(e){}
-   var nm=String((a&&a.n)||"").split(/\s+/)[0]||role,hr=new Date().getHours(),g=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening",open=r.items.filter(function(i){return i.go}).length;
-   var chips=SA().slice(0,4).filter(function(x){return x.ok()});
-   return'<section id="smartx" class="smx" aria-label="Smart insights"><div class="smx-h"><div><h2>'+g+', '+esc(nm)+'</h2><p>'+(open?open+" thing"+(open>1?"s":"")+" worth your attention today.":"You are all caught up.")+'</p></div><div class="smx-score" title="Share of employee records with email, ID, mobile and birth date"><b>'+r.score+'%</b><span>Data health</span></div></div><div class="smx-l">'+
-    r.items.map(function(i){return'<button type="button" class="smx-i '+i.tone+'"'+(i.go?' data-smx="go:'+i.go+'"':' disabled style="cursor:default"')+'><i>'+ic(i.ic)+'</i><span><b>'+esc(i.t)+'</b><small>'+esc(i.s)+'</small></span></button>'}).join("")+
-    '</div><div class="smx-q">'+chips.map(function(c,k){return'<button type="button" data-smx="qa:'+k+'">'+esc(c.t)+'</button>'}).join("")+'</div></section>'}
-  document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-smx]");if(!b)return;var v=b.dataset.smx;
-   if(v.indexOf("go:")===0)go(v.slice(3));else if(v.indexOf("qa:")===0){var c=SA().slice(0,4).filter(function(x){return x.ok()})[+v.slice(3)];if(c)c.fn()}});
-  var view=document.getElementById("view");
-  function mount(){var x=view.querySelector("#smartx");if(typeof page==="undefined"||page!=="dash"){if(x)x.remove();return}if(x)return;try{view.insertAdjacentHTML("afterbegin",card())}catch(e){}}
-  new MutationObserver(mount).observe(view,{childList:true});mount();
-  setInterval(function(){if(page==="dash"&&!document.activeElement.closest("#view"))try{var x=view.querySelector("#smartx");if(x){var h=card();var t=document.createElement("div");t.innerHTML=h;if(t.firstChild.innerHTML!==x.innerHTML)x.innerHTML=t.firstChild.innerHTML}}catch(e){}},30000);
  }
 })();
 </script></body></html>
