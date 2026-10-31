@@ -4513,15 +4513,15 @@ draw();
   function css() {
     if ($("cgcss")) return;
     var s = document.createElement("style"); s.id = "cgcss";
-    s.textContent = "#cg{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(145deg,#0460B5 0%,#034a8c 100%);font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;color:#0f172a;overflow:auto}" +
-      "#cg .cgc{width:100%;max-width:900px;display:grid;grid-template-columns:1fr 1fr;background:#ffffff;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.22);box-shadow:0 28px 68px rgba(2,32,68,.42)}" +
-      "#cg .cgl{background:linear-gradient(155deg,#0460B5 0%,#024380 100%);color:#fff;padding:42px 38px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;position:relative;overflow:hidden}" +
-      "#cg .cgl:after{content:'';position:absolute;right:-80px;bottom:-80px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}" +
-      "#cg .cgl:before{content:'';position:absolute;right:30px;bottom:130px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}" +
-      "#cg .cgl img{width:68px;height:68px;border-radius:16px;background:#fff;object-fit:contain;padding:3px;box-shadow:0 12px 28px rgba(0,0,0,.22)}" +
-      "#cg .cgl h2{margin:20px 0 6px;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-.025em;color:#fff}#cg .cgl p{margin:6px 0 0;color:#dbeafe;font-size:14px;line-height:1.55}" +
-      "#cg .cgl ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;font-size:13.5px;color:#ffffff;position:relative;z-index:1}#cg .cgl li{display:flex;gap:11px;align-items:center;font-weight:500}#cg .cgl li i{width:24px;height:24px;border-radius:8px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:700;flex-shrink:0}" +
-      "#cg .cgr{padding:44px 42px;display:flex;flex-direction:column;justify-content:center;background:#ffffff}" +
+    s.textContent = "#cg{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 20%,rgba(56,189,248,.38),transparent 42%),radial-gradient(circle at 80% 80%,rgba(14,165,233,.32),transparent 45%),linear-gradient(135deg,#0460B5 0%,#034a8c 100%);font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;color:#0f172a;overflow:auto}" +
+      "#cg .cgc{width:100%;max-width:900px;display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.88);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.45);box-shadow:0 30px 70px rgba(2,32,68,.38),inset 0 1px 0 rgba(255,255,255,.65)}" +
+      "#cg .cgl{background:linear-gradient(155deg,rgba(4,96,181,.88) 0%,rgba(3,74,140,.92) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#fff;padding:42px 38px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;position:relative;overflow:hidden;border-right:1px solid rgba(255,255,255,.2)}" +
+      "#cg .cgl:after{content:'';position:absolute;right:-70px;bottom:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.18);pointer-events:none}" +
+      "#cg .cgl:before{content:'';position:absolute;right:30px;bottom:130px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.15);pointer-events:none}" +
+      "#cg .cgl img{width:68px;height:68px;border-radius:16px;background:rgba(255,255,255,.95);object-fit:contain;padding:3px;box-shadow:0 12px 28px rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.5)}" +
+      "#cg .cgl h2{margin:20px 0 6px;font-size:26px;font-weight:800;line-height:1.2;letter-spacing:-.025em;color:#fff}#cg .cgl p{margin:6px 0 0;color:#e0f2fe;font-size:14px;line-height:1.55}" +
+      "#cg .cgl ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;font-size:13.5px;color:#ffffff;position:relative;z-index:1}#cg .cgl li{display:flex;gap:11px;align-items:center;font-weight:500}#cg .cgl li i{width:24px;height:24px;border-radius:8px;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.4);color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:700;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}" +
+      "#cg .cgr{padding:44px 42px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.92);backdrop-filter:blur(16px)}" +
       "#cg h1{margin:0 0 6px;font-size:24px;font-weight:800;color:#0f172a!important;letter-spacing:-.02em!important}#cg .cgr>p{margin:0 0 16px;color:#64748b;font-size:14px;line-height:1.55}" +
       "#cg label.cgrm{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;align-items:center;gap:10px;font-weight:500;font-size:13.5px;margin:14px 0 2px;cursor:pointer;min-height:40px;color:#334155}#cg label.cgrm input{width:18px;height:18px;min-width:18px;padding:0;margin:0;accent-color:#0460B5;border-radius:5px;cursor:pointer}" +
       "#cg label{display:block;font-weight:600;font-size:13px;color:#334155;margin:14px 0 6px}#cg input:not([type=checkbox]){width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;font-size:15px;background:#f8fafc;color:#0f172a;-webkit-text-fill-color:#0f172a;caret-color:#0460B5;color-scheme:light;transition:border-color .15s,box-shadow .15s,background .15s}" +
@@ -4836,20 +4836,205 @@ document.addEventListener("click", ev => {
 });
 </script>
 <style id="ux2">
-/* Keep original SMR Logo Blue (#0460B5) sidebar & palette intact; only fix active sidebar icon contrast */
+/* ===== SMR Logo Blue (#0460B5) Glassmorphism / Frosted Glass UI ===== */
+
+/* Ambient soft blue glow behind the app so glass surfaces refract it */
+body {
+  background:
+    radial-gradient(900px 500px at 12% 8%, rgba(4, 96, 181, 0.11), transparent 65%),
+    radial-gradient(800px 480px at 88% 15%, rgba(56, 189, 248, 0.10), transparent 60%),
+    radial-gradient(900px 520px at 50% 95%, rgba(4, 96, 181, 0.07), transparent 65%),
+    var(--bg) !important;
+  background-attachment: fixed !important;
+}
+
+/* Glassy SMR Blue Sidebar (#side) */
 #side {
-  background: #0460B5 !important;
+  background: linear-gradient(165deg, rgba(4, 96, 181, 0.88) 0%, rgba(5, 110, 204, 0.82) 50%, rgba(3, 74, 140, 0.90) 100%) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.24) !important;
+  box-shadow: 8px 0 32px rgba(4, 96, 181, 0.18), inset -1px 0 0 rgba(255, 255, 255, 0.18) !important;
   color: #eaf3fc !important;
 }
+
+#side .brand {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+#side .brand .slogo {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18), 0 0 0 1.5px rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Glassy Nav Items & Icons */
+#side .nav {
+  border: 1px solid transparent !important;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease !important;
+}
+
+#side .nav .ic {
+  background: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+#side .nav:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+#side .nav:hover:not(:disabled) .ic {
+  background: rgba(255, 255, 255, 0.24) !important;
+  border-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* Active Glassy Pill in Sidebar */
+#side .nav.on {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  box-shadow: 0 8px 20px rgba(2, 42, 88, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
 #side .nav.on .ic,
 #side .nav.on svg.ic.phd {
   background: #ffffff !important;
   color: #0460B5 !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18) !important;
   opacity: 1 !important;
 }
+
+/* Glassy Role Box & Footer in Sidebar */
+#side .side-u,
+#side .side-f {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+#side .rmb {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+}
+
+#side .rmb:hover {
+  background: rgba(255, 255, 255, 0.24) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Glassy Topbar */
+.topbar {
+  background: rgba(255, 255, 255, 0.76) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 4px 20px rgba(4, 96, 181, 0.05) !important;
+}
+
+/* Glassy Cards, KPI Tiles & Portal Tiles */
+.card, .xf, .zb, .zt, .zp, .pst, .rpc, .sti {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 8px 28px -6px rgba(4, 96, 181, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.xf:hover, .zb:hover, .zt:hover, .pst:hover, .rpc:hover, .sti:hover, button.card.k:hover {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(4, 96, 181, 0.35) !important;
+  box-shadow: 0 14px 34px -8px rgba(4, 96, 181, 0.16), inset 0 1px 0 #ffffff !important;
+}
+
+/* Glassy SMR Blue Hero & Profile Banner (.pbn, .hero, .pos, .ws-h:not(.pf)) */
+body .pbn,
+.hero,
+.pos {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.24), transparent 45%),
+    linear-gradient(135deg, rgba(4, 96, 181, 0.90) 0%, rgba(5, 114, 212, 0.85) 55%, rgba(3, 74, 140, 0.92) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 16px 38px -10px rgba(4, 96, 181, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Glassy Primary Buttons (.b.p) */
+.b.p {
+  background: linear-gradient(135deg, rgba(5, 114, 212, 0.95) 0%, rgba(4, 96, 181, 0.92) 100%) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: 0 6px 16px -3px rgba(4, 96, 181, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  color: #ffffff !important;
+}
+
+.b.p:hover:not(:disabled) {
+  background: linear-gradient(135deg, #067ce3 0%, #0460B5 100%) !important;
+  box-shadow: 0 10px 22px -4px rgba(4, 96, 181, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Glassy Drawer & Modals */
+#drawer, .hqm-panel, #confirm .dlg, .accm, .acm, .rmo, .dpo {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Dark Mode Glassy Support */
 html[data-comfort="dark"] #side,
 html[data-theme="dark"] #side {
-  background: #06284a !important;
+  background: linear-gradient(165deg, rgba(6, 40, 74, 0.86) 0%, rgba(4, 28, 54, 0.90) 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-comfort="dark"] .topbar,
+html[data-theme="dark"] .topbar {
+  background: rgba(17, 27, 44, 0.75) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-comfort="dark"] .card,
+html[data-theme="dark"] .card,
+html[data-comfort="dark"] .xf,
+html[data-theme="dark"] .xf,
+html[data-comfort="dark"] .zb,
+html[data-theme="dark"] .zb,
+html[data-comfort="dark"] .zt,
+html[data-theme="dark"] .zt,
+html[data-comfort="dark"] .zp,
+html[data-theme="dark"] .zp,
+html[data-comfort="dark"] .pst,
+html[data-theme="dark"] .pst,
+html[data-comfort="dark"] .rpc,
+html[data-theme="dark"] .rpc,
+html[data-comfort="dark"] .sti,
+html[data-theme="dark"] .sti {
+  background: rgba(24, 34, 47, 0.76) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-comfort="dark"] #drawer,
+html[data-theme="dark"] #drawer,
+html[data-comfort="dark"] .hqm-panel,
+html[data-theme="dark"] .hqm-panel,
+html[data-comfort="dark"] #confirm .dlg,
+html[data-theme="dark"] #confirm .dlg {
+  background: rgba(17, 27, 44, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 </style>
 <script>
