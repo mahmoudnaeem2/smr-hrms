@@ -3782,24 +3782,34 @@ function rep_att(){const days=rpDays(),L=ALLE().filter(e=>e.status!=="Terminated
 reg("rep_att","Attendance Reports","Attendance, lateness and absence by department for a chosen month, department and project.",A("HRD","HRS","DM","PAY"),rep_att);
 /* payroll runs */
 function rep_pay(){if(!canSalV())return forbid("Salary data is restricted for your role.");const rs=rpRuns().filter(r=>!RPT.m||r.period===RPT.m).sort((a,b)=>a.period<b.period?1:-1);
- return`${rpBar({all:"All months"})}${rtab("rp",["Period","Run","Status","Employees","Gross","Overtime","Employee insurance","Tax","Net","Employer cost"],rs.map(r=>[dlink((perOf(r.period)||{label:r.period}).label,()=>({title:"Payroll: "+runLabel(r),desc:"Per employee, from this run.",cols:["No.","Name","Department","Gross","Overtime","Employee insurance","Tax","Net","Employer cost"],rows:r.results.filter(x=>{const e=empBy(x.no);return!e||rpOk(e)}).map(x=>[x.no,x.name,x.dept||"",fmtC(x.gross),fmtC(x.ot||0),fmtC(x.empIns),fmtC(x.tax),fmtC(x.net),fmtC(x.cost)])}),"pay_reg"),r.kind,RS[r.status],r.results.length,...[["gross","Gross pay"],["ot","Overtime"],["empIns","Employee insurance"],["tax","Income tax"],["net","Net pay"],["cost","Employer cost"]].map(([k,nm])=>dlink(fmtC(tot(r,k)||0),()=>({title:nm+": "+runLabel(r),desc:"Per employee.",cols:["No.","Name","Department",nm],rows:r.results.filter(x=>{const e=empBy(x.no);return!e||rpOk(e)}).map(x=>[x.no,x.name,x.dept||"",fmtC(x[k]||0)])})))]),{empty:"No calculated payroll for this selection."})}${note("Run totals include every employee in the run. Open a row to see it filtered by the department and project above. Runs that used trial or test rules are not statutory figures.")}${smrReportBlock(rs)}`}
-/* SMR client invoice workbook: same layout as the Excel sheet (mainData + Invoice) */
+ return`${rpBar({all:"All months"})}${rtab("rp",["Period","Run","Status","Employees","Gross","Overtime","Employee insurance","Tax","Net","Employer cost"],rs.map(r=>[dlink((perOf(r.period)||{label:r.period}).label,()=>({title:"Payroll: "+runLabel(r),desc:"Per employee, from this run.",cols:["No.","Name","Department","Gross","Overtime","Employee insurance","Tax","Net","Employer cost"],rows:r.results.filter(x=>{const e=empBy(x.no);return!e||rpOk(e)}).map(x=>[x.no,x.name,x.dept||"",fmtC(x.gross),fmtC(x.ot||0),fmtC(x.empIns),fmtC(x.tax),fmtC(x.net),fmtC(x.cost)])}),"pay_reg"),r.kind,RS[r.status],r.results.length,...[["gross","Gross pay"],["ot","Overtime"],["empIns","Employee insurance"],["tax","Income tax"],["net","Net pay"],["cost","Employer cost"]].map(([k,nm])=>dlink(fmtC(tot(r,k)||0),()=>({title:nm+": "+runLabel(r),desc:"Per employee.",cols:["No.","Name","Department",nm],rows:r.results.filter(x=>{const e=empBy(x.no);return!e||rpOk(e)}).map(x=>[x.no,x.name,x.dept||"",fmtC(x[k]||0)])})))]),{empty:"No calculated payroll for this selection."})}${note("Run totals include every employee in the run. Open a row to see it filtered by the department and project above. Runs that used trial or test rules are not statutory figures.")}${smrReportBlock()}`}
+/* ===== Client invoices by cost center (confirmed payroll only), same layout as the Excel sheet (mainData + Invoice) ===== */
+const CC_OK=["approved",...FINAL];
 const SMR_MAIN_COLS=["Empl.No.","Persons","Cost Allocation","Dept","SI Salary","Basic Net Salary pcm","Gross monthly Salary before additions and deductions","Social Insurance (Employer)","Social Insurance (Employee)","Total SI","Over time & Deductions","Gross yearly Salary","unpaid prorated days Amount","Disciplinary Deduction Adjustment","Salary tax","Tot (Med+Life)","Hiring Docs Cost","Dept","Total Cost"];
 const SMR_INV_COLS=["Cost Allocation","Department","Basic Net Salary pcm","Gross monthly Salary","Social Insurance (Employer)","Social Insurance (Employee)","Over time & Deductions","Salary tax","Medical Insurance","Hiring Docs Cost","Total Cost","Management Fee 15%","Total + 15%"];
-function smrSheets(r){const r2=n=>Math.round(n*100)/100,c=v=>r2((v||0)/100);
- const main=r.results.map(x=>{const e=empBy(x.no)||{},E=c(x.wage),F=c(x.net),G=c(x.gross),H=c(x.erIns),I=c(x.empIns),J=r2(H+I),K=r2(c(x.ot)+c(x.inp)-c(x.ded)),L=r2((G-I)*12+K-20000),O=c(x.tax),P=c(x.medLife),Q=c(x.hiringDocs),S=r2(F+J+K+O+P+Q);
-  return[x.no,x.name,e.project||"–",x.dept||"",E,F,G,H,I,J,K,L,0,0,O,P,Q,x.dept||"",S]});
- const g={};main.forEach(m=>{const k=m[2]+"|"+m[3],a=g[k]||(g[k]={cc:m[2],dept:m[3],v:[0,0,0,0,0,0,0,0]});[[5,0],[6,1],[7,2],[8,3],[10,4],[14,5],[15,6],[16,7]].forEach(([src,i])=>a.v[i]+=m[src])});
- const inv=Object.values(g).map(a=>{const[F,G,H,I,K,O,P,Q]=a.v.map(r2),T=r2(F+H+I+K+O+P+Q);return[a.cc,a.dept,F,G,H,I,K,O,P,Q,T,r2(T*0.15),r2(T*1.15)]});
- if(inv.length){const t=inv[0].map((_,i)=>i<2?"":r2(inv.reduce((s,r)=>s+r[i],0)));t[0]="Total";inv.push(t)}
- return{main,inv}}
-function smrReportBlock(rs){if(!rs.length)return"";const last=rs[rs.length-1],s=smrSheets(last),f=v=>typeof v==="number"?v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):esc(v);
- return`${secH("SMR client invoice workbook (Excel layout)")}${note("Same layout as the Arkan Theatre sheet: <b>mainData</b> (one row per employee) and <b>Invoice</b> (totals per cost allocation and department, + 15 % fee). Medical &amp; Life and the 15 % fee are client billing only and are not deducted from employee pay.","sm")}
- <div class="bar">${rs.slice().reverse().map(r=>`<button class="b p" data-act="smrx:${r.id}">Export Excel: ${esc(runLabel(r))}</button>`).join(" ")}</div>
- <div class="card" style="margin-top:10px"><b>Preview: ${esc(runLabel(last))}</b>
- <h3 style="margin:10px 0 4px">Invoice</h3>${tbl(SMR_INV_COLS,s.inv.map(r=>r.map(f)))}
- <h3 style="margin:14px 0 4px">mainData</h3>${tbl(SMR_MAIN_COLS.map((c,i)=>i===17?"Dept (2)":c),s.main.map(r=>r.map(f)))}</div>`}
-ACTS.smrx=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!r.results.length)return toast("Calculate this run first.");const s=smrSheets(r);XL.save("SMR Invoice "+runLabel(r),[{name:"mainData",cols:SMR_MAIN_COLS,rows:s.main},{name:"Invoice",cols:SMR_INV_COLS,rows:s.inv}])};
+const ccR2=n=>Math.round(n*100)/100,ccC=v=>ccR2((v||0)/100),ccF=v=>typeof v==="number"?v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):esc(v);
+function ccAlloc(e){return e&&e.alloc&&e.alloc.length?e.alloc.map(a=>({to:a.to,pct:a.pct})):[{to:(e&&e.project)||"Unassigned",pct:100}]}
+/* one row per employee per cost center (employees with a split allocation appear once per cost center, pro rata) */
+function smrMain(r){const rows=[];r.results.forEach(x=>{const e=empBy(x.no)||{},E=ccC(x.wage),F=ccC(x.net),G=ccC(x.gross),H=ccC(x.erIns),I=ccC(x.empIns),K=ccR2(ccC(x.ot)+ccC(x.inp)-ccC(x.ded)),O=ccC(x.tax),P=ccC(x.medLife),Q=ccC(x.hiringDocs),L=ccR2((G-I)*12+K-20000);
+  ccAlloc(e).forEach(a=>{const w=a.pct/100,s=v=>ccR2(v*w),J=ccR2(s(H)+s(I));rows.push([x.no,x.name,a.to,x.dept||"",s(E),s(F),s(G),s(H),s(I),J,s(K),L,0,0,s(O),s(P),s(Q),x.dept||"",ccR2(s(F)+J+s(K)+s(O)+s(P)+s(Q))])})});return rows}
+/* Invoice sheet: totals per cost allocation and department, then the 15 % fee */
+function smrInvoice(main){const g={};main.forEach(m=>{const k=m[2]+"|"+m[3],a=g[k]||(g[k]={cc:m[2],dept:m[3],v:[0,0,0,0,0,0,0,0]});[[5,0],[6,1],[7,2],[8,3],[10,4],[14,5],[15,6],[16,7]].forEach(([src,i])=>a.v[i]+=m[src])});
+ const inv=Object.values(g).map(a=>{const[F,G,H,I,K,O,P,Q]=a.v.map(ccR2),T=ccR2(F+H+I+K+O+P+Q);return[a.cc,a.dept,F,G,H,I,K,O,P,Q,T,ccR2(T*0.15),ccR2(T*1.15)]});
+ if(inv.length){const t=inv[0].map((_,i)=>i<2?"":ccR2(inv.reduce((s,r)=>s+r[i],0)));t[0]="Total";inv.push(t)}return inv}
+function smrReportBlock(){return`${secH("Client invoices by cost center")}${note("One invoice and one Excel file per cost center, in the same layout as the Arkan Theatre sheet. They appear only after a payroll run is approved.","sm")}<div class="bar"><button class="b p" data-go="cc_invoice">Open Client Invoices by Cost Center</button></div>`}
+function cc_invoice(){if(!canSalV())return forbid("Salary data is restricted for your role.");
+ const p=runPick("cci",r=>r.results.length&&CC_OK.includes(r.status));
+ if(!p){const L=RUNS().filter(r=>r.results.length);return`${note("Client invoices appear here only after a payroll run is <b>confirmed</b> (approved or finalized). Calculate the run, submit it for approval, and have it approved.","sm")}${tbl(["Run","Status",""],L.map(r=>[esc(runLabel(r)),rsb(r.status),`<button class="b" data-act="gorun:${r.id}">Open run</button>`]),{empty:"No calculated payroll runs yet. Create and calculate a run in Payroll Processing."})}`}
+ const r=p.r,main=smrMain(r),ccs=[...new Set(main.map(m=>m[2]))].sort();
+ const cards=ccs.map(cc=>{const rows=main.filter(m=>m[2]===cc),inv=smrInvoice(rows),t=inv[inv.length-1],n=new Set(rows.map(m=>m[0])).size;
+  const show=inv.map((x,i)=>i===inv.length-1?["<b>Total</b>",...x.slice(2).map(ccF)]:x.slice(1).map(ccF));
+  return`<div class="card" style="margin-top:14px"><div class="bar" style="justify-content:space-between"><h2 style="margin:0">${esc(cc)} <span class="mu" style="font-size:13px">${n} employee${n===1?"":"s"}</span></h2><button class="b p" data-act="ccx:${r.id}|${esc(cc)}">Export Excel</button></div>
+  <div class="grid kpis" style="margin-top:10px">${stat("Total cost",fmtC(Math.round(t[10]*100)),"Net + insurance + tax + medical")}${stat("Management fee 15 %",fmtC(Math.round(t[11]*100)),"")}${stat("Invoice total",fmtC(Math.round(t[12]*100)),"Total + 15 %")}</div>
+  <h3 style="margin:12px 0 4px">Invoice</h3>${tbl(SMR_INV_COLS.slice(1),show)}
+  <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">Employees (mainData)</summary>${tbl(["Empl.No.","Persons","Dept","SI Salary","Basic Net Salary pcm","Gross","Social Insurance (Employer)","Social Insurance (Employee)","Salary tax","Tot (Med+Life)","Total Cost"],rows.map(m=>[m[0],esc(m[1]),esc(m[3]),...[4,5,6,7,8,14,15,18].map(i=>ccF(m[i]))]))}</details></div>`}).join("");
+ return`${runSel("cci",p.L)}${rsb(r.status)}${note("Medical &amp; Life insurance and the 15 % management fee are client billing only. They are not deducted from employee pay.","sm")}<div class="bar" style="margin-top:8px"><button class="b" data-act="ccx:${r.id}|*">Export all cost centers (one file)</button></div>${cards||'<div class="card"><div class="empty">No employees in this run.</div></div>'}`}
+ACTS.ccx=a=>{const i=a.indexOf("|"),id=a.slice(0,i),cc=a.slice(i+1),r=RUNS().find(x=>x.id===id);if(!r||!CC_OK.includes(r.status))return toast("Approve the payroll run first.");let main=smrMain(r);if(cc!=="*")main=main.filter(m=>m[2]===cc);if(!main.length)return toast("Nothing to export.");XL.save("SMR Invoice "+(cc==="*"?"All cost centers":cc)+" "+runLabel(r),[{name:"mainData",cols:SMR_MAIN_COLS,rows:main},{name:"Invoice",cols:SMR_INV_COLS,rows:smrInvoice(main)}])};
+reg("cc_invoice","Client Invoices by Cost Center","One invoice and Excel file per cost center, from confirmed payroll.",A("PAY","FIN","HRD"),cc_invoice);
 reg("rep_pay","Payroll Reports","Totals for every calculated payroll run, by month.",A("PAY","FIN","HRD"),rep_pay);
 /* cost analysis */
 function rep_cost(){if(!canSalV())return forbid("Salary data is restricted for your role.");const run=rpRun(),asof=rpAsof();
@@ -5100,12 +5110,12 @@ R2("r_aging","Approvals Aging","Pending approvals by type and how long they have
  return _cnt([["Pending approvals",I.length],["Overdue",I.filter(i=>i.due&&i.due<iso(T0)).length]])+_tb("rag1",["Type","Pending","Oldest submitted","Waiting","SLA"],rows,{empty:"Nothing is waiting for approval."})},"appr");
 /* ---- hub wiring ---- */
 const _new=["r_master","r_join","r_bday","r_prob","r_contract","r_demo","r_career","r_warn","r_late","r_abs","r_ot","r_out","r_lvuse","r_lvliab","r_sal","r_band","r_rev","r_loans","r_ytd","r_bank","r_stat","r_aging"];
-REPKEYS.push(..._new);
+REPKEYS.push(..._new,"cc_invoice");
 RCATS.splice(0,RCATS.length,
  ["People & headcount","#14a39a","#dff5f2",["rep_hr","rep_head","r_master","r_demo","reporting","completeness","r_join"]],
  ["Employee lifecycle","#0f9d8a","#e0f6f1",["r_prob","r_contract","r_career","r_bday","r_warn"]],
  ["Attendance & leave","#2f80ed","#e2eefd",["rep_att","r_late","r_abs","r_ot","r_out","rep_leave","leave_bal","r_lvuse","r_lvliab"]],
- ["Payroll & finance","#8a5cd1","#efe6fb",["rep_pay","pay_reg","r_sal","r_band","r_rev","r_ytd","r_bank","r_loans","r_stat","rep_cost","pay_var","pay_rec","pay_je","pay_fs"]],
+ ["Payroll & finance","#8a5cd1","#efe6fb",["cc_invoice","rep_pay","pay_reg","r_sal","r_band","r_rev","r_ytd","r_bank","r_loans","r_stat","rep_cost","pay_var","pay_rec","pay_je","pay_fs"]],
  ["Control & audit","#e5484d","#fde8e8",["r_aging","auditlog"]]);
 function NAVGRP(k){if(REPKEYS.includes(k)&&k!=="auditlog"&&k!=="reporting"&&k!=="leave_bal"&&k!=="pay_fs")return"Reports";if(k==="profile")return"People";const x=NAV.find(n=>n[1].some(i=>i[1]===k));return x?x[0]:""}
 function NAVACT(k){return k===page||(k==="emp"&&page==="profile")||(k==="reports"&&REPKEYS.includes(page)&&!["auditlog","reporting","leave_bal","pay_fs"].includes(page))}
@@ -5215,7 +5225,7 @@ const HUBS=[
  {g:"People",n:"Contracts & records",ic:"contracts",p:[["Contracts","contracts"],["Probation","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]},
  {g:"Time & pay",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
  {g:"Time & pay",n:"Leave",ic:"leave_req",p:[["Requests","leave_req"],["Balances","leave_bal"],["Calendar","leave_cal"],["Policies","leave_pol"]]},
- {g:"Time & pay",n:"Payroll",ic:"pay_proc",p:[["Overview","paydash"],["Run payroll","pay_proc"],["Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Final settlements","settle"]]},
+ {g:"Time & pay",n:"Payroll",ic:"pay_proc",p:[["Overview","paydash"],["Run payroll","pay_proc"],["Inputs","pay_inputs"],["Loans","loans"],["Payslips","payslips"],["Client invoices","cc_invoice"],["Final settlements","settle"]]},
  {g:"Manage",n:"Reports",ic:"reports",p:[["All reports","reports"]]},
  {g:"Manage",n:"Settings",ic:"company",p:[["Settings","settings"]]}];
 const SETG=[["Organization",[["company","Company details, logo and work week"],["cost_centers","Projects and cost centers used in payroll"],["holidays","Official holidays for the year"]]],
