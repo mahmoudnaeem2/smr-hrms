@@ -1538,13 +1538,9 @@ const ccCodeOf=d=>{if(!d)return"CC-GEN";const c=(typeof CCS==="function"?CCS():[
 function build(){
  const S=MODE==="sample",X=S?SAMPLE:null,all=allEmps(),L=flt(all),T=iso(T0),nos=new Set(L.map(e=>e.no)),byNo={};all.forEach(e=>byNo[e.no]=e);
  const now=L.filter(e=>empAt(e,T)),pe=iso(new Date(T0.getFullYear(),T0.getMonth(),0));
- const H_RAMP=[0.60,0.60,0.65,0.72,0.78,0.80,0.84,0.88,0.92,0.95,0.98,1.00];
- const G_RAMP=[0.65,0.65,0.70,0.76,0.80,0.84,0.88,0.91,0.94,0.96,0.98,1.00];
  const months=[];for(let i=11;i>=0;i--){const d=new Date(T0.getFullYear(),T0.getMonth()-i,1),end=i===0?T0:new Date(d.getFullYear(),d.getMonth()+1,0);months.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"short"}),full:d.toLocaleString("en",{month:"long",year:"numeric"}),end:iso(end)})}
- const rawHcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length);
- const synthHc=now.length>0&&rawHcS.slice(0,11).every(v=>v===0);
- const hcS=synthHc?H_RAMP.map((r,i)=>i===11?now.length:Math.max(1,Math.round(now.length*r))):rawHcS;
- const hcPrev=synthHc?hcS[10]:L.filter(e=>empAt(e,pe)).length;
+ const hcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length);
+ const hcPrev=L.filter(e=>empAt(e,pe)).length;
  const mk=T.slice(0,7),pk=iso(new Date(T0.getFullYear(),T0.getMonth()-1,1)).slice(0,7),hM=L.filter(e=>e.hire.slice(0,7)===mk),hP=L.filter(e=>e.hire.slice(0,7)===pk);
  let kw=0;while(isWk(addD(T0,kw)))kw--;let kp=kw-1;while(isWk(addD(T0,kp)))kp--;
  const dKw=iso(addD(T0,kw)),at=(k,cs)=>L.filter(e=>cs.includes(attCode(e,iso(addD(T0,k)))));
@@ -1553,11 +1549,8 @@ function build(){
  const late=S?at(kw,[2]):now.filter(e=>attCode(e,dKw)===2);
  const pres=S?at(kw,[1,2]):now.filter(e=>!lv.includes(e)&&!abs.includes(e));
  const gross=d=>L.filter(e=>empAt(e,d)).reduce((s,e)=>s+e.basic+e.allow,0),mP=months[11-PM],mPP=months[10-PM];
- const rg=m=>{const r=m&&RUNS().find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return r?r.results.reduce((s,x)=>s+x.gross,0)/100:null},gNow=mP?(rg(mP)??gross(mP.end)):0,rawGPrev=mPP?(rg(mPP)??gross(mPP.end)):0,noSal=now.filter(e=>!(e.basic>0)).length;
- const rawGSeries=months.map(m=>rg(m)??gross(m.end));
- const synthG=gNow>0&&rawGSeries.slice(0,11).every(v=>v===0);
- const gSeries=synthG?G_RAMP.map((r,i)=>i===11?gNow:(Math.round(gNow*r/500)*500||Math.round(gNow*r))):rawGSeries;
- const gPrev=synthG?gSeries[10]:rawGPrev;
+ const rg=m=>{const r=m&&RUNS().find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return r?r.results.reduce((s,x)=>s+x.gross,0)/100:null},gNow=mP?(rg(mP)??gross(mP.end)):0,gPrev=mPP?(rg(mPP)??gross(mPP.end)):0,noSal=now.filter(e=>!(e.basic>0)).length;
+ const gSeries=months.map(m=>rg(m)??gross(m.end));
  const varp=gSeries.map((g,i)=>i===0||!gSeries[i-1]?0:Math.round((g-gSeries[i-1])/gSeries[i-1]*1000)/10);
  const cx=now.filter(e=>e.end).map(e=>({e,d:dd(e.end)})),exp0=cx.filter(x=>x.d<0),e30=cx.filter(x=>x.d>=0&&x.d<=30),e60=cx.filter(x=>x.d>=0&&x.d<=60),e90=cx.filter(x=>x.d>30&&x.d<=90);
  const inL=a=>a.filter(x=>nos.has(x.no)),vac=VACS().filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc));
@@ -1598,7 +1591,7 @@ function build(){
   ["abs","Absent",now.length?abs.length:"—","No clock-in and no leave record.",S?dl(abs.length,at(kp,[3]).length,"vs previous working day"):"",!!now.length],
   ["late","Late arrivals",now.length?late.length:"—","Arrived after shift start plus grace.",S?dl(late.length,at(kp,[2]).length,"vs previous working day"):"",!!now.length],
   ["apr","Pending approvals",apr.length,"Every request waiting in the Approvals inbox.","",true],
-  ["pay","Payroll cost – "+(mP?mP.label:""),canSal()?(L.length?"EGP "+fk(gNow):"—"):"Restricted",(mP&&rg(mP)!=null?"From the payroll run for this month.":"Fixed pay (basic + allowances). Calculate a run for the real figure.")+(noSal&&!S?" "+noSal+" employee(s) have no salary entered.":""),canSal()&&mPP&&gPrev?(gNow===gPrev?"● steady vs "+mPP.label:(gNow>gPrev?"▲ +":"▼ ")+Math.abs(Math.round((gNow-gPrev)/gPrev*1000)/10)+"% vs "+mPP.label):"",canSal()&&L.length],
+  ["pay","Payroll cost – "+(mP?mP.label:""),canSal()?(L.length?money(Math.round(gNow)):"—"):"Restricted",(mP&&rg(mP)!=null?"From the payroll run for this month.":"Fixed pay (basic + allowances). Calculate a run for the real figure.")+(noSal&&!S?" "+noSal+" employee(s) have no salary entered.":""),canSal()&&mPP&&gPrev?(gNow===gPrev?"● steady vs "+mPP.label:(gNow>gPrev?"▲ +":"▼ ")+Math.abs(Math.round((gNow-gPrev)/gPrev*1000)/10)+"% vs "+mPP.label):"",canSal()&&L.length],
   ["ins","Employer social insurance cost",(RUN_&&!RUN_.test&&canSal())?"EGP "+fk(RUN_.results.reduce((s,x)=>s+x.erIns,0)/100):"—",(RUN_&&!RUN_.test)?"From the latest payroll run.":"Needs approved insurance rules and a calculated run.","",!!(RUN_&&!RUN_.test&&canSal())],
   ["c60","Contracts expiring ≤ 60 days",e60.length,"Contract end date, today to +60 days.","",L.length],
   ["vac","Open vacancies",vac.length,"From Recruitment.","",true]];
@@ -1637,9 +1630,9 @@ function dash(){
  const ccData=buildCostCenterData(now,m.RUN_);
  window.CDGO=id=>{const p=CP[id.split(":")[1]];return p&&canSee(p)?p:null};
  window.CDRES=id=>{if(id.slice(0,3)!=="ch:")return null;const[,t,a,b]=id.split(":"),i=+a,s=+b;
-  if(t==="hc")return()=>{const x=MO(i),actRows=L.filter(e=>empAt(e,x.end)),list=actRows.length?actRows:now.slice(0,m.hcS[i]||now.length);return{title:"Headcount at end of "+x.full,desc:"Employees in service on "+x.end+", matching the current filters.",cols:["No.","Name","Department","Cost Center","Status","Hire date"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),e.status,e.hire])}}
+  if(t==="hc")return()=>{const x=MO(i),list=L.filter(e=>empAt(e,x.end));return{title:"Headcount at end of "+x.full,desc:"Employees in service on "+x.end+", matching the current filters.",cols:["No.","Name","Department","Cost Center","Status","Hire date"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),e.status,e.hire])}}
   if(t==="hl")return()=>{const x=MO(i),h=L.filter(e=>e.hire.slice(0,7)===x.key),l=L.filter(e=>e.term&&e.term.slice(0,7)===x.key),rows=[];if(s!==1)h.forEach(e=>rows.push([...RW(e),"Hired",e.hire]));if(s!==0)l.forEach(e=>rows.push([...RW(e),"Left",e.term]));return{title:(s===0?"Hires":s===1?"Leavers":"Hires and leavers")+" in "+x.full,desc:"Based on hire and termination dates in the employee records.",cols:["No.","Name","Department","Movement","Date"],rows}}
-  if(t==="pc")return()=>{const x=MO(i),actRows=L.filter(e=>empAt(e,x.end)),list=actRows.length?actRows:now;return!m.canS?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost, "+x.full,desc:"Gross = basic + fixed allowances for employees in service at "+x.end+".",cols:["No.","Name","Department","Cost Center","Basic","Allowances","Gross"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),money(e.basic),money(e.allow),money(e.basic+e.allow)])}}
+  if(t==="pc")return()=>{const x=MO(i),list=L.filter(e=>empAt(e,x.end));return!m.canS?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost, "+x.full,desc:"Gross = basic + fixed allowances for employees in service at "+x.end+".",cols:["No.","Name","Department","Cost Center","Basic","Allowances","Gross"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),money(e.basic),money(e.allow),money(e.basic+e.allow)])}}
   if(t==="pv")return()=>{const x=MO(i),p=MO(i-1);if(!m.canS)return{title:"Payroll change",desc:"Salary data is restricted for your role.",cols:[],rows:[]};if(i<1)return{title:"Payroll change, "+x.full,desc:"No previous month to compare with.",cols:[],rows:[]};const j=L.filter(e=>empAt(e,x.end)&&!empAt(e,p.end)),lf=L.filter(e=>empAt(e,p.end)&&!empAt(e,x.end));return{title:"Payroll change, "+x.full,desc:"Gross "+money(m.gSeries[i-1])+" → "+money(m.gSeries[i])+" ("+(m.varp[i]>0?"+":"")+m.varp[i]+"%).",cols:["No.","Name","Department","Change","Gross"],rows:j.map(e=>[...RW(e),"Joined",money(e.basic+e.allow)]).concat(lf.map(e=>[...RW(e),"Left","-"+money(e.basic+e.allow)]))}}
   if(t==="at")return()=>{const ds=iso(addD(T0,i)),rows=[];L.forEach(e=>{const v=attCode(e,ds);if(v>0&&(s<0||v===s))rows.push([...RW(e),GN[v]])});return{title:(s<0?"Attendance":GN[s])+", "+dshort(ds),desc:s<0?"Everyone with an attendance record on this day.":"Employees recorded as "+GN[s].toLowerCase()+" on this day.",cols:["No.","Name","Department","Status"],rows}}
   if(t==="cx")return()=>{const nm=["Contracts already expired","Contracts ending in 0 to 30 days","Contracts ending in 31 to 60 days","Contracts ending in 61 to 90 days"],sel=[x=>x.d<0,x=>x.d>=0&&x.d<=30,x=>x.d>30&&x.d<=60,x=>x.d>60&&x.d<=90][i];return{title:nm[i],desc:"Employees in service, by contract end date.",cols:["No.","Name","Department","End date","Days left"],rows:m.cx.filter(sel).map(x=>[...RW(x.e),x.e.end,String(x.d)])}}
@@ -1671,34 +1664,33 @@ function dash(){
  const ai=typeof acctInfo==="function"?acctInfo():null;
  let uName=(ai&&ai.e&&ai.e.name)||(ai&&ai.n)||(window.SMR_CLOUD_ON&&window.SMR_CLOUD_ON.name)||(typeof SSES!=="undefined"&&SSES&&SSES.name)||(allNow[0]&&allNow[0].name)||role;
  if(/@/.test(uName)){const em=allEmps().find(e=>e.email&&e.email.toLowerCase()===uName.toLowerCase());uName=(em&&em.name)||uName.split("@")[0]}
- const band=`<section class="xband" aria-label="Key figures">${fig("hc","Headcount",nOf("hc"),delta(kd("hc"))||`<span class="xd up">${now.length} active in ${deptPills.length||1} CC</span>`,null,DIC.hc,"#e0f2fe","#0284c7",spark(hcS,"#0284c7"))}${m.canS?fig("pay","Monthly payroll cost",nOf("pay"),delta(kd("pay"))||`<span class="xd">Avg EGP ${fk(now.length?Math.round(m.gSeries[11]/now.length):0)} / emp</span>`,null,DIC.pay,"#dcfce7","#16a34a",spark(gSer,"#16a34a")):""}${fig("pres","Attendance",attR!=null?attR+"%":"—",`<span class="xd ${attR>=90?"up":""}">${attR!=null?`<i class="ldot"></i>${pres} of ${now.length} on roster today`:"no attendance yet"}</span>`,null,DIC.pres,"#ede9fe","#7c3aed")}${fig("hc","Turnover, 12 months",turn+"%",`<span class="xd ${turn===0?"up":""}">${100-turn}% retention · ${left12} leaver${left12===1?"":"s"}</span>`,"rep_hr",DIC.turn,"#fef3c7","#d97706")}${fig("apr","Open approvals",nAp,`<span class="xd ${nAp?"warn":"up"}">${nAp?"waiting for decision":"all caught up"}</span>`,canSee("appr")?"appr":null,DIC.apr,"#ffe4e6","#e11d48")}</section>`;
+ const band=`<section class="xband" aria-label="Key figures">${fig("hc","Headcount",nOf("hc"),delta(kd("hc"))||`<span class="xd up">${now.length} active in ${deptPills.length||1} CC</span>`,null,DIC.hc,"#e0f2fe","#0284c7",spark(hcS,"#0284c7"))}${m.canS?fig("pay","Monthly payroll cost",nOf("pay"),delta(kd("pay"))||`<span class="xd">Avg ${money(now.length?Math.round(m.gSeries[11]/now.length):0)} / emp</span>`,null,DIC.pay,"#dcfce7","#16a34a",spark(gSer,"#16a34a")):""}${fig("pres","Attendance",attR!=null?attR+"%":"—",`<span class="xd ${attR>=90?"up":""}">${attR!=null?`<i class="ldot"></i>${pres} of ${now.length} on roster today`:"no attendance yet"}</span>`,null,DIC.pres,"#ede9fe","#7c3aed")}${fig("hc","Turnover, 12 months",turn+"%",`<span class="xd ${turn===0?"up":""}">${100-turn}% retention · ${left12} leaver${left12===1?"":"s"}</span>`,"rep_hr",DIC.turn,"#fef3c7","#d97706")}${fig("apr","Open approvals",nAp,`<span class="xd ${nAp?"warn":"up"}">${nAp?"waiting for decision":"all caught up"}</span>`,canSee("appr")?"appr":null,DIC.apr,"#ffe4e6","#e11d48")}</section>`;
  const hdr=`<header class="xhd"><div><p class="xorg"><span class="ldot"></span> ${gIc} ${greet}</p><h2 class="xtt">Hello, ${esc(uName)} 👋</h2><p class="xsub">HR &amp; Payroll Summary, ${esc(monN)} · As of ${esc(dayN)} · ${now.length} employee${now.length===1?"":"s"} in service${run?" · Payroll: "+esc(RS[run.status]||run.status):""}</p></div><div class="xact"><button class="b" type="button" data-print>${'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>'}<span>Print / PDF</span></button>${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")}<span>${run?"Open payroll":"Start payroll"}</span></button>`:""}</div></header>`;
  const sec=(t,sub,body,cls,link)=>`<section class="card xs ${cls||""}"><div class="xsh"><div><h3>${t}</h3>${sub?`<p>${sub}</p>`:""}</div>${link||""}</div>${body}</section>`;
  const lk=(g,t)=>canSee(g)?`<button class="xlk" data-go="${g}">${t} →</button>`:"";
  const gB=m.canS?now.reduce((s,e)=>s+(+e.basic||0),0):0,gA=m.canS?now.reduce((s,e)=>s+(+e.allow||0),0):0,gTot=gB+gA;
  const estErIns=m.canS?now.reduce((s,e)=>s+Math.round(Math.min(Math.max(+e.basic||0,2300),14500)*0.1125),0):0;
  const actualErIns=(m.RUN_&&m.RUN_.results&&m.RUN_.results.length&&m.canS)?Math.round(m.RUN_.results.reduce((s,x)=>s+x.erIns,0)/100):estErIns;
- const pay=!m.canS?sec("Payroll cost","",`<p class="mu">Salary figures are restricted for your role.</p>`,"xp"):sec("Payroll cost",`Monthly gross pay (basic + allowances), last ${hor} months.`,
-  `<div class="xchart">${cols(gSer,ml,{aria:`Payroll cost, last ${hor} months`,fmt:fk,k:K_("pc",off)})}</div>
-   <ul class="xlist"><li><span>Basic salaries (${now.length} staff)</span><b>EGP ${fk(gB)}</b></li><li><span>Fixed allowances</span><b>EGP ${fk(gA)}</b></li><li><span>${m.RUN_?"Employer social insurance":"Est. employer social insurance (~11.25%)"}</span><b>EGP ${fk(actualErIns)}</b></li><li><span>Average gross per employee</span><b>EGP ${fk(now.length?Math.round(gTot/now.length):0)}</b></li><li class="tot"><span>Total monthly gross · Est. total cost</span><b>EGP ${fk(gTot)} · <span style="color:var(--brand)">EGP ${fk(gTot+actualErIns)}</span></b></li></ul>`,"xp",lk("pay_reg","Payroll register"));
+ const pay=!m.canS?sec("Payroll cost","",`<p class="mu">Salary figures are restricted for your role.</p>`,"xp"):sec("Payroll cost",`Monthly gross pay (basic + allowances) for employees in service at each month end.`,
+  `<div class="xchart">${cols(gSer,ml,{aria:`Payroll cost, last ${hor} months`,fmt:fk,tip:v=>money(Math.round(v)),k:K_("pc",off)})}</div>
+   <ul class="xlist"><li><span>Basic salaries (${now.length} staff)</span><b>${money(Math.round(gB))}</b></li><li><span>Fixed allowances</span><b>${money(Math.round(gA))}</b></li><li><span>${m.RUN_?"Employer social insurance":"Est. employer social insurance (~11.25%)"}</span><b>${money(Math.round(actualErIns))}</b></li><li><span>Average gross per employee</span><b>${money(now.length?Math.round(gTot/now.length):0)}</b></li><li class="tot"><span>Total monthly gross · Est. total cost</span><b>${money(Math.round(gTot))} · <span style="color:var(--brand)">${money(Math.round(gTot+actualErIns))}</span></b></li></ul>`,"xp",lk("pay_reg","Payroll register"));
  /* ---- Payroll Summary by Cost Center & Project Card ---- */
  const ccRows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows;
  const totB=ccRows.reduce((s,r)=>s+r.b,0),totA=ccRows.reduce((s,r)=>s+r.a,0),totG=ccRows.reduce((s,r)=>s+r.g,0),totEr=ccRows.reduce((s,r)=>s+r.er,0),totCost=ccRows.reduce((s,r)=>s+r.cost,0);
  const ccColors=["#0460B5","#0284c7","#0d9488","#7c3aed","#d97706","#e11d48"];
- const ccStackBar=totG>0?`<div class="xcc-bar" role="img" aria-label="Payroll share by cost center">${ccRows.map((r,idx)=>{const pct=Math.max(2,Math.round(r.g/totG*1000)/10);return`<i style="width:${pct}%;background:${ccColors[idx%ccColors.length]}" title="${esc(r.code+" · "+r.name)}: EGP ${fk(Math.round(r.g))} (${pct}%)"></i>`}).join("")}</div>`:"";
- const ccSec=!m.canS?"":sec("Payroll Summary by Cost Center & Project","Complete financial allocation of basic salaries, allowances, gross pay, and total employer cost across cost centers.",
-  `<div class="xcc-top"><div class="xseg"><button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Department Cost Center (${ccData.deptRows.length})</button><button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button></div><div class="xcc-kpis"><span>Active CCs: <b>${ccRows.length}</b></span><span>Total Gross: <b>${money(Math.round(totG))}</b></span><span>Est. Employer Ins.: <b>${money(Math.round(totEr))}</b></span><span class="hi">Total Employer Cost: <b>${money(Math.round(totCost))}</b></span></div></div>
-   ${ccStackBar}
-   <div class="wrap xcc-tbl"><table><thead><tr><th>Cost Center</th><th>Department / Project</th><th>Headcount</th><th>Basic Salary</th><th>Allowances</th><th>Monthly Gross</th><th>Est. Employer Ins.</th><th>Total Employer Cost</th><th>Cost Share</th></tr></thead><tbody>
-   ${ccRows.map((r,idx)=>{const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];return`<tr data-d="ch:cc:${esc(r.name)}" style="cursor:pointer" title="Click to inspect employees in ${esc(r.code)}"><td><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span></td><td><b>${esc(r.name)}</b> <small class="mu">· ${esc(r.type)}</small></td><td><b>${r.hc}</b>${r.fte!==r.hc?` <small class="mu">(${r.fte.toFixed(1)} FTE)</small>`:""}</td><td>${money(Math.round(r.b))}</td><td>${money(Math.round(r.a))}</td><td><b>${money(Math.round(r.g))}</b></td><td>${money(Math.round(r.er))}</td><td><b style="color:var(--brand)">${money(Math.round(r.cost))}</b></td><td style="min-width:130px"><div class="xcc-sh"><span class="t"><div class="f" style="width:${pct}%;background:${col}"></div></span><b>${pct}%</b></div></td></tr>`}).join("")||`<tr><td colspan="9" class="mu">No cost center data available.</td></tr>`}
-   </tbody><tfoot><tr class="xcc-tot"><td><b>TOTAL</b></td><td><b>${ccRows.length} Cost Center${ccRows.length===1?"":"s"}</b></td><td><b>${now.length}</b></td><td><b>${money(Math.round(totB))}</b></td><td><b>${money(Math.round(totA))}</b></td><td><b>${money(Math.round(totG))}</b></td><td><b>${money(Math.round(totEr))}</b></td><td><b style="color:var(--brand)">${money(Math.round(totCost))}</b></td><td><b>100%</b></td></tr></tfoot></table></div>`,
+ const ccSec=!m.canS?"":sec("Payroll by Cost Center","Monthly salary allocation, employer social insurance, and total cost per cost center.",
+  `<div class="xcc-top"><div class="xseg"><button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Cost Center (${ccData.deptRows.length})</button><button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button></div></div>
+   <div class="xcc-grid">
+   ${ccRows.map((r,idx)=>{const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];return`<button type="button" class="xcc-card" data-d="ch:cc:${esc(r.name)}" title="Click to inspect employees in ${esc(r.code)}">
+    <div class="xcc-chd"><div class="xcc-cid"><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span><div><b>${esc(r.name)}</b><small>${r.hc} employee${r.hc===1?"":"s"}${r.fte!==r.hc?` (${r.fte.toFixed(1)} FTE)`:""}</small></div></div><span class="xcc-cpct" style="color:${col};background:color-mix(in srgb,${col} 10%,transparent)">${pct}%</span></div>
+    <div class="xcc-cbar"><i style="width:${pct}%;background:${col}"></i></div>
+    <div class="xcc-cmet"><div><span>Monthly Gross</span><b>${money(Math.round(r.g))}</b></div><div><span>Employer Ins.</span><b>${money(Math.round(r.er))}</b></div><div><span>Total Cost</span><b class="hi">${money(Math.round(r.cost))}</b></div></div>
+   </button>`}).join("")||`<div class="mu">No cost center data available.</div>`}
+   </div>
+   <div class="xcc-foot"><span>Total across <b>${ccRows.length}</b> cost center${ccRows.length===1?"":"s"} (${now.length} staff)</span><div class="xcc-ftot"><span>Gross: <b>${money(Math.round(totG))}</b></span><span>Employer Ins.: <b>${money(Math.round(totEr))}</b></span><span class="hi">Total Cost: <b>${money(Math.round(totCost))}</b></span></div></div>`,
   "xcc",`<div class="bar" style="gap:8px">${canSee("cost_centers")?`<button class="xlk" data-go="cost_centers">Manage Cost Centers</button>`:""}${lk("rep_cost","Full Cost Analysis")}</div>`);
  const days=[];for(let k=-29;k<=0;k++){const d=addD(T0,k);if(!isWk(d))days.push(iso(d))}
  const ac=[0,0,0,0,0];days.forEach(d=>now.forEach(e=>{const v=attCode(e,d);if(v>0)ac[v]++}));
- if(ac[1]+ac[2]+ac[3]+ac[4]===0&&now.length>0){
-  const totSlots=now.length*Math.max(1,days.length),lvSlots=lv.length*Math.max(1,days.length),rem=Math.max(0,totSlots-lvSlots);
-  ac[1]=Math.round(rem*0.94);ac[2]=rem-ac[1];ac[4]=lvSlots;ac[3]=0;
- }
  const at=ac[1]+ac[2]+ac[3]+ac[4],pc=v=>at?Math.round(v/at*100):0;
  const lr=(typeof LR!=="undefined"?LR:[]).filter(r=>r.mode===MODE),lvPend=lr.filter(r=>r.status==="Pending").length,lvUp=lr.filter(r=>r.status==="Approved"&&r.start>T&&r.start<=iso(addD(T0,14))).length;
  const attBar=at?`<div class="xbar" role="img" aria-label="On time ${pc(ac[1])}%, late ${pc(ac[2])}%, on leave ${pc(ac[4])}%, absent ${pc(ac[3])}%"><i style="width:${pc(ac[1])}%;background:var(--brand)"></i><i style="width:${pc(ac[2])}%;background:#d98a00"></i><i style="width:${pc(ac[4])}%;background:var(--c3,#7aa7d9)"></i><i style="width:${pc(ac[3])}%;background:var(--er)"></i></div>`:"";
@@ -2107,10 +2099,29 @@ reg("positions","Job Positions","Positions in use, how many people hold them, an
 function cxCat(e){if(db("renew",{})[e.no])return"renewed";if(!e.end)return"none";const d=dd(e.end);return d<0?"expired":d<=30?"d30":d<=60?"d60":d<=90?"d90":"later"}
 const CXL={expired:["Expired","s-er"],d30:["Within 30 days","s-wn"],d60:["Within 60 days","s-wn"],d90:["Within 90 days","s-mu"],renewed:["Renewed","s-ok"],none:["No end date recorded","s-mu"],later:["Later than 90 days","s-mu"]};
 function contracts(){const L=ALLE().filter(e=>e.status!=="Terminated"),cnt=k=>L.filter(e=>cxCat(e)===k).length,cur=tab("cx","all"),can=[R.HRD,R.HRS].includes(role);
+ const qRaw=TAB.cx_q||"",q=qRaw.trim().toLowerCase(),fDept=TAB.cx_dept||"",fCc=TAB.cx_cc||"";
+ const depts=[...new Set([...DEPTS,...L.map(e=>e.dept)].filter(Boolean))].sort();
+ const ccMap=new Map();
+ depts.forEach(d=>{const c=ccCodeOf(d);ccMap.set(c,`${c} · ${d}`)});
+ (typeof CCS==="function"?CCS():[]).filter(c=>c.on!==0&&c.code).forEach(c=>{if(!ccMap.has(c.code))ccMap.set(c.code,`${c.code} · ${c.name}`)});
+ L.forEach(e=>{if(e.project&&!depts.includes(e.project)){const c=ccCodeOf(e.project);if(!ccMap.has(c))ccMap.set(c,`${c} · ${e.project}`)}});
+ const ccList=[...ccMap.entries()];
  const chips=[["all","All",L.length],...["expired","d30","d60","d90","renewed","none"].map(k=>[k,CXL[k][0],cnt(k)])];
- const rows=L.filter(e=>cur==="all"||cxCat(e)===cur).sort((a,b)=>(a.end||"9999")<(b.end||"9999")?-1:1).map(e=>{const c=cxCat(e),rn=db("renew",{})[e.no];return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button>`,e.no,esc(e.dept),`<span style="white-space:nowrap">${esc(e.type)} contract</span>`,e.hire,e.end||"–",e.end?dd(e.end):"–",bd(CXL[c][0],CXL[c][1]),rn?"Renewed "+rn.when:"Open","HR Specialist",attBtn("contract|"+e.no,e.name+": signed contract","Files"),can&&e.end?`<form class="inl" data-form="renew"><input type="hidden" name="no" value="${esc(e.no)}"><input type="date" name="end" aria-label="New end date for ${esc(e.name)}" required><button class="b" type="submit">Renew</button></form>`:""]});
- return`<div class="chips">${chips.map(([k,l,n])=>`<button class="chip2 ${cur===k?"on":""}" data-tab="cx:${k}">${l} <b>${n}</b></button>`).join("")}</div><div class="err" id="cxerr"></div>${ptbl("cx",["Employee","No.","Department","Document","Start","End","Days left","Category","Renewal","Responsible","Signed contract","Renew until"],rows,{csv:"contracts",empty:"No contracts in this category."})}${note("Contract start uses the hire date until separate contract records are added. Renewal changes the contract end date and is recorded in the audit log.")}`}
+ const filtered=L.filter(e=>cur==="all"||cxCat(e)===cur).filter(e=>{
+  const cc=ccCodeOf(e.dept),prjCc=e.project?ccCodeOf(e.project):"";
+  if(fDept&&e.dept!==fDept)return false;
+  if(fCc&&cc!==fCc&&prjCc!==fCc&&e.project!==fCc)return false;
+  if(q&&![e.name,e.no,e.dept,cc,prjCc,e.project,e.pos,e.type].filter(Boolean).join(" ").toLowerCase().includes(q))return false;
+  return true;
+ });
+ const rows=filtered.sort((a,b)=>(a.end||"9999")<(b.end||"9999")?-1:1).map(e=>{const c=cxCat(e),rn=db("renew",{})[e.no],cc=ccCodeOf(e.dept);return[`<button class="lnk" data-act="prof:${esc(e.no)}">${esc(e.name)}</button>`,e.no,esc(e.dept),`<span class="cc-badge">${esc(cc)}</span>${e.project&&e.project!==e.dept?` <small class="mu">· ${esc(e.project)}</small>`:""}`,`<span style="white-space:nowrap">${esc(e.type)} contract</span>`,e.hire,e.end||"–",e.end?dd(e.end):"–",bd(CXL[c][0],CXL[c][1]),rn?"Renewed "+rn.when:"Open","HR Specialist",attBtn("contract|"+e.no,e.name+": signed contract","Files"),can&&e.end?`<form class="inl" data-form="renew"><input type="hidden" name="no" value="${esc(e.no)}"><input type="date" name="end" aria-label="New end date for ${esc(e.name)}" required><button class="b" type="submit">Renew</button></form>`:""]});
+ const hasFlt=!!(qRaw||fDept||fCc);
+ const fbar=`<div class="bar cx-fbar" style="margin:12px 0 14px"><input id="cxq" type="search" placeholder="Search by employee name, ID, cost center, or department…" value="${esc(qRaw)}" style="flex:1 1 280px;min-width:220px"><select data-cxf="dept" aria-label="Filter by department"><option value="">All departments</option>${depts.map(d=>`<option value="${esc(d)}" ${d===fDept?"selected":""}>${esc(d)}</option>`).join("")}</select><select data-cxf="cc" aria-label="Filter by cost center"><option value="">All cost centers</option>${ccList.map(([code,lbl])=>`<option value="${esc(code)}" ${code===fCc?"selected":""}>${esc(lbl)}</option>`).join("")}</select>${hasFlt?`<button type="button" class="b" data-act="cx_clr">Clear</button>`:""}<span class="tag">${rows.length} of ${L.length} contract(s)</span></div>`;
+ return`<div class="chips">${chips.map(([k,l,n])=>`<button class="chip2 ${cur===k?"on":""}" data-tab="cx:${k}">${l} <b>${n}</b></button>`).join("")}</div>${fbar}<div class="err" id="cxerr"></div>${ptbl0("cx",["Employee","No.","Department","Cost Center","Document","Start","End","Days left","Category","Renewal","Responsible","Signed contract","Renew until"],rows,{csv:"contracts",empty:hasFlt?"No contracts match your search or filters.":"No contracts in this category."})}${note("Contract start uses the hire date until separate contract records are added. Renewal changes the contract end date and is recorded in the audit log.")}`}
 reg("contracts","Employment Contracts","Every contract with its end date, expiry category and renewal status.",A("HRD","HRS"),contracts);
+ACTS.cx_clr=()=>{TAB.cx_q="";TAB.cx_dept="";TAB.cx_cc="";PGS.cx=0;draw()};
+document.addEventListener("input",ev=>{if(ev.target&&ev.target.id==="cxq"){TAB.cx_q=ev.target.value;PGS.cx=0;const p=ev.target.selectionStart;draw();const n=$("#cxq");if(n){n.focus();try{n.setSelectionRange(p,p)}catch(e){}}}});
+document.addEventListener("change",ev=>{const s=ev.target&&ev.target.closest&&ev.target.closest("select[data-cxf]");if(s){TAB["cx_"+s.dataset.cxf]=s.value;PGS.cx=0;draw()}});
 FORMS.renew=o=>{const e=empBy(o.no);if(!e)return"Employee not found.";if(o.end<=iso(T0))return"The new end date must be in the future.";if(e.end&&o.end<=e.end)return"The new end date must be later than the current end date ("+e.end+").";
  const old=e.end;if(MODE==="sample")e.end=o.end;else{const r=E.find(x=>x.no===o.no);if(r)r.end=o.end;save()}db("renew",{})[o.no]={end:o.end,when:iso(T0)};sv("renew");audit("Contract renewed",o.no+": "+old+" to "+o.end);toast("Contract renewed until "+o.end);draw()};
 
@@ -5304,94 +5315,156 @@ html[data-theme="dark"] #confirm .dlg {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
-.xcc-kpis {
+.xcc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+.xcc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  text-align: left;
+  cursor: pointer;
+  color: var(--tx);
+  font: inherit;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03), 0 4px 12px -4px rgba(16, 24, 40, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.xcc-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--bd));
+  box-shadow: 0 10px 24px -6px rgba(4, 96, 181, 0.12);
+}
+
+.xcc-chd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.xcc-cid {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xcc-cid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.xcc-cid b {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xcc-cid small {
   font-size: 12.5px;
   color: var(--mu);
+  font-weight: 500;
 }
 
-.xcc-kpis span {
-  padding: 5px 11px;
-  border-radius: 9px;
-  background: rgba(4, 96, 181, 0.045);
-  border: 1px solid rgba(4, 96, 181, 0.1);
-}
-
-.xcc-kpis span b {
-  color: var(--tx);
-  margin-left: 3px;
-}
-
-.xcc-kpis span.hi {
-  background: rgba(4, 96, 181, 0.1);
-  border-color: rgba(4, 96, 181, 0.25);
-}
-
-.xcc-kpis span.hi b {
-  color: var(--brand);
-}
-
-.xcc-bar {
-  display: flex;
-  height: 10px;
+.xcc-cpct {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 10px;
   border-radius: 999px;
-  overflow: hidden;
-  background: rgba(4, 96, 181, 0.08);
-  margin-bottom: 14px;
-  gap: 2px;
+  flex-shrink: 0;
 }
 
-.xcc-bar i {
+.xcc-cbar {
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 10%, var(--soft));
+  overflow: hidden;
+}
+
+.xcc-cbar i {
   display: block;
   height: 100%;
   border-radius: 999px;
   transition: width 0.35s ease;
 }
 
-.xcc-tbl table {
-  width: 100%;
-  border-collapse: collapse;
+.xcc-cmet {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--bd) 65%, transparent);
 }
 
-.xcc-tbl tbody tr:hover {
-  background: rgba(4, 96, 181, 0.04);
+.xcc-cmet > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.xcc-tot td {
-  border-top: 2px solid rgba(4, 96, 181, 0.18) !important;
-  background: rgba(4, 96, 181, 0.035);
-  font-size: 13px;
+.xcc-cmet span {
+  font-size: 11.5px;
+  color: var(--mu);
+  font-weight: 600;
 }
 
-.xcc-sh {
+.xcc-cmet b {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tx);
+  font-variant-numeric: tabular-nums;
+}
+
+.xcc-cmet b.hi {
+  color: var(--brand);
+}
+
+.xcc-foot {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 13px 18px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--brand) 5%, var(--surf));
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--bd));
+  font-size: 13.5px;
+  color: var(--mu);
 }
 
-.xcc-sh .t {
-  flex: 1;
-  height: 7px;
-  background: rgba(4, 96, 181, 0.08);
-  border-radius: 999px;
-  overflow: hidden;
+.xcc-ftot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
 }
 
-.xcc-sh .f {
-  height: 100%;
-  border-radius: 999px;
+.xcc-ftot b {
+  color: var(--tx);
+  font-weight: 700;
+  margin-left: 3px;
 }
 
-.xcc-sh b {
-  font-size: 12px;
-  min-width: 38px;
-  text-align: right;
+.xcc-ftot .hi b {
+  color: var(--brand);
+  font-size: 14.5px;
 }
 
 .xroster {
