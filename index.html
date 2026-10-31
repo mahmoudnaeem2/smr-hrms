@@ -961,8 +961,31 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 .xrows b{font-size:var(--fs-lg)}.xrows b.warn{color:var(--er)}
 .xfoot{margin:0 0 var(--sp-6);font-size:var(--fs-sm);color:var(--mu)}
 @media(max-width:1100px){.xg2{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:768px){.xband{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.xf{padding:16px}.xf:last-child:nth-child(odd){grid-column:1/-1}.xg2{grid-template-columns:1fr!important}.xsplit{grid-template-columns:1fr!important}.card.xs{padding:16px!important}.xact{width:100%}.xact .b{flex:1}}
-@media(max-width:480px){.xband{grid-template-columns:1fr}.xf:last-child:nth-child(odd){grid-column:auto}}
+@media(max-width:768px){
+  .xband{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:14px!important}
+  .xf{padding:12px 14px!important;gap:6px!important;border-radius:14px!important}
+  .xf-top{margin-bottom:2px}
+  .xf-ic{width:32px!important;height:32px!important;border-radius:10px!important}
+  .xf-ic svg{width:17px!important;height:17px!important}
+  .xl{font-size:12px!important}
+  .xf b{font-size:19px!important}
+  .xf-bot{min-height:18px!important}
+  .xd{font-size:11px!important;padding:1px 6px!important}
+  .xf:last-child:nth-child(odd){grid-column:1/-1}
+  .xg2{grid-template-columns:1fr!important}
+  .xsplit{grid-template-columns:1fr!important}
+  .card.xs{padding:16px!important}
+  .xact{width:100%}
+  .xact .b{flex:1}
+  .xtt{font-size:22px!important}
+  .xsub{font-size:13px!important;margin-top:4px!important}
+}
+@media(max-width:480px){
+  .xband{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .xf{padding:10px 12px!important}
+  .xf b{font-size:17px!important}
+  .xf:last-child:nth-child(odd){grid-column:1/-1}
+}
 @media print{
  #side,.topbar,.strip,.xact,.qa,#drawer,#toast,.backl,body::after{display:none!important}
  body,.main,main{background:#fff!important}main{padding:0!important;max-width:none!important}
@@ -5541,6 +5564,121 @@ html[data-theme="dark"] .xpill:not(.on) {
 
 .card.xs.xc {
   margin-bottom: var(--sp-5) !important;
+}
+
+/* Mobile compact enhancements for Dash & Portal */
+@media (max-width: 768px) {
+  .zh {
+    padding: 0 0 24px !important;
+  }
+  .zh .zw {
+    font-size: 22px !important;
+    margin-bottom: 2px !important;
+  }
+  .zh .zsub {
+    font-size: 13px !important;
+    margin-bottom: 14px !important;
+  }
+  .zbal {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .zb {
+    padding: 10px 10px 8px !important;
+    border-radius: 14px !important;
+    gap: 6px !important;
+  }
+  .zbh {
+    gap: 6px !important;
+  }
+  .zbi {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+  .zbi svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+  .zbl {
+    font-size: 11.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .zbn {
+    gap: 4px !important;
+  }
+  .zbn b {
+    font-size: 18px !important;
+  }
+  .zbn small {
+    font-size: 10.5px !important;
+  }
+  .zbar {
+    height: 4px !important;
+  }
+  .zbf {
+    font-size: 10px !important;
+  }
+  .zq {
+    margin: 18px 0 10px !important;
+    font-size: 14.5px !important;
+  }
+  .zgrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .zt {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 12px 6px !important;
+    border-radius: 14px !important;
+    gap: 6px !important;
+  }
+  .zt .zi {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+  }
+  .zt .zi svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .zt .zl {
+    font-size: 12px !important;
+  }
+  .zt .zt-sub, .zt .zt-arr {
+    display: none !important;
+  }
+  .xcc-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .xcc-card {
+    padding: 14px 16px !important;
+  }
+  .xcc-cmet b {
+    font-size: 13px !important;
+  }
+}
+@media (max-width: 480px) {
+  .zbal {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .zb {
+    padding: 12px 14px !important;
+    gap: 8px !important;
+  }
+  .zbn b {
+    font-size: 20px !important;
+  }
+  .zgrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
 }
 </style>
 <script>
