@@ -1402,7 +1402,7 @@ const PAGES={};
 function reg(key,title,desc,roles,fn){PAGES[key]={title,desc,roles,fn}}
 const PERM=()=>db("perm",{},false);
 const canSee=p=>{if(!PAGES[p])return false;const o=PERM()[p+"|"+role];return o!=null?!!o:PAGES[p].roles.includes(role)};
-const NAV=[["Overview",[["HR Dashboard","dash"],["Payroll Dashboard","paydash"],["Approvals","appr"],["My Portal","work"],["HR Requests","hr_req"],["My Profile","myprofile"]]],
+const NAV=[["Overview",[["HR Dashboard","dash"],["Payroll Dashboard","paydash"],["Approvals","appr"],["My Profile","myprofile"],["HR Requests","hr_req"],["My Portal","work"]]],
 ["People",[["Employees","emp"],["Employee Profiles","profile"],["Organization Chart","org"],["Reporting Lines","reporting"],["Departments","depts"],["Job Positions","positions"],["Employment Contracts","contracts"],["Data Completeness","completeness"],["Probation Tracker","probation"],["Employee Documents","docs"],["Disciplinary Warnings","warns"]]],
 ["Time & Attendance",[["Daily Attendance","att_d"],["Monthly Attendance","att_m"],["Timesheets","timesheets"],["Shifts & Scheduling","shifts"],["Overtime","overtime"],["Attendance Exceptions","exceptions"]]],
 ["Leave",[["Leave Requests","leave_req"],["Leave Balances","leave_bal"],["Leave Calendar","leave_cal"],["Leave Policies","leave_pol"]]],
