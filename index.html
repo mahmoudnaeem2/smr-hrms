@@ -1105,6 +1105,11 @@ svg.ic.phd{stroke:none;overflow:visible}
 #strip .chip{display:inline-flex;align-items:center}
 .hubt{margin:var(--sp-3) 0 var(--sp-5)!important}
 .hubt+.ph{margin-top:0}
+/* data-source chip moved into the top bar; tabs/header tidy */
+#strip{display:none!important}
+#srcchip{order:3;white-space:nowrap;font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,var(--surf));border-radius:var(--r-pill);padding:5px 12px}
+@media(max-width:900px){#srcchip{display:none}}
+main>.hubt:first-child{margin-top:0!important}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">SMR Workplace</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3853,6 +3858,9 @@ function ndeptAdd(box){const i=box.querySelector("input"),n=i.value.trim(),er=bo
  const s=box.previousElementSibling.querySelector(`select[name="${key}"]`);if(s){s.value=v;s.dataset.prev=v;s.dispatchEvent(new Event("change",{bubbles:true}))}box.remove()}
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-nd]");if(!b)return;const box=b.closest(".ndept");if(b.dataset.nd==="x")return box.remove();ndeptAdd(box)});
 document.addEventListener("keydown",e=>{const i=e.target.closest&&e.target.closest(".ndept input");if(!i)return;if(e.key==="Enter"){e.preventDefault();ndeptAdd(i.closest(".ndept"))}if(e.key==="Escape"){e.stopPropagation();i.closest(".ndept").remove()}},true);
+
+/* data-source chip lives in the top bar (the strip row under it is hidden) */
+(function(){const sync=()=>{const t=document.querySelector(".topbar"),s=document.getElementById("strip");if(!t||!s)return setTimeout(sync,80);let c=document.getElementById("srcchip");if(!c){c=document.createElement("span");c.id="srcchip";c.className="chip";c.setAttribute("role","status");t.appendChild(c)}const f=s.querySelector(".chip");if(f&&c.textContent!==f.textContent){c.textContent=f.textContent;c.title=(s.querySelector(".chip+span")||{}).textContent||""}};sync();new MutationObserver(sync).observe(document.getElementById("strip")||document.body,{childList:true,subtree:true})})();
 
 /* ===== m50: job grades. A managed list like job titles; every employee can have a grade. Forms pick title and grade from lists that end with "+ New …". ===== */
 const GRDS=()=>db("grades",[],false);
