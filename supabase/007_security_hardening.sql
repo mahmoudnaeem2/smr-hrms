@@ -22,3 +22,11 @@ revoke all on function public.is_staff() from public, anon;
 revoke all on function public.is_admin() from public, anon;
 grant execute on function public.is_staff() to authenticated;
 grant execute on function public.is_admin() to authenticated;
+
+-- The initial "profiles_admin_all" policy was created for System Administrators.
+-- Migration 002 broadened is_admin() to include HR Directors, unintentionally
+-- granting HR Directors direct INSERT/UPDATE/DELETE access to profiles. That
+-- bypasses the guarded set_profile() RPC (including its self-edit and
+-- System-Administrator-role restrictions). Profile changes must go through
+-- set_profile() or the server-side admin-users Edge Function.
+drop policy if exists profiles_admin_all on public.profiles;
