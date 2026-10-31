@@ -1100,6 +1100,11 @@ svg.ic.phd{stroke:none;overflow:visible}
 @media(max-width:900px){#livepill{display:none}}
 .ndept{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:calc(-1 * var(--sp-1)) 0 var(--sp-3);padding:var(--sp-3);background:var(--soft);border-radius:var(--r-md)}
 .ndept input{flex:1 1 180px;min-height:var(--h-ctl-sm)!important}.ndept .err{flex-basis:100%;margin:0}
+/* spacing: data-source chip row and My portal / My profile tabs */
+#strip{padding:12px 0 0!important;margin:0!important;min-height:0;line-height:1.2}
+#strip .chip{display:inline-flex;align-items:center}
+.hubt{margin:var(--sp-3) 0 var(--sp-5)!important}
+.hubt+.ph{margin-top:0}
 </style></head><body>
 <div id="gate" role="dialog" aria-labelledby="gt"><div class="box"><img class="slogo" alt="SMR – savills management resources"><h2 id="gt">SMR Workplace</h2><p>Prototype entry. There is no real sign-in yet. Choose a role to preview what it can see.</p><label for="grole">Preview role<select id="grole"></select></label><button class="b p" id="gok">Continue to prototype</button></div></div>
 <div class="shell">
@@ -3717,7 +3722,7 @@ ACTS.phdel=no=>{if(!canPhoto(empBy(no)))return;ask("Remove this profile photo?",
 const HUBS=[
  {g:"Home",n:"Dashboard",ic:"dash",p:[["Summary","dash"]]},
  {g:"Home",n:"Inbox",ic:"appr",p:[["Approvals","appr"],["HR requests","hr_req"],["Notifications","notif"]]},
- {g:"Home",n:"My portal",ic:"work",p:[["My portal","work"],["My profile","myprofile"]]},
+ {g:"Home",n:"My portal",ic:"work",p:[["My profile","myprofile"],["My portal","work"]]},
  {g:"People",n:"Employees",ic:"emp",p:[["Directory","emp"],["Organization chart","org"],["Reporting lines","reporting"],["Departments","depts"],["Titles & grades","positions"]]},
  {g:"People",n:"Contracts & records",ic:"contracts",p:[["Contracts","contracts"],["Probation","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]},
  {g:"Time & pay",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
@@ -3735,7 +3740,7 @@ const SETK=SETG.flatMap(g=>g[1].map(x=>x[0]));
 function hubOf(k){if(SETK.includes(k))return HUBS.find(h=>h.n==="Settings");return HUBS.find(h=>h.p.some(x=>x[1]===k))||null}
 function hubKey(h){const x=h.p.find(x=>canSee(x[1]));return x?x[1]:null}
 /* menu: one entry per hub, pointing to the first page this role can open */
-function NAVV(){if(role===R.EMP){return[["Home",[["My portal","work"],["My profile","myprofile"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & pay",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"],["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
+function NAVV(){if(role===R.EMP){return[["Home",[["My profile","myprofile"],["My portal","work"],["HR requests","hr_req"],["Notifications","notif"]].filter(i=>canSee(i[1]))],["Time & pay",[["Leave","leave_req"],["Leave balances","leave_bal"],["Leave calendar","leave_cal"],["Payslips","payslips"]].filter(i=>canSee(i[1]))]].filter(([g,it])=>it.length)}
  const out=[];HUBS.forEach(h=>{const k=hubKey(h);if(!k)return;let G=out.find(x=>x[0]===h.g);if(!G){G=[h.g,[]];out.push(G)}G[1].push([h.n,k])});
  try{out.forEach(([g])=>{GOPEN[g]=true})}catch(e){}return out}
 function NAVACT(k){if(k===page)return true;if(role===R.EMP)return false;const a=hubOf(k),b=hubOf(page);if(a&&b&&a===b)return true;return k==="reports"&&typeof REPKEYS!=="undefined"&&REPKEYS.includes(page)&&page!=="auditlog"}

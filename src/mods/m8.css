@@ -270,3 +270,8 @@ svg.ic.phd{stroke:none;overflow:visible}
 @media(max-width:900px){#livepill{display:none}}
 .ndept{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:calc(-1 * var(--sp-1)) 0 var(--sp-3);padding:var(--sp-3);background:var(--soft);border-radius:var(--r-md)}
 .ndept input{flex:1 1 180px;min-height:var(--h-ctl-sm)!important}.ndept .err{flex-basis:100%;margin:0}
+/* spacing: data-source chip row and My portal / My profile tabs */
+#strip{padding:12px 0 0!important;margin:0!important;min-height:0;line-height:1.2}
+#strip .chip{display:inline-flex;align-items:center}
+.hubt{margin:var(--sp-3) 0 var(--sp-5)!important}
+.hubt+.ph{margin-top:0}
