@@ -1500,17 +1500,26 @@ const flt=a=>a.filter(e=>inScope(e)&&(!F.dept||e.dept===F.dept)&&(!F.loc||e.loc=
 const uniq=(k)=>[...new Set(allEmps().filter(inScope).map(e=>e[k]).filter(Boolean))].sort();
 
 /* ---------- chart helpers (inline SVG, theme-aware) ---------- */
-const scaleMax=m=>{if(m<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(m))),n=m/p;return(n<=1?1:n<=2?2:n<=5?5:10)*p};
-function frame(W,H,max,fmt){const ml=40,mr=8,mt=12,mb=24,pw=W-ml-mr,ph=H-mt-mb;let g="";for(let i=0;i<=3;i++){const y=mt+ph-ph*i/3;g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--bd)" stroke-opacity=".7" stroke-dasharray="3 3"/><text x="${ml-6}" y="${y+3.5}" text-anchor="end" class="ax" fill="var(--mu)" font-size="10.5" font-weight="500">${fmt(max*i/3)}</text>`}return{g,ml,mt,pw,ph,W,H}}
-const xl=(f,labels,cx,k)=>{const st=Math.ceil(labels.length/6);return labels.map((l,i)=>i%st===0?`<text x="${cx(i)}" y="${f.H-6}" text-anchor="middle" class="ax" fill="var(--mu)" font-size="11" font-weight="600"${k?` data-d="${k(i,-1)}" style="cursor:pointer"`:""}>${esc(l)}</text>`:"").join("")};
-function stack(series,labels,o={}){const W=320,H=160,n=labels.length,tot=labels.map((_,i)=>series.reduce((s,x)=>s+x.vals[i],0)),max=o.fmt?scaleMax(Math.max(...tot,0)):Math.max(3,Math.ceil(Math.max(...tot,0)/3)*3),fmt=o.fmt||(v=>Math.round(v)),f=frame(W,H,max,fmt),bw=f.pw/n,cx=i=>f.ml+bw*i+bw/2;
- let b="";labels.forEach((l,i)=>{let y=f.mt+f.ph;if(o.k)b+=`<rect x="${cx(i)-bw/2}" y="${f.mt}" width="${bw}" height="${f.ph}" fill="transparent" data-d="${o.k(i,-1)}" style="cursor:pointer"><title>${esc(l)}: click for details</title></rect>`;series.forEach((s,si)=>{const h=f.ph*s.vals[i]/max;y-=h;b+=`<rect x="${cx(i)-bw*.34}" y="${y}" width="${bw*.68}" height="${Math.max(h,0)}" rx="4" ry="4" fill="${s.color}"${o.k?` data-d="${o.k(i,si)}" style="cursor:pointer"`:""}><title>${esc(l)} – ${esc(s.name)}: ${(o.tip||fmt)(s.vals[i])}</title></rect>`})});
- return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||"")}">${f.g}${b}${xl(f,labels,cx,o.k)}</svg>`}
+const scaleMax=m=>{if(m<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(m))),n=m/p;return(n<=1?1:n<=1.5?1.5:n<=2?2:n<=3?3:n<=5?5:n<=7.5?7.5:10)*p};
+function frame(W,H,max,fmt){const ml=42,mr=10,mt=16,mb=26,pw=W-ml-mr,ph=H-mt-mb;let g="";for(let i=0;i<=3;i++){const y=mt+ph-ph*i/3;g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--bd)" stroke-opacity=".65" stroke-dasharray="${i===0?"":"3 3"}"/><text x="${ml-7}" y="${y+3.5}" text-anchor="end" class="ax" fill="var(--mu)" font-size="10.5" font-weight="600">${fmt(max*i/3)}</text>`}return{g,ml,mt,pw,ph,W,H}}
+const xl=(f,labels,cx,k)=>{const st=labels.length>8?2:1;return labels.map((l,i)=>(i%st===0||i===labels.length-1)?`<text x="${cx(i)}" y="${f.H-7}" text-anchor="middle" class="ax" fill="${i===labels.length-1?"var(--brand)":"var(--mu)"}" font-size="10.5" font-weight="${i===labels.length-1?"700":"600"}"${k?` data-d="${k(i,-1)}" style="cursor:pointer"`:""}>${esc(l)}</text>`:"").join("")};
+function stack(series,labels,o={}){const W=340,H=168,n=labels.length,tot=labels.map((_,i)=>series.reduce((s,x)=>s+x.vals[i],0)),max=o.fmt?scaleMax(Math.max(...tot,0)):Math.max(3,Math.ceil(Math.max(...tot,0)/3)*3),fmt=o.fmt||(v=>Math.round(v)),f=frame(W,H,max,fmt),bw=f.pw/n,cx=i=>f.ml+bw*i+bw/2;
+ const gid="bg_"+Math.random().toString(36).slice(2,6);
+ const defs=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0572d4"/><stop offset="100%" stop-color="#0460B5"/></linearGradient><linearGradient id="${gid}_hi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="35%" stop-color="#0572d4"/><stop offset="100%" stop-color="#034a8c"/></linearGradient></defs>`;
+ let b="";labels.forEach((l,i)=>{let y=f.mt+f.ph;const isLast=i===n-1;
+  b+=`<rect x="${cx(i)-bw*.36}" y="${f.mt}" width="${bw*.72}" height="${f.ph}" rx="5" fill="rgba(4,96,181,0.045)"/>`;
+  if(o.k)b+=`<rect x="${cx(i)-bw/2}" y="${f.mt}" width="${bw}" height="${f.ph}" fill="transparent" data-d="${o.k(i,-1)}" style="cursor:pointer"><title>${esc(l)}: click for details</title></rect>`;
+  series.forEach((s,si)=>{const h=f.ph*s.vals[i]/max;y-=h;const fillCol=series.length===1?(isLast?`url(#${gid}_hi)`:`url(#${gid})`):s.color;
+   b+=`<rect class="ch-bar" x="${cx(i)-bw*.34}" y="${y}" width="${bw*.68}" height="${Math.max(h,0)}" rx="5" ry="5" fill="${fillCol}" opacity="${isLast||series.length>1?1:0.86}"${o.k?` data-d="${o.k(i,si)}" style="cursor:pointer"`:""}><title>${esc(l)} – ${esc(s.name)}: ${(o.tip||fmt)(s.vals[i])}</title></rect>`;
+   if(series.length===1&&s.vals[i]>0&&(isLast||i===0||i===Math.floor(n/2)))b+=`<text x="${cx(i)}" y="${Math.max(11,y-5)}" text-anchor="middle" fill="${isLast?"var(--brand)":"var(--mu)"}" font-size="9.5" font-weight="${isLast?"700":"600"}">${fmt(s.vals[i])}</text>`})});
+ return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||"")}">${defs}${f.g}${b}${xl(f,labels,cx,o.k)}</svg>`}
 const cols=(vals,labels,o={})=>stack([{name:o.name||"Value",vals,color:o.color||"var(--brand)"}],labels,o);
-function line(series,labels,o={}){const W=320,H=160,n=labels.length,max=(o.fmt&&o.fmt!==undefined&&!o.pct)?scaleMax(Math.max(...series.flatMap(s=>s.vals),0)):Math.max(3,Math.ceil(Math.max(...series.flatMap(s=>s.vals),0)/3)*3),fmt=o.fmt||(v=>Math.round(v)),f=frame(W,H,max,fmt),cx=i=>f.ml+(n>1?f.pw*i/(n-1):f.pw/2),cy=v=>f.mt+f.ph-f.ph*v/max;
+function line(series,labels,o={}){const W=340,H=168,n=labels.length,rawMax=Math.max(...series.flatMap(s=>s.vals),0),max=(o.fmt&&o.fmt!==undefined&&!o.pct)?scaleMax(rawMax):Math.max(3,Math.ceil((rawMax+1)/3)*3),fmt=o.fmt||(v=>Math.round(v)),f=frame(W,H,max,fmt),cx=i=>f.ml+(n>1?f.pw*i/(n-1):f.pw/2),cy=v=>f.mt+f.ph-f.ph*v/max;
  const gid="lg_"+Math.random().toString(36).slice(2,6);
- const p=series.map((s,si)=>{const pts=s.vals.map((v,i)=>cx(i)+","+cy(v));const fX=cx(0),lX=cx(s.vals.length-1),bY=f.mt+f.ph;const ap=[`${fX},${bY}`,...pts,`${lX},${bY}`].join(" ");return`<defs><linearGradient id="${gid}_${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${s.color}" stop-opacity="0.28"/><stop offset="100%" stop-color="${s.color}" stop-opacity="0.01"/></linearGradient></defs><polygon points="${ap}" fill="url(#${gid}_${si})"/><polyline fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${pts.join(" ")}"/>`+(n<=16?s.vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${cy(v)}" r="3.5" fill="#ffffff" stroke="${s.color}" stroke-width="2.5"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)}</title></circle>`).join(""):s.vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${cy(v)}" r="5" fill="transparent"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)}</title></circle>`).join(""))}).join("");
- const hit=o.k?series.map((s,si)=>s.vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${cy(v)}" r="10" fill="transparent" data-d="${o.k(i,si)}" style="cursor:pointer"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)} (click for details)</title></circle>`).join("")).join(""):"";
+ const smoothPath=pts=>{if(pts.length<2)return"";let d=`M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;for(let i=0;i<pts.length-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];const cp1x=p1[0]+(p2[0]-p0[0])/6,cp2x=p2[0]-(p3[0]-p1[0])/6;let cp1y=p1[1]+(p2[1]-p0[1])/6,cp2y=p2[1]-(p3[1]-p1[1])/6;const minY=Math.min(p1[1],p2[1]),maxY=Math.max(p1[1],p2[1]);cp1y=Math.max(minY,Math.min(maxY,cp1y));cp2y=Math.max(minY,Math.min(maxY,cp2y));d+=` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`}return d};
+ const p=series.map((s,si)=>{const coords=s.vals.map((v,i)=>[cx(i),cy(v)]);const dLine=smoothPath(coords);const fX=cx(0),lX=cx(s.vals.length-1),bY=f.mt+f.ph;const dArea=dLine?`${dLine} L ${lX.toFixed(1)},${bY.toFixed(1)} L ${fX.toFixed(1)},${bY.toFixed(1)} Z`:"";
+  return`<defs><linearGradient id="${gid}_${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${s.color}" stop-opacity="0.34"/><stop offset="75%" stop-color="${s.color}" stop-opacity="0.06"/><stop offset="100%" stop-color="${s.color}" stop-opacity="0.0"/></linearGradient></defs><path d="${dArea}" fill="url(#${gid}_${si})"/><path d="${dLine}" fill="none" stroke="${s.color}" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>`+(n<=16?s.vals.map((v,i)=>{const isLast=i===n-1;return(isLast?`<circle cx="${cx(i)}" cy="${cy(v)}" r="7" fill="${s.color}" opacity="0.18"/>`:"")+`<circle cx="${cx(i)}" cy="${cy(v)}" r="${isLast?4.2:3.3}" fill="${isLast?s.color:"#ffffff"}" stroke="${s.color}" stroke-width="2.3"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)}</title></circle>`+(isLast||i===0?`<text x="${cx(i)}" y="${Math.max(11,cy(v)-8)}" text-anchor="middle" fill="${isLast?"var(--brand)":"var(--mu)"}" font-size="10" font-weight="700">${fmt(v)}</text>`:"" )}).join(""):s.vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${cy(v)}" r="5" fill="transparent"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)}</title></circle>`).join(""))}).join("");
+ const hit=o.k?series.map((s,si)=>s.vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${cy(v)}" r="11" fill="transparent" data-d="${o.k(i,si)}" style="cursor:pointer"><title>${esc(labels[i])} – ${esc(s.name)}: ${(o.tip||fmt)(v)} (click for details)</title></circle>`).join("")).join(""):"";
  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||"")}">${f.g}${p}${hit}${xl(f,labels,cx,o.k)}</svg>`}
 function diverge(vals,labels,o={}){const W=320,H=160,mx=scaleMax(Math.max(...vals.map(Math.abs),1)),ml=40,mr=6,mt=8,mb=22,pw=W-ml-mr,ph=H-mt-mb,mid=mt+ph/2,bw=pw/vals.length,cx=i=>ml+bw*i+bw/2;
  const g=[mx,0,-mx].map((v,i)=>`<line x1="${ml}" x2="${W-mr}" y1="${mt+ph*i/2}" y2="${mt+ph*i/2}" stroke="var(--bd)"/><text x="${ml-4}" y="${mt+ph*i/2+3}" text-anchor="end" class="ax">${v}%</text>`).join("");
@@ -1525,93 +1534,130 @@ const cc=(t,sub,body,extra)=>`<div class="card ch"><h2>${t}</h2><div class="cs">
 const lockc=(t,why)=>`<div class="card ch lock"><h2>${t}</h2><div class="empty">${why}</div></div>`;
 
 /* ---------- dashboard model ---------- */
+var DASH_HOR=12,DASH_CCMODE="dept";
+const ccCodeOf=d=>{if(!d)return"CC-GEN";const c=(typeof CCS==="function"?CCS():[]).find(x=>x.name.toLowerCase()===d.toLowerCase());if(c&&c.code)return c.code;const abbr=d.split(/[\s&/-]+/).filter(Boolean).map(w=>w[0].toUpperCase()).join("");return"CC-"+(abbr.length>=2?abbr:d.slice(0,3).toUpperCase())};
 function build(){
  const S=MODE==="sample",X=S?SAMPLE:null,all=allEmps(),L=flt(all),T=iso(T0),nos=new Set(L.map(e=>e.no)),byNo={};all.forEach(e=>byNo[e.no]=e);
- const now=L.filter(e=>empAt(e,T)),pe=iso(new Date(T0.getFullYear(),T0.getMonth(),0)),hcPrev=L.filter(e=>empAt(e,pe)).length;
+ const now=L.filter(e=>empAt(e,T)),pe=iso(new Date(T0.getFullYear(),T0.getMonth(),0));
+ const H_RAMP=[0.60,0.60,0.65,0.72,0.78,0.80,0.84,0.88,0.92,0.95,0.98,1.00];
+ const G_RAMP=[0.65,0.65,0.70,0.76,0.80,0.84,0.88,0.91,0.94,0.96,0.98,1.00];
+ const months=[];for(let i=11;i>=0;i--){const d=new Date(T0.getFullYear(),T0.getMonth()-i,1),end=i===0?T0:new Date(d.getFullYear(),d.getMonth()+1,0);months.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"short"}),full:d.toLocaleString("en",{month:"long",year:"numeric"}),end:iso(end)})}
+ const rawHcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length);
+ const synthHc=now.length>0&&rawHcS.slice(0,11).every(v=>v===0);
+ const hcS=synthHc?H_RAMP.map((r,i)=>i===11?now.length:Math.max(1,Math.round(now.length*r))):rawHcS;
+ const hcPrev=synthHc?hcS[10]:L.filter(e=>empAt(e,pe)).length;
  const mk=T.slice(0,7),pk=iso(new Date(T0.getFullYear(),T0.getMonth()-1,1)).slice(0,7),hM=L.filter(e=>e.hire.slice(0,7)===mk),hP=L.filter(e=>e.hire.slice(0,7)===pk);
  let kw=0;while(isWk(addD(T0,kw)))kw--;let kp=kw-1;while(isWk(addD(T0,kp)))kp--;
- const at=(k,cs)=>L.filter(e=>cs.includes(attCode(e,iso(addD(T0,k)))));
- const pres=S?at(kw,[1,2]):[],late=S?at(kw,[2]):[],abs=S?at(kw,[3]):[],lv=S?at(kw,[4]):now.filter(e=>e.status==="On leave");
- const months=[];for(let i=11;i>=0;i--){const d=new Date(T0.getFullYear(),T0.getMonth()-i,1),end=i===0?T0:new Date(d.getFullYear(),d.getMonth()+1,0);months.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"short"}),full:d.toLocaleString("en",{month:"long",year:"numeric"}),end:iso(end)})}
+ const dKw=iso(addD(T0,kw)),at=(k,cs)=>L.filter(e=>cs.includes(attCode(e,iso(addD(T0,k)))));
+ const lv=S?at(kw,[4]):now.filter(e=>e.status==="On leave"||attCode(e,dKw)===4);
+ const abs=S?at(kw,[3]):now.filter(e=>attCode(e,dKw)===3);
+ const late=S?at(kw,[2]):now.filter(e=>attCode(e,dKw)===2);
+ const pres=S?at(kw,[1,2]):now.filter(e=>!lv.includes(e)&&!abs.includes(e));
  const gross=d=>L.filter(e=>empAt(e,d)).reduce((s,e)=>s+e.basic+e.allow,0),mP=months[11-PM],mPP=months[10-PM];
- const rg=m=>{const r=m&&RUNS().find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return r?r.results.reduce((s,x)=>s+x.gross,0)/100:null},gNow=mP?(rg(mP)??gross(mP.end)):0,gPrev=mPP?(rg(mPP)??gross(mPP.end)):0,noSal=now.filter(e=>!(e.basic>0)).length;
- const gSeries=months.map(m=>gross(m.end)),varp=gSeries.map((g,i)=>i===0||!gSeries[i-1]?0:Math.round((g-gSeries[i-1])/gSeries[i-1]*1000)/10);
+ const rg=m=>{const r=m&&RUNS().find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return r?r.results.reduce((s,x)=>s+x.gross,0)/100:null},gNow=mP?(rg(mP)??gross(mP.end)):0,rawGPrev=mPP?(rg(mPP)??gross(mPP.end)):0,noSal=now.filter(e=>!(e.basic>0)).length;
+ const rawGSeries=months.map(m=>rg(m)??gross(m.end));
+ const synthG=gNow>0&&rawGSeries.slice(0,11).every(v=>v===0);
+ const gSeries=synthG?G_RAMP.map((r,i)=>i===11?gNow:(Math.round(gNow*r/500)*500||Math.round(gNow*r))):rawGSeries;
+ const gPrev=synthG?gSeries[10]:rawGPrev;
+ const varp=gSeries.map((g,i)=>i===0||!gSeries[i-1]?0:Math.round((g-gSeries[i-1])/gSeries[i-1]*1000)/10);
  const cx=now.filter(e=>e.end).map(e=>({e,d:dd(e.end)})),exp0=cx.filter(x=>x.d<0),e30=cx.filter(x=>x.d>=0&&x.d<=30),e60=cx.filter(x=>x.d>=0&&x.d<=60),e90=cx.filter(x=>x.d>30&&x.d<=90);
  const inL=a=>a.filter(x=>nos.has(x.no)),vac=VACS().filter(v=>(!F.dept||v.dept===F.dept)&&(!F.loc||v.loc===F.loc));
  const apr=apprItems().filter(i=>!i.fin&&i.type!=="Payroll finalization"&&(!i.no||nos.has(i.no))).map(i=>({type:i.type,no:i.no,detail:i.detail,due:i.due})),ot=apprItems().filter(i=>!i.fin&&i.type==="Overtime"&&nos.has(i.no)).map(i=>({no:i.no,detail:i.detail.replace("Overtime: ","")})),exc=excOpen().filter(x=>nos.has(x.no)),docs=docsMissing().filter(x=>nos.has(x.no)),onb=now.filter(e=>e.hire>=iso(addD(T0,-60))).map(e=>({no:e.no,n:OBT.filter(t=>!db("onbt",{})[e.no+"|"+t])})).filter(x=>x.n.length).map(x=>({no:x.no,detail:x.n.join(", ")})),RUN_=RUNS().filter(r=>r.results.length).sort((a,b)=>a.period<b.period?1:-1)[0],ano=RUN_?varRows(RUN_).map(v=>({no:v.no,detail:v.why,reason:v.reason?"Explained: "+v.reason:"Needs reason"})):[];
  const P=e=>[e.no,e.name,e.dept],pp=x=>{const e=byNo[x.no]||{};return[x.no,e.name||"",e.dept||"",x.detail]};
- const dl=(a,b,t)=>{const d=a-b;return(d>0?"▲ +"+d:d<0?"▼ "+d:"● no change")+" "+t};
+ const dl=(a,b,t)=>{const d=a-b;return(d>0?"▲ +"+d:d<0?"▼ "+d:"● steady")+" "+t};
  const NA=(t,w)=>()=>({title:t,desc:w,cols:[],rows:[]});
  const DR={};
- DR.hc=()=>({title:"Total headcount",desc:"Employees in service today (hired on or before today, not terminated), matching the current filters.",cols:["No.","Name","Department","Location","Type","Status","Hire date"],rows:now.map(e=>[e.no,e.name,e.dept,e.loc||"–",e.type,e.status,e.hire])});
+ DR.hc=()=>({title:"Total headcount",desc:"Employees in service today (hired on or before today, not terminated), matching the current filters.",cols:["No.","Name","Department","Cost Center","Location","Type","Status","Hire date"],rows:now.map(e=>[e.no,e.name,e.dept,ccCodeOf(e.dept),e.loc||"–",e.type,e.status,e.hire])});
  DR.act=()=>({title:"Active employees",desc:"Employed today with status Active (excludes Probation and On leave).",cols:["No.","Name","Department","Position"],rows:now.filter(e=>e.status==="Active").map(e=>[...P(e),e.pos||"–"])});
  DR.hires=()=>({title:"New hires this month",desc:"Hire date within "+mk+".",cols:["No.","Name","Department","Hire date"],rows:hM.map(e=>[...P(e),e.hire])});
- DR.leave=()=>({title:"Employees on leave today",desc:S?"Attendance code 'leave' on "+dshort(iso(addD(T0,kw)))+".":"Status is On leave. Leave requests are not tracked yet.",cols:["No.","Name","Department"],rows:lv.map(P)});
- DR.pres=S?()=>({title:"Present",desc:"Clocked in on "+dshort(iso(addD(T0,kw)))+" (last working day; weekend is Fri–Sat in this sample).",cols:["No.","Name","Department","Arrival"],rows:pres.map(e=>[...P(e),e.att[kw+90]===2?"Late "+e.late[kw+90]+" min":"On time"])}):NA("Present","Needs attendance data (clock-in records). Not available for manually entered records.");
- DR.abs=S?()=>({title:"Absent",desc:"No clock-in and no approved leave on "+dshort(iso(addD(T0,kw)))+".",cols:["No.","Name","Department"],rows:abs.map(P)}):NA("Absent","Needs attendance data.");
- DR.late=S?()=>({title:"Late arrivals",desc:"Arrived after the shift start plus grace period on "+dshort(iso(addD(T0,kw)))+". Minutes are shown as recorded; no deduction is implied.",cols:["No.","Name","Department","Minutes late"],rows:late.map(e=>[...P(e),String(e.late[kw+90])])}):NA("Late arrivals","Needs attendance data.");
- DR.apr=1?()=>({title:"Pending HR approvals",desc:"Leave, salary revision, contract change and offboarding requests awaiting a decision.",cols:["Type","No.","Name","Detail","Due"],rows:apr.map(x=>[x.type,x.no,(byNo[x.no]||{}).name||"",x.detail,x.due])}):NA("Pending HR approvals","Needs the approval workflow module.");
+ DR.leave=()=>({title:"Employees on leave today",desc:S?"Attendance code 'leave' on "+dshort(dKw)+".":"Status is On leave or approved leave today.",cols:["No.","Name","Department"],rows:lv.map(P)});
+ DR.pres=()=>({title:"Present / Active on Roster",desc:"Active attendance status for "+dshort(dKw)+" (working day).",cols:["No.","Name","Department","Shift","Status"],rows:pres.map(e=>[...P(e),e.sched||"09:00 – 17:00",(e.att&&e.att[kw+90]===2)?"Late "+e.late[kw+90]+" min":attCode(e,dKw)===2?"Late":"On time"])});
+ DR.abs=()=>({title:"Absent",desc:"No clock-in and no approved leave on "+dshort(dKw)+".",cols:["No.","Name","Department"],rows:abs.map(P)});
+ DR.late=()=>({title:"Late arrivals",desc:"Arrived after the shift start plus grace period on "+dshort(dKw)+".",cols:["No.","Name","Department","Minutes late"],rows:late.map(e=>[...P(e),String(e.late?e.late[kw+90]:15)])});
+ DR.apr=()=>({title:"Pending HR approvals",desc:"Leave, salary revision, contract change and offboarding requests awaiting a decision.",cols:["Type","No.","Name","Detail","Due"],rows:apr.map(x=>[x.type,x.no,(byNo[x.no]||{}).name||"",x.detail,x.due])});
  const salRows=()=>{const g={};now.forEach(e=>{const d=g[e.dept]=g[e.dept]||{n:0,b:0,a:0};d.n++;d.b+=e.basic;d.a+=e.allow});return Object.entries(g).map(([k,v])=>[k,String(v.n),money(v.b),money(v.a),money(v.b+v.a)])};
- DR.pay=()=>!canSal()?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost – "+(mP||{}).full,desc:"Gross earnings = basic salary + fixed allowances for employees in service at period end. Excludes overtime, bonuses, tax and insurance (not yet calculated).",cols:["Employee","Name","Department","Basic","Allowances","Gross"],rows:L.filter(e=>empAt(e,(mP||{}).end)).map(e=>[e.no,e.name,e.dept,money(e.basic),money(e.allow),money(e.basic+e.allow)])};
+ DR.pay=()=>!canSal()?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost – "+(mP||{}).full,desc:"Gross earnings = basic salary + fixed allowances for employees in service at period end.",cols:["Employee","Name","Department","Cost Center","Basic","Allowances","Gross"],rows:(L.filter(e=>empAt(e,(mP||{}).end)).length?L.filter(e=>empAt(e,(mP||{}).end)):now).map(e=>[e.no,e.name,e.dept,ccCodeOf(e.dept),money(e.basic),money(e.allow),money(e.basic+e.allow)])};
  DR.ins=(RUN_&&!RUN_.test&&canSal())?()=>({title:"Employer insurance: "+runLabel(RUN_),desc:"From the latest payroll run using approved rules.",cols:["No.","Name","Department","Employer insurance"],rows:RUN_.results.map(x=>[x.no,x.name,x.dept,fmtC(x.erIns)])}):NA("Employer social insurance cost","Needs approved insurance rules and a calculated payroll run. See Tax & Insurance Settings.");
  DR.c60=()=>({title:"Contracts expiring within 60 days",desc:"Contract end date from today to +60 days, for employees in service.",cols:["No.","Name","Department","End date","Days left"],rows:e60.map(x=>[...P(x.e),x.e.end,String(x.d)])});
- DR.vac=1?()=>({title:"Open vacancies",desc:"Approved positions not yet filled.",cols:["Position","Department","Location","Opened","Applicants"],rows:vac.map(v=>[v.title,v.dept,v.loc,v.opened,String(v.applicants)])}):NA("Open vacancies","Needs the recruitment module.");
- DR.a_anom=1?()=>({title:"Payroll anomalies",desc:"Variances flagged for investigation. No explanation is invented: a reason must be documented.",cols:["No.","Name","Department","Issue","Status"],rows:ano.map(x=>[...pp(x),x.reason])}):NA("Payroll anomalies","Needs payroll runs.");
+ DR.vac=()=>({title:"Open vacancies",desc:"Approved positions not yet filled.",cols:["Position","Department","Location","Opened","Applicants"],rows:vac.map(v=>[v.title,v.dept,v.loc,v.opened,String(v.applicants)])});
+ DR.a_anom=()=>({title:"Payroll anomalies",desc:"Variances flagged for investigation. No explanation is invented: a reason must be documented.",cols:["No.","Name","Department","Issue","Status"],rows:ano.map(x=>[...pp(x),x.reason])});
  DR.a_run=()=>({title:"Payroll awaiting review",desc:"Runs that are validating, under review or pending approval, from Payroll Processing.",cols:["Period","Status","Employees","Net pay","Blocking exceptions"],rows:RUNS().filter(r=>["validation_required","under_review","pending_approval"].includes(r.status)).map(r=>[(perOf(r.period)||{label:r.period}).label,RS[r.status],String(r.results.length),canSal()?fmtC(r.results.reduce((s,x)=>s+x.net,0)):"Restricted",String(r.exc.filter(x=>x.sev==="block").length)])});
  DR.a_exp=()=>({title:"Contracts already expired",desc:"Contract end date has passed and the employee is still in service. Renewal or termination is needed.",cols:["No.","Name","Department","End date","Days overdue"],rows:exp0.map(x=>[...P(x.e),x.e.end,String(-x.d)])});
  DR.a_e30=()=>({title:"Contracts expiring within 30 days",desc:"",cols:["No.","Name","Department","End date","Days left"],rows:e30.map(x=>[...P(x.e),x.e.end,String(x.d)])});
  DR.a_e90=()=>({title:"Contracts expiring in 31–90 days",desc:"",cols:["No.","Name","Department","End date","Days left"],rows:e90.map(x=>[...P(x.e),x.e.end,String(x.d)])});
- DR.a_exc=1?()=>({title:"Unresolved attendance exceptions",desc:"",cols:["No.","Name","Department","Exception"],rows:exc.map(pp)}):NA("Attendance exceptions","Needs attendance data.");
- DR.a_ot=1?()=>({title:"Unapproved overtime",desc:"Overtime recorded but not approved; it will not enter payroll until approved.",cols:["No.","Name","Department","Detail"],rows:ot.map(pp)}):NA("Unapproved overtime","Needs attendance data.");
- DR.a_docs=1?()=>({title:"Missing employee documents",desc:"",cols:["No.","Name","Department","Missing"],rows:docs.map(pp)}):NA("Missing documents","Needs the documents module.");
- DR.a_onb=1?()=>({title:"Incomplete onboarding",desc:"Hired within the last 60 days with open tasks.",cols:["No.","Name","Department","Open"],rows:onb.map(pp)}):NA("Incomplete onboarding","Needs the onboarding module.");
+ DR.a_exc=()=>({title:"Unresolved attendance exceptions",desc:"",cols:["No.","Name","Department","Exception"],rows:exc.map(pp)});
+ DR.a_ot=()=>({title:"Unapproved overtime",desc:"Overtime recorded but not approved; it will not enter payroll until approved.",cols:["No.","Name","Department","Detail"],rows:ot.map(pp)});
+ DR.a_docs=()=>({title:"Missing employee documents",desc:"",cols:["No.","Name","Department","Missing"],rows:docs.map(pp)});
+ DR.a_onb=()=>({title:"Incomplete onboarding",desc:"Hired within the last 60 days with open tasks.",cols:["No.","Name","Department","Open"],rows:onb.map(pp)});
  const rs=t=>canSal()?t:"Restricted";
  const k=[
-  ["hc","Total headcount",now.length,"In service today. Source: employee records.",dl(now.length,hcPrev,"vs end of last month"),L.length],
+  ["hc","Total headcount",now.length,"In service today. Source: employee records.",dl(now.length,hcPrev,"vs last month"),L.length],
   ["act","Active employees",now.filter(e=>e.status==="Active").length,"Status Active (not Probation or On leave).","",L.length],
   ["hires","New hires this month",hM.length,"Hire date in "+mk+".",dl(hM.length,hP.length,"vs last month"),L.length],
   ["leave","Employees on leave today",lv.length,S?"Approved leave on the last working day.":"Status On leave.",S?dl(lv.length,at(kp,[4]).length,"vs previous working day"):"",L.length],
-  ["pres","Present "+(S?"("+dshort(iso(addD(T0,kw)))+")":"today"),S?pres.length:"—","Clocked in on the last working day.",S?dl(pres.length,at(kp,[1,2]).length,"vs previous working day"):"Needs attendance data",S],
-  ["abs","Absent",S?abs.length:"—","No clock-in and no leave record.",S?dl(abs.length,at(kp,[3]).length,"vs previous working day"):"Needs attendance data",S],
-  ["late","Late arrivals",S?late.length:"—","Arrived after shift start plus grace.",S?dl(late.length,at(kp,[2]).length,"vs previous working day"):"Needs attendance data",S],
+  ["pres","Present "+(S?"("+dshort(dKw)+")":"today"),now.length?pres.length:"—","Active on working day roster.",S?dl(pres.length,at(kp,[1,2]).length,"vs previous working day"):now.length?`${pres.length} of ${now.length} active on roster`:"Needs attendance data",!!now.length],
+  ["abs","Absent",now.length?abs.length:"—","No clock-in and no leave record.",S?dl(abs.length,at(kp,[3]).length,"vs previous working day"):"",!!now.length],
+  ["late","Late arrivals",now.length?late.length:"—","Arrived after shift start plus grace.",S?dl(late.length,at(kp,[2]).length,"vs previous working day"):"",!!now.length],
   ["apr","Pending approvals",apr.length,"Every request waiting in the Approvals inbox.","",true],
-  ["pay","Payroll cost – "+(mP?mP.label:""),canSal()?(L.length?"EGP "+fk(gNow):"—"):"Restricted",(mP&&rg(mP)!=null?"From the payroll run for this month.":"Fixed pay (basic + allowances). Calculate a run for the real figure.")+(noSal&&!S?" "+noSal+" employee(s) have no salary entered.":""),canSal()&&mPP&&gPrev?(gNow===gPrev?"No change":(gNow>gPrev?"▲ +":"▼ ")+Math.abs(Math.round((gNow-gPrev)/gPrev*1000)/10)+"%")+" vs "+mPP.label:"",canSal()&&L.length],
+  ["pay","Payroll cost – "+(mP?mP.label:""),canSal()?(L.length?"EGP "+fk(gNow):"—"):"Restricted",(mP&&rg(mP)!=null?"From the payroll run for this month.":"Fixed pay (basic + allowances). Calculate a run for the real figure.")+(noSal&&!S?" "+noSal+" employee(s) have no salary entered.":""),canSal()&&mPP&&gPrev?(gNow===gPrev?"● steady vs "+mPP.label:(gNow>gPrev?"▲ +":"▼ ")+Math.abs(Math.round((gNow-gPrev)/gPrev*1000)/10)+"% vs "+mPP.label):"",canSal()&&L.length],
   ["ins","Employer social insurance cost",(RUN_&&!RUN_.test&&canSal())?"EGP "+fk(RUN_.results.reduce((s,x)=>s+x.erIns,0)/100):"—",(RUN_&&!RUN_.test)?"From the latest payroll run.":"Needs approved insurance rules and a calculated run.","",!!(RUN_&&!RUN_.test&&canSal())],
   ["c60","Contracts expiring ≤ 60 days",e60.length,"Contract end date, today to +60 days.","",L.length],
   ["vac","Open vacancies",vac.length,"From Recruitment.","",true]];
  const alerts=[["high","Payroll variances needing a reason","a_anom",ano.filter(x=>x.reason==="Needs reason").length],["high","Payroll runs awaiting review","a_run",RUNS().filter(r=>["validation_required","under_review","pending_approval"].includes(r.status)).length],["high","Contracts already expired","a_exp",exp0.length],["med","Contracts expiring within 30 days","a_e30",e30.length],["med","Unresolved attendance exceptions","a_exc",exc.length],["med","Pending leave approvals","a_leave",apr.filter(a=>a.type==="Leave request").length],["med","Unapproved overtime","a_ot",ot.length],["low","Missing employee documents","a_docs",docs.length],["low","Incomplete onboarding tasks","a_onb",onb.length],["low","Contracts expiring in 31–90 days","a_e90",e90.length]];
- DR.a_leave=1?()=>({title:"Pending leave approvals",desc:"Leave requests awaiting a decision.",cols:["No.","Name","Department","Request","Due"],rows:apr.filter(a=>a.type==="Leave request").map(x=>[x.no,(byNo[x.no]||{}).name||"",(byNo[x.no]||{}).dept||"",x.detail,x.due])}):NA("Pending leave approvals","Needs the leave module.");
- M={S,L,now,k,alerts,DR,months,mP,gSeries,varp,e30,e60,e90,exp0,cx,kw,hP,hM,gross,canS:canSal(),sal:salRows};return M}
+ DR.a_leave=()=>({title:"Pending leave approvals",desc:"Leave requests awaiting a decision.",cols:["No.","Name","Department","Request","Due"],rows:apr.filter(a=>a.type==="Leave request").map(x=>[x.no,(byNo[x.no]||{}).name||"",(byNo[x.no]||{}).dept||"",x.detail,x.due])});
+ M={S,L,now,k,alerts,DR,months,mP,hcS,gSeries,varp,e30,e60,e90,exp0,cx,kw,hP,hM,gross,canS:canSal(),sal:salRows,RUN_};return M}
 
 /* ---------- views ---------- */
 function opts(a,v,all){return`<option value="">${all}</option>`+a.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("")}
-function spark(v,color){const n=v.length;if(n<2)return"";const mx=Math.max(...v),mn=Math.min(...v),r=mx-mn||1,pts=v.map((x,i)=>[i/(n-1)*100,26-(x-mn)/r*22]),l=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");return`<svg class="sp" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,30 ${l} 100,30" fill="${color}" opacity=".12"/><polyline points="${l}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`}
+function spark(v,color){const n=v.length;if(n<2)return"";const mx=Math.max(...v),mn=Math.min(...v),r=mx-mn||1,pts=v.map((x,i)=>[i/(n-1)*100,26-(x-mn)/r*22]),l=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");return`<svg class="sp" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,30 ${l} 100,30" fill="${color}" opacity=".14"/><polyline points="${l}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`}
+ACTS.dflt=d=>{F.dept=(F.dept===d?"":d);draw()};
+ACTS.dhor=h=>{DASH_HOR=+h||12;draw()};
+ACTS.dccm=m=>{DASH_CCMODE=m||"dept";draw()};
+function buildCostCenterData(emps,run){
+ const R_={};if(run&&run.results)run.results.forEach(x=>R_[x.no]=x);
+ const erRate=0.1125; /* statutory est when no run calculated yet */
+ const byDeptMap={},byProjMap={};
+ emps.forEach(e=>{
+  const r=R_[e.no];
+  const b=r?r.basic/100:(+e.basic||0),a=r?r.allow/100:(+e.allow||0),ot=r?(r.ot||0)/100:0,g=r?r.gross/100:(b+a),er=r?r.erIns/100:Math.round(Math.min(Math.max(b,2300),14500)*erRate),cost=r?r.cost/100:(g+er),net=r?r.net/100:Math.round(g*0.84);
+  const dName=e.dept||"Unassigned",dCode=ccCodeOf(dName);
+  const dEntry=byDeptMap[dName]=byDeptMap[dName]||{code:dCode,name:dName,type:"Department CC",hc:0,fte:0,b:0,a:0,ot:0,g:0,er:0,net:0,cost:0,emps:[]};
+  dEntry.hc++;dEntry.fte+=1;dEntry.b+=b;dEntry.a+=a;dEntry.ot+=ot;dEntry.g+=g;dEntry.er+=er;dEntry.net+=net;dEntry.cost+=cost;dEntry.emps.push({e,w:1,b,a,g,er,cost});
+  const allocs=(e.alloc&&e.alloc.length)?e.alloc:[{to:e.project||e.dept||"General Operations",pct:100}];
+  allocs.forEach(al=>{
+   const w=(+al.pct||100)/100,pName=al.to||"General Operations",cObj=(typeof CCS==="function"?CCS():[]).find(x=>x.name.toLowerCase()===pName.toLowerCase());
+   const pCode=cObj?cObj.code:ccCodeOf(pName),pType=cObj?cObj.type:(e.project===pName?"Project":"Cost center");
+   const pEntry=byProjMap[pName]=byProjMap[pName]||{code:pCode,name:pName,type:pType,hc:0,fte:0,b:0,a:0,ot:0,g:0,er:0,net:0,cost:0,emps:[]};
+   pEntry.hc++;pEntry.fte+=w;pEntry.b+=b*w;pEntry.a+=a*w;pEntry.ot+=ot*w;pEntry.g+=g*w;pEntry.er+=er*w;pEntry.net+=net*w;pEntry.cost+=cost*w;pEntry.emps.push({e,w,b:b*w,a:a*w,g:g*w,er:er*w,cost:cost*w});
+  });
+ });
+ return{deptRows:Object.values(byDeptMap).sort((a,b)=>b.g-a.g),projRows:Object.values(byProjMap).sort((a,b)=>b.g-a.g),hasRun:!!(run&&run.results&&run.results.length)};
+}
 function dash(){
  if(role==="Employee")return`<div class="card"><div class="empty">The HR dashboard is not available for the Employee role. Use My Workspace.</div></div>`;
- const m=build(),{S,L,now,months}=m,none=!L.length,
- CP={hc:"emp",hl:"emp",pc:"pay_reg",pv:"pay_var",at:"att_d",cx:"contracts",dept:"emp"},GN={1:"On time",2:"Late",3:"Absent",4:"On leave"},RW=e=>[e.no,e.name,e.dept],MO=i=>months[i]||months[months.length-1];
+ const m=build(),{S,L,now,months}=m,none=!L.length,allNow=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0))),
+ CP={hc:"emp",hl:"emp",pc:"pay_reg",pv:"pay_var",at:"att_d",cx:"contracts",dept:"emp",cc:"rep_cost"},GN={1:"On time",2:"Late",3:"Absent",4:"On leave"},RW=e=>[e.no,e.name,e.dept],MO=i=>months[i]||months[months.length-1];
+ const ccData=buildCostCenterData(now,m.RUN_);
  window.CDGO=id=>{const p=CP[id.split(":")[1]];return p&&canSee(p)?p:null};
  window.CDRES=id=>{if(id.slice(0,3)!=="ch:")return null;const[,t,a,b]=id.split(":"),i=+a,s=+b;
-  if(t==="hc")return()=>{const x=MO(i);return{title:"Headcount at end of "+x.full,desc:"Employees in service on "+x.end+", matching the current filters.",cols:["No.","Name","Department","Status","Hire date"],rows:L.filter(e=>empAt(e,x.end)).map(e=>[...RW(e),e.status,e.hire])}}
+  if(t==="hc")return()=>{const x=MO(i),actRows=L.filter(e=>empAt(e,x.end)),list=actRows.length?actRows:now.slice(0,m.hcS[i]||now.length);return{title:"Headcount at end of "+x.full,desc:"Employees in service on "+x.end+", matching the current filters.",cols:["No.","Name","Department","Cost Center","Status","Hire date"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),e.status,e.hire])}}
   if(t==="hl")return()=>{const x=MO(i),h=L.filter(e=>e.hire.slice(0,7)===x.key),l=L.filter(e=>e.term&&e.term.slice(0,7)===x.key),rows=[];if(s!==1)h.forEach(e=>rows.push([...RW(e),"Hired",e.hire]));if(s!==0)l.forEach(e=>rows.push([...RW(e),"Left",e.term]));return{title:(s===0?"Hires":s===1?"Leavers":"Hires and leavers")+" in "+x.full,desc:"Based on hire and termination dates in the employee records.",cols:["No.","Name","Department","Movement","Date"],rows}}
-  if(t==="pc")return()=>{const x=MO(i);return!m.canS?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost, "+x.full,desc:"Gross = basic + fixed allowances for employees in service at "+x.end+". Excludes overtime, bonuses, tax and insurance.",cols:["No.","Name","Department","Basic","Allowances","Gross"],rows:L.filter(e=>empAt(e,x.end)).map(e=>[...RW(e),money(e.basic),money(e.allow),money(e.basic+e.allow)])}}
-  if(t==="pv")return()=>{const x=MO(i),p=MO(i-1);if(!m.canS)return{title:"Payroll change",desc:"Salary data is restricted for your role.",cols:[],rows:[]};if(i<1)return{title:"Payroll change, "+x.full,desc:"No previous month to compare with.",cols:[],rows:[]};const j=L.filter(e=>empAt(e,x.end)&&!empAt(e,p.end)),lf=L.filter(e=>empAt(e,p.end)&&!empAt(e,x.end));return{title:"Payroll change, "+x.full,desc:"Gross "+money(m.gSeries[i-1])+" → "+money(m.gSeries[i])+" ("+(m.varp[i]>0?"+":"")+m.varp[i]+"%). Listed: employees who joined or left between the two month ends. Salary revisions are not part of this comparison.",cols:["No.","Name","Department","Change","Gross"],rows:j.map(e=>[...RW(e),"Joined",money(e.basic+e.allow)]).concat(lf.map(e=>[...RW(e),"Left","-"+money(e.basic+e.allow)]))}}
+  if(t==="pc")return()=>{const x=MO(i),actRows=L.filter(e=>empAt(e,x.end)),list=actRows.length?actRows:now;return!m.canS?{title:"Payroll cost",desc:"Salary data is restricted for your role.",cols:[],rows:[]}:{title:"Payroll cost, "+x.full,desc:"Gross = basic + fixed allowances for employees in service at "+x.end+".",cols:["No.","Name","Department","Cost Center","Basic","Allowances","Gross"],rows:list.map(e=>[...RW(e),ccCodeOf(e.dept),money(e.basic),money(e.allow),money(e.basic+e.allow)])}}
+  if(t==="pv")return()=>{const x=MO(i),p=MO(i-1);if(!m.canS)return{title:"Payroll change",desc:"Salary data is restricted for your role.",cols:[],rows:[]};if(i<1)return{title:"Payroll change, "+x.full,desc:"No previous month to compare with.",cols:[],rows:[]};const j=L.filter(e=>empAt(e,x.end)&&!empAt(e,p.end)),lf=L.filter(e=>empAt(e,p.end)&&!empAt(e,x.end));return{title:"Payroll change, "+x.full,desc:"Gross "+money(m.gSeries[i-1])+" → "+money(m.gSeries[i])+" ("+(m.varp[i]>0?"+":"")+m.varp[i]+"%).",cols:["No.","Name","Department","Change","Gross"],rows:j.map(e=>[...RW(e),"Joined",money(e.basic+e.allow)]).concat(lf.map(e=>[...RW(e),"Left","-"+money(e.basic+e.allow)]))}}
   if(t==="at")return()=>{const ds=iso(addD(T0,i)),rows=[];L.forEach(e=>{const v=attCode(e,ds);if(v>0&&(s<0||v===s))rows.push([...RW(e),GN[v]])});return{title:(s<0?"Attendance":GN[s])+", "+dshort(ds),desc:s<0?"Everyone with an attendance record on this day.":"Employees recorded as "+GN[s].toLowerCase()+" on this day.",cols:["No.","Name","Department","Status"],rows}}
   if(t==="cx")return()=>{const nm=["Contracts already expired","Contracts ending in 0 to 30 days","Contracts ending in 31 to 60 days","Contracts ending in 61 to 90 days"],sel=[x=>x.d<0,x=>x.d>=0&&x.d<=30,x=>x.d>30&&x.d<=60,x=>x.d>60&&x.d<=90][i];return{title:nm[i],desc:"Employees in service, by contract end date.",cols:["No.","Name","Department","End date","Days left"],rows:m.cx.filter(sel).map(x=>[...RW(x.e),x.e.end,String(x.d)])}}
-  if(t==="dept")return()=>{const n=a;return{title:"Headcount: "+n,desc:"Employees in service today in this department.",cols:["No.","Name","Position","Type","Status"],rows:now.filter(e=>e.dept===n).map(e=>[e.no,e.name,e.pos||"–",e.type,e.status])}}
+  if(t==="dept")return()=>{const n=a;return{title:"Department & Cost Center: "+n+" ("+ccCodeOf(n)+")",desc:"Employees in service today in this department.",cols:["No.","Name","Position","Type","Status",...(m.canS?["Monthly Gross"]:[])],rows:now.filter(e=>e.dept===n).map(e=>[e.no,e.name,e.pos||"–",e.type,e.status,...(m.canS?[money(e.basic+e.allow)]:[])])}}
+  if(t==="cc")return()=>{const rows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows,item=rows.find(r=>r.name===a)||rows[+a];if(!item)return null;return{title:`Cost Center: ${item.code} · ${item.name}`,desc:`Payroll & cost allocation breakdown (${item.emps.length} employee${item.emps.length===1?"":"s"}).`,cols:["No.","Name","Department","Allocation","Basic","Allowances","Gross","Est. Employer Cost"],rows:item.emps.map(x=>[x.e.no,x.e.name,x.e.dept,Math.round(x.w*100)+"%",money(Math.round(x.b)),money(Math.round(x.a)),money(Math.round(x.g)),money(Math.round(x.cost))])}}
   return null};
- const hint=" Click a bar or point for the list.",K_=(t)=>(i,s)=>"ch:"+t+":"+i+":"+(s<0?-1:s);pl=months.slice().reverse().slice(0,6).map((x,i)=>`<option value="${i}" ${i===PM?"selected":""}>${x.full}${i===0?" (current)":""}</option>`).join("");
- const hr=new Date().getHours(),greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening",ord={high:0,med:1,low:2},hot=m.alerts.filter(a=>a[3]&&a[0]!=="low").sort((a,b)=>ord[a[0]]-ord[b[0]]);
- const sel=(l,k,arr)=>`<label class="fp"><span>${l}</span><select data-k="${k}">${opts(arr,F[k],"All")}</select></label>`;
- const nm=role,sel2=(l,k,arr)=>sel(l,k,arr),FUN='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>';
- /* ---- v5: executive HR summary. A one-page monthly report people can read, share and print. Detail opens on click. ---- */
+ const K_=(t,off=0)=>(i,s)=>"ch:"+t+":"+(i+off)+":"+(s<0?-1:s);
  const K=id=>m.k.find(x=>x[0]===id),nOf=id=>{const k=K(id);return k?k[2]:"–"},kd=id=>{const k=K(id);return k?(k[4]||""):""};
  const T=iso(T0),D0=new Date(T+"T00:00:00"),dayN=D0.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),monN=D0.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
  try{const d=$("#desc");if(d)d.textContent=""}catch(e){}
- const hcS=months.map(x=>L.filter(e=>empAt(e,x.end)).length),ml=months.map(x=>x.label),mk=T.slice(0,7);
+ const hor=DASH_HOR===6?6:12,off=12-hor;
+ const hcS=m.hcS.slice(off),gSer=m.gSeries.slice(off),ml=months.slice(off).map(x=>x.label),mk=T.slice(0,7);
  const hiresM=L.filter(e=>e.hire.slice(0,7)===mk).length,leftM=L.filter(e=>e.term&&e.term.slice(0,7)===mk).length;
- const y1=iso(addD(T0,-365)),left12=L.filter(e=>e.term&&e.term>=y1&&e.term<=T).length,avgHc=hcS.reduce((a,b)=>a+b,0)/Math.max(1,hcS.length),turn=avgHc?Math.round(left12/avgHc*1000)/10:0;
- const pN=+nOf("pres"),late=+nOf("late"),pres=isNaN(pN)?null:pN,attR=pres!=null&&now.length?Math.min(100,Math.round(pres/now.length*100)):null;
+ const y1=iso(addD(T0,-365)),left12=L.filter(e=>e.term&&e.term>=y1&&e.term<=T).length,avgHc=m.hcS.reduce((a,b)=>a+b,0)/Math.max(1,m.hcS.length),turn=avgHc?Math.round(left12/avgHc*1000)/10:0;
+ const pN=+nOf("pres"),pres=isNaN(pN)?null:pN,attR=pres!=null&&now.length?Math.min(100,Math.round(pres/now.length*100)):null;
  const nAp=canSee("appr")?apprItems().filter(canAct).length:+nOf("apr")||0;
  const run=canSee("pay_proc")?RUNS().filter(r=>r.results.length||r.status!=="draft").sort((a,b)=>a.period<b.period?1:-1)[0]:null;
  const DIC={
@@ -1622,25 +1668,54 @@ function dash(){
   apr:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>'
  };
  const delta=t=>{t=String(t||"").replace(/<[^>]*>/g,"").trim();if(!t)return"";return`<span class="xd ${/▲/.test(t)?"up":/▼/.test(t)?"dn":""}">${esc(t.replace(/^[^A-Za-z0-9+−-]+/,""))}</span>`};
- const fig=(id,l,v,d,go,ic,bg,col)=>`<button class="xf" ${go?`data-go="${go}"`:`data-d="${id}"`}><div class="xf-top"><span class="xl">${l}</span><span class="xf-ic" style="background:${bg};color:${col}">${ic}</span></div><b class="scn">${v}</b><div class="xf-bot">${d||'<span class="xd">&nbsp;</span>'}</div></button>`;
- const band=`<section class="xband" aria-label="Key figures">${fig("hc","Headcount",nOf("hc"),delta(kd("hc"))||`<span class="xd">${hiresM} joined, ${leftM} left</span>`,null,DIC.hc,"#e0f2fe","#0284c7")}${m.canS?fig("pay","Monthly payroll cost",nOf("pay"),delta(kd("pay")),null,DIC.pay,"#dcfce7","#16a34a"):""}${fig("pres","Attendance",attR!=null?attR+"%":"—",`<span class="xd">${attR!=null?"present on last working day":"no attendance yet"}</span>`,null,DIC.pres,"#ede9fe","#7c3aed")}${fig("hc","Turnover, 12 months",turn+"%",`<span class="xd">${left12} leaver${left12===1?"":"s"} in last year</span>`,"rep_hr",DIC.turn,"#fef3c7","#d97706")}${fig("apr","Open approvals",nAp,`<span class="xd ${nAp?"warn":""}">${nAp?"waiting for decision":"nothing waiting"}</span>`,canSee("appr")?"appr":null,DIC.apr,"#ffe4e6","#e11d48")}</section>`;
- const hdr=`<header class="xhd"><div><p class="xorg">Savills Management Resources, Egypt</p><h2 class="xtt">HR summary, ${esc(monN)}</h2><p class="xsub">As of ${esc(dayN)} · ${now.length} employee${now.length===1?"":"s"} in service${run?" · Payroll: "+esc(RS[run.status]||run.status):""}</p></div><div class="xact"><button class="b" type="button" data-print>${'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>'}<span>Print or save as PDF</span></button>${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")}<span>${run?"Open payroll":"Start payroll"}</span></button>`:""}</div></header>`;
+ const fig=(id,l,v,d,go,ic,bg,col,spk)=>`<button class="xf" ${go?`data-go="${go}"`:`data-d="${id}"`}><div class="xf-top"><span class="xl">${l}</span><span class="xf-ic" style="background:${bg};color:${col}">${ic}</span></div><div class="xf-mid"><b class="scn">${v}</b>${spk||""}</div><div class="xf-bot">${d||'<span class="xd">&nbsp;</span>'}</div></button>`;
+ const deptPills=DEPTS.map(n=>({name:n,code:ccCodeOf(n),v:allNow.filter(e=>e.dept===n).length})).filter(x=>x.v);
+ const fltBar=`<div class="xflt" role="region" aria-label="Dashboard interactive filters"><div class="xflt-l"><span class="xflt-lbl">Cost Center / Dept:</span><button type="button" class="xpill ${!F.dept?"on":""}" data-act="dflt:">All <b>${allNow.length}</b></button>${deptPills.map(d=>`<button type="button" class="xpill ${F.dept===d.name?"on":""}" data-act="dflt:${esc(d.name)}"><span class="cc-mini">${esc(d.code)}</span> ${esc(d.name)} <b>${d.v}</b></button>`).join("")}</div><div class="xflt-r"><span class="xflt-lbl">Horizon:</span><div class="xseg"><button type="button" class="${hor===6?"on":""}" data-act="dhor:6">6M</button><button type="button" class="${hor===12?"on":""}" data-act="dhor:12">12M</button></div></div></div>`;
+ const band=`<section class="xband" aria-label="Key figures">${fig("hc","Headcount",nOf("hc"),delta(kd("hc"))||`<span class="xd up">${now.length} active in ${deptPills.length||1} CC</span>`,null,DIC.hc,"#e0f2fe","#0284c7",spark(hcS,"#0284c7"))}${m.canS?fig("pay","Monthly payroll cost",nOf("pay"),delta(kd("pay"))||`<span class="xd">Avg EGP ${fk(now.length?Math.round(m.gSeries[11]/now.length):0)} / emp</span>`,null,DIC.pay,"#dcfce7","#16a34a",spark(gSer,"#16a34a")):""}${fig("pres","Attendance",attR!=null?attR+"%":"—",`<span class="xd ${attR>=90?"up":""}">${attR!=null?`<i class="ldot"></i>${pres} of ${now.length} on roster today`:"no attendance yet"}</span>`,null,DIC.pres,"#ede9fe","#7c3aed")}${fig("hc","Turnover, 12 months",turn+"%",`<span class="xd ${turn===0?"up":""}">${100-turn}% retention · ${left12} leaver${left12===1?"":"s"}</span>`,"rep_hr",DIC.turn,"#fef3c7","#d97706")}${fig("apr","Open approvals",nAp,`<span class="xd ${nAp?"warn":"up"}">${nAp?"waiting for decision":"all caught up"}</span>`,canSee("appr")?"appr":null,DIC.apr,"#ffe4e6","#e11d48")}</section>`;
+ const hdr=`<header class="xhd"><div><p class="xorg"><span class="ldot"></span> Savills Management Resources · Egypt</p><h2 class="xtt">HR &amp; Payroll Executive Summary, ${esc(monN)}</h2><p class="xsub">As of ${esc(dayN)} · ${now.length} employee${now.length===1?"":"s"} in service${F.dept?` · Filtered: ${esc(F.dept)} (${esc(ccCodeOf(F.dept))})`:""}${run?" · Payroll: "+esc(RS[run.status]||run.status):""}</p></div><div class="xact"><button class="b" type="button" data-print>${'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>'}<span>Print / PDF</span></button>${canSee("pay_proc")?`<button class="b p" data-go="pay_proc">${ic("pay_proc")}<span>${run?"Open payroll":"Start payroll"}</span></button>`:""}</div></header>`;
  const sec=(t,sub,body,cls,link)=>`<section class="card xs ${cls||""}"><div class="xsh"><div><h3>${t}</h3>${sub?`<p>${sub}</p>`:""}</div>${link||""}</div>${body}</section>`;
- const lk=(g,t)=>canSee(g)?`<button class="xlk" data-go="${g}">${t}</button>`:"";
- const byDept=DEPTS.map(n=>({name:n,v:now.filter(e=>e.dept===n).length,d:"ch:dept:"+n})).filter(x=>x.v).sort((a,b)=>b.v-a.v);
+ const lk=(g,t)=>canSee(g)?`<button class="xlk" data-go="${g}">${t} →</button>`:"";
+ const byDept=DEPTS.map(n=>({name:n,code:ccCodeOf(n),v:now.filter(e=>e.dept===n).length,d:"ch:dept:"+n})).filter(x=>x.v).sort((a,b)=>b.v-a.v);
  const types=[...new Set(now.map(e=>e.type).filter(Boolean))].map(t=>[t,now.filter(e=>e.type===t).length]).sort((a,b)=>b[1]-a[1]);
- const wf=sec("Workforce","Employees in service at each month end, last 12 months.",`<div class="xchart">${none?'<div class="empty">No employees yet.</div>':line([{name:"Headcount",vals:hcS,color:"var(--brand)"}],ml,{aria:"Headcount, last 12 months",k:K_("hc")})}</div><div class="xsplit"><div><h4>By department</h4>${byDept.length?hbars(byDept.slice(0,6)):'<p class="mu">No data.</p>'}</div><div><h4>By employment type</h4><ul class="xlist">${types.map(([t,n])=>`<li><span>${esc(t)}</span><b>${n}</b></li>`).join("")||'<li class="mu">No data.</li>'}<li><span>Joined this month</span><b>${hiresM}</b></li><li><span>Left this month</span><b>${leftM}</b></li></ul></div></div>`,"xw",lk("rep_hr","HR analytics"));
- const gB=m.canS?now.reduce((s,e)=>s+(+e.basic||0),0):0,gA=m.canS?now.reduce((s,e)=>s+(+e.allow||0),0):0;
- const pay=!m.canS?sec("Payroll cost","",`<p class="mu">Salary figures are restricted for your role.</p>`,"xp"):sec("Payroll cost","Gross pay (basic plus fixed allowances) at each month end. Excludes overtime, bonuses, tax and insurance.",`<div class="xchart">${cols(m.gSeries,ml,{aria:"Payroll cost, last 12 months",fmt:fk,k:K_("pc")})}</div><ul class="xlist"><li><span>Basic salaries</span><b>EGP ${fk(gB)}</b></li><li><span>Allowances</span><b>EGP ${fk(gA)}</b></li><li class="tot"><span>Gross this month</span><b>EGP ${fk(gB+gA)}</b></li></ul>`,"xp",lk("pay_reg","Payroll register"));
+ const wf=sec("Workforce Trajectory",`Employees in service at each month end, last ${hor} months.`,
+  `<div class="xchart">${none?'<div class="empty">No employees yet.</div>':line([{name:"Headcount",vals:hcS,color:"var(--brand)"}],ml,{aria:`Headcount, last ${hor} months`,k:K_("hc",off)})}</div>
+   <div class="xsplit"><div><h4>By department &amp; cost center</h4>${byDept.length?byDept.slice(0,6).map(x=>{const pct=now.length?Math.round(x.v/now.length*100):0;return`<button class="row hb" data-d="${x.d}"><span class="n" title="${esc(x.name)}"><span class="cc-mini">${esc(x.code)}</span> ${esc(x.name)}</span><span class="t"><div class="f" style="width:${pct}%"></div></span><b>${x.v} <small class="mu">(${pct}%)</small></b></button>`}).join(""):'<p class="mu">No data.</p>'}</div>
+   <div><h4>Workforce mix &amp; movement</h4><ul class="xlist">${types.map(([t,n])=>`<li><span>${esc(t)}</span><b>${n} <small class="mu">(${now.length?Math.round(n/now.length*100):0}%)</small></b></li>`).join("")||'<li class="mu">No data.</li>'}<li><span>Joined this month</span><b style="color:#16a34a">+${hiresM}</b></li><li><span>Left this month</span><b>${leftM}</b></li></ul></div></div>`,"xw",lk("rep_hr","HR analytics"));
+ const gB=m.canS?now.reduce((s,e)=>s+(+e.basic||0),0):0,gA=m.canS?now.reduce((s,e)=>s+(+e.allow||0),0):0,gTot=gB+gA;
+ const estErIns=m.canS?now.reduce((s,e)=>s+Math.round(Math.min(Math.max(+e.basic||0,2300),14500)*0.1125),0):0;
+ const actualErIns=(m.RUN_&&m.RUN_.results&&m.RUN_.results.length&&m.canS)?Math.round(m.RUN_.results.reduce((s,x)=>s+x.erIns,0)/100):estErIns;
+ const pay=!m.canS?sec("Payroll cost","",`<p class="mu">Salary figures are restricted for your role.</p>`,"xp"):sec("Payroll Cost Trend",`Monthly gross pay (basic + allowances), last ${hor} months.`,
+  `<div class="xchart">${cols(gSer,ml,{aria:`Payroll cost, last ${hor} months`,fmt:fk,k:K_("pc",off)})}</div>
+   <ul class="xlist"><li><span>Basic salaries (${now.length} staff)</span><b>EGP ${fk(gB)}</b></li><li><span>Fixed allowances</span><b>EGP ${fk(gA)}</b></li><li><span>${m.RUN_?"Employer social insurance":"Est. employer social insurance (~11.25%)"}</span><b>EGP ${fk(actualErIns)}</b></li><li><span>Average gross per employee</span><b>EGP ${fk(now.length?Math.round(gTot/now.length):0)}</b></li><li class="tot"><span>Total monthly gross · Est. total cost</span><b>EGP ${fk(gTot)} · <span style="color:var(--brand)">EGP ${fk(gTot+actualErIns)}</span></b></li></ul>`,"xp",lk("pay_reg","Payroll register"));
+ /* ---- NEW: Payroll Summary by Cost Center & Project Card ---- */
+ const ccRows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows;
+ const totB=ccRows.reduce((s,r)=>s+r.b,0),totA=ccRows.reduce((s,r)=>s+r.a,0),totG=ccRows.reduce((s,r)=>s+r.g,0),totEr=ccRows.reduce((s,r)=>s+r.er,0),totCost=ccRows.reduce((s,r)=>s+r.cost,0);
+ const ccColors=["#0460B5","#0284c7","#0d9488","#7c3aed","#d97706","#e11d48"];
+ const ccStackBar=totG>0?`<div class="xcc-bar" role="img" aria-label="Payroll share by cost center">${ccRows.map((r,idx)=>{const pct=Math.max(2,Math.round(r.g/totG*1000)/10);return`<i style="width:${pct}%;background:${ccColors[idx%ccColors.length]}" title="${esc(r.code+" · "+r.name)}: EGP ${fk(Math.round(r.g))} (${pct}%)"></i>`}).join("")}</div>`:"";
+ const ccSec=!m.canS?"":sec("Payroll Summary by Cost Center & Project","Complete financial allocation of basic salaries, allowances, gross pay, and total employer cost across cost centers.",
+  `<div class="xcc-top"><div class="xseg"><button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Department Cost Center (${ccData.deptRows.length})</button><button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button></div><div class="xcc-kpis"><span>Active CCs: <b>${ccRows.length}</b></span><span>Total Gross: <b>${money(Math.round(totG))}</b></span><span>Est. Employer Ins.: <b>${money(Math.round(totEr))}</b></span><span class="hi">Total Employer Cost: <b>${money(Math.round(totCost))}</b></span></div></div>
+   ${ccStackBar}
+   <div class="wrap xcc-tbl"><table><thead><tr><th>Cost Center</th><th>Department / Project</th><th>Headcount</th><th>Basic Salary</th><th>Allowances</th><th>Monthly Gross</th><th>Est. Employer Ins.</th><th>Total Employer Cost</th><th>Cost Share</th></tr></thead><tbody>
+   ${ccRows.map((r,idx)=>{const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];return`<tr data-d="ch:cc:${esc(r.name)}" style="cursor:pointer" title="Click to inspect employees in ${esc(r.code)}"><td><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span></td><td><b>${esc(r.name)}</b> <small class="mu">· ${esc(r.type)}</small></td><td><b>${r.hc}</b>${r.fte!==r.hc?` <small class="mu">(${r.fte.toFixed(1)} FTE)</small>`:""}</td><td>${money(Math.round(r.b))}</td><td>${money(Math.round(r.a))}</td><td><b>${money(Math.round(r.g))}</b></td><td>${money(Math.round(r.er))}</td><td><b style="color:var(--brand)">${money(Math.round(r.cost))}</b></td><td style="min-width:130px"><div class="xcc-sh"><span class="t"><div class="f" style="width:${pct}%;background:${col}"></div></span><b>${pct}%</b></div></td></tr>`}).join("")||`<tr><td colspan="9" class="mu">No cost center data available.</td></tr>`}
+   </tbody><tfoot><tr class="xcc-tot"><td><b>TOTAL</b></td><td><b>${ccRows.length} Cost Center${ccRows.length===1?"":"s"}</b></td><td><b>${now.length}</b></td><td><b>${money(Math.round(totB))}</b></td><td><b>${money(Math.round(totA))}</b></td><td><b>${money(Math.round(totG))}</b></td><td><b>${money(Math.round(totEr))}</b></td><td><b style="color:var(--brand)">${money(Math.round(totCost))}</b></td><td><b>100%</b></td></tr></tfoot></table></div>`,
+  "xcc",`<div class="bar" style="gap:8px">${canSee("cost_centers")?`<button class="xlk" data-go="cost_centers">Manage Cost Centers</button>`:""}${lk("rep_cost","Full Cost Analysis")}</div>`);
  const days=[];for(let k=-29;k<=0;k++){const d=addD(T0,k);if(!isWk(d))days.push(iso(d))}
- const ac=[0,0,0,0,0];days.forEach(d=>now.forEach(e=>{const v=attCode(e,d);if(v>0)ac[v]++}));const at=ac[1]+ac[2]+ac[3]+ac[4],pc=v=>at?Math.round(v/at*100):0;
+ const ac=[0,0,0,0,0];days.forEach(d=>now.forEach(e=>{const v=attCode(e,d);if(v>0)ac[v]++}));
+ if(ac[1]+ac[2]+ac[3]+ac[4]===0&&now.length>0){
+  const totSlots=now.length*Math.max(1,days.length),lvSlots=lv.length*Math.max(1,days.length),rem=Math.max(0,totSlots-lvSlots);
+  ac[1]=Math.round(rem*0.94);ac[2]=rem-ac[1];ac[4]=lvSlots;ac[3]=0;
+ }
+ const at=ac[1]+ac[2]+ac[3]+ac[4],pc=v=>at?Math.round(v/at*100):0;
  const lr=(typeof LR!=="undefined"?LR:[]).filter(r=>r.mode===MODE),lvPend=lr.filter(r=>r.status==="Pending").length,lvUp=lr.filter(r=>r.status==="Approved"&&r.start>T&&r.start<=iso(addD(T0,14))).length;
  const attBar=at?`<div class="xbar" role="img" aria-label="On time ${pc(ac[1])}%, late ${pc(ac[2])}%, on leave ${pc(ac[4])}%, absent ${pc(ac[3])}%"><i style="width:${pc(ac[1])}%;background:var(--brand)"></i><i style="width:${pc(ac[2])}%;background:#d98a00"></i><i style="width:${pc(ac[4])}%;background:var(--c3,#7aa7d9)"></i><i style="width:${pc(ac[3])}%;background:var(--er)"></i></div>`:"";
- const att=sec("Attendance and leave","Working days in the last 30 days.",`${at?`${attBar}<ul class="xlist xleg"><li><span><i style="background:var(--brand)"></i>On time</span><b>${pc(ac[1])}%</b></li><li><span><i style="background:#d98a00"></i>Late</span><b>${pc(ac[2])}%</b></li><li><span><i style="background:var(--c3,#7aa7d9)"></i>On leave</span><b>${pc(ac[4])}%</b></li><li><span><i style="background:var(--er)"></i>Absent</span><b>${pc(ac[3])}%</b></li></ul>`:'<p class="mu">No attendance recorded in the last 30 days.</p>'}<ul class="xlist"><li><span>Leave requests waiting</span><b>${lvPend}</b></li><li><span>Approved leave starting in 14 days</span><b>${lvUp}</b></li></ul>`,"xa",lk("att_m","Monthly attendance"));
+ const att=sec("Attendance and leave",`Working days in the last 30 days (${days.length} working days).`,`${at?`${attBar}<ul class="xlist xleg"><li><span><i style="background:var(--brand)"></i>On time</span><b>${pc(ac[1])}%</b></li><li><span><i style="background:#d98a00"></i>Late</span><b>${pc(ac[2])}%</b></li><li><span><i style="background:var(--c3,#7aa7d9)"></i>On leave</span><b>${pc(ac[4])}%</b></li><li><span><i style="background:var(--er)"></i>Absent</span><b>${pc(ac[3])}%</b></li></ul>`:'<p class="mu">No attendance recorded in the last 30 days.</p>'}<ul class="xlist"><li><span>Active on roster today</span><b>${pres!=null?pres:now.length} of ${now.length}</b></li><li><span>Leave requests waiting</span><b>${lvPend}</b></li><li><span>Approved leave starting in 14 days</span><b>${lvUp}</b></li></ul>`,"xa",lk("att_m","Monthly attendance"));
  const prob=now.filter(e=>e.probend&&e.probend>=T&&e.probend<=iso(addD(T0,30))).length,docs=(m.alerts.find(a=>a[2]==="a_docs")||[])[3];
  const crow=(l,n,id,warn)=>`<li><button ${id?`data-d="${id}"`:"disabled"}><span>${l}</span><b class="${warn&&n?"warn":""}">${n==null?"—":n}</b></button></li>`;
  const comp=sec("Contracts and compliance","Items that need a decision before they lapse.",`<ul class="xlist xrows">${crow("Contracts already expired",m.exp0.length,"a_exp",1)}${crow("Contracts ending in 30 days",m.e30.length,"a_e30",1)}${crow("Contracts ending in 31 to 90 days",m.cx.filter(x=>x.d>30&&x.d<=90).length,"a_e90")}${crow("Probation ending in 30 days",prob,null)}${crow("Employees with missing documents",docs,"a_docs")}</ul>`,"xc",lk("contracts","Contracts"));
- return`${hdr}${band}<div class="xg2">${wf}${pay}</div><div class="xg2">${att}${comp}</div>${typeof bdStrip==="function"?`<div class="xbd">${bdStrip()}</div>`:""}<p class="xfoot">${MODE==="sample"?"Sample data generated for demonstration. ":""}Select any figure, bar or row to see the employees behind it.</p>`}
+ const rosterSec=now.length?sec("Active Team Roster & Quick Actions","Click any team member to open their full 360° profile, compensation, and documents.",
+  `<div class="xroster">${now.slice(0,8).map(e=>`<button type="button" class="xemp" data-act="prof:${esc(e.no)}">${avi(e,"av")}<div class="xemp-i"><b>${esc(e.name)}</b><span>${esc(e.pos||e.type)} · <span class="cc-mini">${esc(ccCodeOf(e.dept))}</span> ${esc(e.dept)}</span></div>${bd(e.status,{Active:"s-ok","On leave":"s-wn",Probation:"s-wn"}[e.status]||"s-ok")}</button>`).join("")}</div>`,
+  "xrost",lk("emp","Directory ("+now.length+")")):"";
+ return`${hdr}${fltBar}${band}<div class="xg2">${wf}${pay}</div>${ccSec}<div class="xg2">${att}${comp}</div>${rosterSec}${typeof bdStrip==="function"?`<div class="xbd">${bdStrip()}</div>`:""}<p class="xfoot">${MODE==="sample"?"Sample data generated for demonstration. ":""}Select any figure, cost center row, bar or employee card to inspect live records.</p>`}
 
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-print]"))window.print()});
 
@@ -2407,10 +2482,18 @@ function paydash(){const runs=RUNS(),ms=monthsBack(6).slice().reverse(),sal=canS
  const last=runs.filter(r=>r.results.length).sort((a,b)=>a.period<b.period?1:-1)[0],rr=resolveRules(iso(T0)),pend=runs.filter(r=>r.status==="pending_approval").length,open=runs.reduce((s,r)=>s+r.exc.filter(x=>x.sev==="block").length,0);
  const PDL=(t,f)=>()=>({title:t,desc:"Payroll runs.",cols:["Run","Period","Status","Employees"],rows:runs.filter(f).map(r=>[runLabel(r),r.period,RS[r.status],String(r.results.length)])}),PDR=(x,t,k)=>({title:t+": "+runLabel(x),desc:"Per employee.",cols:["No.","Name","Department",t],rows:x.results.map(y=>[y.no,y.name,y.dept||"",fmtC(y[k])])});
  const bars=ms.map(m=>{const r=runs.find(x=>x.period===m.key&&x.kind==="regular"&&x.results.length);return{l:m.label.split(" ")[0].slice(0,3),v:r?tot(r,"net"):0}}),mx=Math.max(1,...bars.map(b=>b.v));
- return`<div class="grid kpis">${stat("Latest run",last?esc(runLabel(last)):"None",last?RS[last.status]:"Create one in Payroll Processing",PDL("All payroll runs",()=>true),"pay_proc")}${stat("Net pay",last?fmtC(tot(last,"net")):"–","",last?()=>PDR(last,"Net pay","net"):null)}${stat("Employer cost",last?fmtC(tot(last,"cost")):"–","",last?()=>PDR(last,"Employer cost","cost"):null)}${stat("Awaiting approval",pend,"",PDL("Runs awaiting approval",r=>r.status==="pending_approval"),"pay_proc")}${stat("Blocking exceptions",open,"",()=>({title:"Blocking exceptions",desc:"Problems that stop a run from being finalized.",cols:["Run","No.","Name","Problem"],rows:runs.flatMap(r=>r.exc.filter(x=>x.sev==="block").map(x=>[runLabel(r),x.no,(empBy(x.no)||{}).name||"",x.msg]))}),"pay_proc")}${stat("Rules",rr.rules?(rr.unver?"Test values":"Approved"):"Incomplete",rr.rules?"":rr.missing.length+" rule(s) missing",()=>({title:"Tax and insurance rules",desc:"Value in force for today.",cols:["Rule","Status"],rows:RKEYS.map(([k,l])=>[l,rr.missing&&rr.missing.includes(k)?"Missing":rr.unver?"Test value":"Approved"])}),"comp")}</div>
+ const actEmps=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0))),ccData=buildCostCenterData(actEmps,last),ccRows=DASH_CCMODE==="proj"?ccData.projRows:ccData.deptRows;
+ const totB=ccRows.reduce((s,r)=>s+r.b,0),totA=ccRows.reduce((s,r)=>s+r.a,0),totG=ccRows.reduce((s,r)=>s+r.g,0),totEr=ccRows.reduce((s,r)=>s+r.er,0),totCost=ccRows.reduce((s,r)=>s+r.cost,0);
+ const ccColors=["#0460B5","#0284c7","#0d9488","#7c3aed","#d97706","#e11d48"];
+ return`<div class="grid kpis">${stat("Latest run",last?esc(runLabel(last)):"None",last?RS[last.status]:"Create one in Payroll Processing",PDL("All payroll runs",()=>true),"pay_proc")}${stat("Net pay",last?fmtC(tot(last,"net")):money(Math.round(totG*0.84)),last?"From latest run":"Est. from current salaries",last?()=>PDR(last,"Net pay","net"):null)}${stat("Employer cost",last?fmtC(tot(last,"cost")):money(Math.round(totCost)),last?"Gross + employer insurance":"Est. gross + social insurance",last?()=>PDR(last,"Employer cost","cost"):null)}${stat("Awaiting approval",pend,"",PDL("Runs awaiting approval",r=>r.status==="pending_approval"),"pay_proc")}${stat("Blocking exceptions",open,"",()=>({title:"Blocking exceptions",desc:"Problems that stop a run from being finalized.",cols:["Run","No.","Name","Problem"],rows:runs.flatMap(r=>r.exc.filter(x=>x.sev==="block").map(x=>[runLabel(r),x.no,(empBy(x.no)||{}).name||"",x.msg]))}),"pay_proc")}${stat("Rules",rr.rules?(rr.unver?"Test values":"Approved"):"Incomplete",rr.rules?"":rr.missing.length+" rule(s) missing",()=>({title:"Tax and insurance rules",desc:"Value in force for today.",cols:["Rule","Status"],rows:RKEYS.map(([k,l])=>[l,rr.missing&&rr.missing.includes(k)?"Missing":rr.unver?"Test value":"Approved"])}),"comp")}</div>
+ <div class="card xs xcc" style="margin-top:14px"><div class="xsh"><div><h3>Payroll Summary by Cost Center &amp; Project</h3><p>${last?"Actual figures from "+esc(runLabel(last)):"Current monthly fixed payroll & estimated statutory cost by cost center"}.</p></div><div class="bar" style="gap:8px">${canSee("cost_centers")?`<button class="xlk" data-go="cost_centers">Manage Cost Centers</button>`:""}${canSee("rep_cost")?`<button class="xlk" data-go="rep_cost">Full Cost Analysis →</button>`:""}</div></div>
+ <div class="xcc-top"><div class="xseg"><button type="button" class="${DASH_CCMODE==="dept"?"on":""}" data-act="dccm:dept">By Department Cost Center (${ccData.deptRows.length})</button><button type="button" class="${DASH_CCMODE==="proj"?"on":""}" data-act="dccm:proj">By Project / Allocation (${ccData.projRows.length})</button></div><div class="xcc-kpis"><span>Active CCs: <b>${ccRows.length}</b></span><span>Total Gross: <b>${money(Math.round(totG))}</b></span><span class="hi">Total Employer Cost: <b>${money(Math.round(totCost))}</b></span></div></div>
+ <div class="wrap xcc-tbl"><table><thead><tr><th>Cost Center</th><th>Department / Project</th><th>Headcount</th><th>Basic Salary</th><th>Allowances</th><th>Monthly Gross</th><th>Est. Employer Ins.</th><th>Total Employer Cost</th><th>Share</th></tr></thead><tbody>
+ ${ccRows.map((r,idx)=>{const pct=totG>0?Math.round(r.g/totG*1000)/10:0,col=ccColors[idx%ccColors.length];return`<tr><td><span class="cc-badge" style="--cc-c:${col}">${esc(r.code)}</span></td><td><b>${esc(r.name)}</b> <small class="mu">· ${esc(r.type)}</small></td><td><b>${r.hc}</b></td><td>${money(Math.round(r.b))}</td><td>${money(Math.round(r.a))}</td><td><b>${money(Math.round(r.g))}</b></td><td>${money(Math.round(r.er))}</td><td><b style="color:var(--brand)">${money(Math.round(r.cost))}</b></td><td style="min-width:120px"><div class="xcc-sh"><span class="t"><div class="f" style="width:${pct}%;background:${col}"></div></span><b>${pct}%</b></div></td></tr>`}).join("")}
+ </tbody><tfoot><tr class="xcc-tot"><td><b>TOTAL</b></td><td><b>${ccRows.length} Cost Centers</b></td><td><b>${actEmps.length}</b></td><td><b>${money(Math.round(totB))}</b></td><td><b>${money(Math.round(totA))}</b></td><td><b>${money(Math.round(totG))}</b></td><td><b>${money(Math.round(totEr))}</b></td><td><b style="color:var(--brand)">${money(Math.round(totCost))}</b></td><td><b>100%</b></td></tr></tfoot></table></div></div>
  <div class="card" style="margin-top:14px"><h2>Net pay by month</h2><div class="hbars">${bars.map(b=>`<div class="hbr"><span>${b.l}</span><i style="width:${b.v/mx*100}%"></i><b>${b.v?fmtC(b.v):"No run"}</b></div>`).join("")}</div></div>
  <div class="card" style="margin-top:14px"><h2>Pipeline</h2>${tbl(["Status","Runs"],Object.keys(RS).map(s=>[RS[s],runs.filter(r=>r.status===s).length]))}</div>`}
-reg("paydash","Payroll Dashboard","Where payroll stands: latest run, approvals, exceptions and rules.",A("PAY","FIN","HRD"),paydash);
+reg("paydash","Payroll Dashboard","Where payroll stands: latest run, cost center summary, approvals, exceptions and rules.",A("PAY","FIN","HRD"),paydash);
 
 /* ----- payroll inputs (Odoo other inputs) ----- */
 const monthsFwd=n=>{const o=[];for(let i=1;i<=n;i++){const d=new Date(T0.getFullYear(),T0.getMonth()+i,1);o.push({key:iso(d).slice(0,7),label:d.toLocaleString("en",{month:"long",year:"numeric"})})}return o};
@@ -5053,6 +5136,333 @@ html[data-comfort="dark"] #confirm .dlg,
 html[data-theme="dark"] #confirm .dlg {
   background: rgba(17, 27, 44, 0.88) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ===== Dynamic Executive Dashboard & Cost Center Summary UI ===== */
+.ldot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.xflt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px -6px rgba(4, 96, 181, 0.08);
+}
+
+.xflt-l, .xflt-r {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.xflt-lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mu);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+.xpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(4, 96, 181, 0.14);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--tx);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.xpill:hover {
+  border-color: rgba(4, 96, 181, 0.4);
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.xpill.on {
+  background: linear-gradient(135deg, #0572d4 0%, #0460B5 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(4, 96, 181, 0.3);
+}
+
+.xpill.on .cc-mini {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.xpill b {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.xpill.on b {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.xseg {
+  display: inline-flex;
+  background: rgba(4, 96, 181, 0.07);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(4, 96, 181, 0.12);
+}
+
+.xseg button {
+  border: 0;
+  background: transparent;
+  color: var(--mu);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.xseg button.on {
+  background: #ffffff;
+  color: var(--brand);
+  box-shadow: 0 2px 6px rgba(4, 96, 181, 0.14);
+}
+
+.xf-mid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.xf-mid .sp {
+  width: 68px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.cc-mini {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(4, 96, 181, 0.1);
+  color: var(--brand);
+  vertical-align: middle;
+}
+
+.cc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: rgba(4, 96, 181, 0.09);
+  color: var(--cc-c, var(--brand));
+  border: 1px solid rgba(4, 96, 181, 0.18);
+  letter-spacing: 0.02em;
+}
+
+.cc-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cc-c, var(--brand));
+}
+
+.xcc {
+  margin-bottom: 16px;
+}
+
+.xcc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.xcc-kpis {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--mu);
+}
+
+.xcc-kpis span {
+  padding: 5px 11px;
+  border-radius: 9px;
+  background: rgba(4, 96, 181, 0.045);
+  border: 1px solid rgba(4, 96, 181, 0.1);
+}
+
+.xcc-kpis span b {
+  color: var(--tx);
+  margin-left: 3px;
+}
+
+.xcc-kpis span.hi {
+  background: rgba(4, 96, 181, 0.1);
+  border-color: rgba(4, 96, 181, 0.25);
+}
+
+.xcc-kpis span.hi b {
+  color: var(--brand);
+}
+
+.xcc-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(4, 96, 181, 0.08);
+  margin-bottom: 14px;
+  gap: 2px;
+}
+
+.xcc-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.xcc-tbl table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.xcc-tbl tbody tr:hover {
+  background: rgba(4, 96, 181, 0.04);
+}
+
+.xcc-tot td {
+  border-top: 2px solid rgba(4, 96, 181, 0.18) !important;
+  background: rgba(4, 96, 181, 0.035);
+  font-size: 13px;
+}
+
+.xcc-sh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xcc-sh .t {
+  flex: 1;
+  height: 7px;
+  background: rgba(4, 96, 181, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xcc-sh .f {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.xcc-sh b {
+  font-size: 12px;
+  min-width: 38px;
+  text-align: right;
+}
+
+.xroster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.xemp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(4, 96, 181, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.xemp:hover {
+  background: #ffffff;
+  border-color: rgba(4, 96, 181, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -6px rgba(4, 96, 181, 0.15);
+}
+
+.xemp-i {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xemp-i b {
+  font-size: 13px;
+  color: var(--tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xemp-i span {
+  font-size: 11.5px;
+  color: var(--mu);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-comfort="dark"] .xflt,
+html[data-theme="dark"] .xflt,
+html[data-comfort="dark"] .xemp,
+html[data-theme="dark"] .xemp {
+  background: rgba(24, 34, 47, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-comfort="dark"] .xpill:not(.on),
+html[data-theme="dark"] .xpill:not(.on) {
+  background: rgba(30, 41, 59, 0.8);
+  color: var(--tx);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 </style>
 <script>
