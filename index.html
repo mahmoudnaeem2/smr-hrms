@@ -4047,7 +4047,7 @@ document.addEventListener("focusin",e=>{const i=e.target;if(!i||i.tagName!=="INP
 document.addEventListener("submit",e=>{const f=e.target;if(!f||!f.elements||!f.elements.pos||MODE==="sample")return;const v=(f.elements.pos.value||"").trim();if(v&&!jobTitles().some(t=>t.toLowerCase()===v.toLowerCase())){POSS().push(v);sv("posl",false)}},true);
 
 /* Build stamp: shows which version of the app is open */
-(function(){const B="29 Oct 2026 12:40 · build 97";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
+(function(){const B="31 Oct 2026 22:35 · build 98";const s=document.querySelector("#side .side-f");if(s&&!document.getElementById("bst")){s.insertAdjacentHTML("beforeend",'<div id="bst" title="If this is not the latest build, refresh the page (Ctrl+Shift+R)">'+B+'</div>')}})();
 
 /* Reporting lines and career history */
 IC.reporting=IC.org;
@@ -5030,6 +5030,21 @@ body {
   border-color: #ffffff !important;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18) !important;
   opacity: 1 !important;
+}
+
+/* Sidebar Section Headers (HOME, PEOPLE, TIME & PAY, MANAGE) - High Contrast & Crisp */
+#nav .gh,
+#side .gh,
+#side .grp,
+#nav .gh .lb,
+#side .gh .lb {
+  color: #ffffff !important;
+  opacity: 0.95 !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 1px 2px rgba(2, 30, 65, 0.5) !important;
 }
 
 /* Glassy Role Box & Footer in Sidebar */
