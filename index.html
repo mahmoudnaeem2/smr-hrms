@@ -3049,17 +3049,73 @@ document.addEventListener("submit",ev=>{const f=ev.target;if(!f||!f.querySelecto
 
 document.addEventListener("focusin",ev=>{const i=ev.target;if(i&&i.dataset&&i.dataset.money)setTimeout(()=>{try{i.select()}catch(e){}},0)});
 
-/* Compact Add employee: only what is needed to start; the rest is completed later */
-ACTS.eadd=()=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist can add employees.");if(MODE==="sample")return toast("Sample data is read-only.");
+/* Full-page Add employee */
+function empNewPage(){
  const no=nextEmpNo(),mgrs=allEmps().filter(e=>e.status!=="Terminated"),ccs=ccOpts("").filter(x=>x[0]);
- const sec=t=>`<div class="nsec">${t}</div>`;
- openDr2("Add employee","Number "+no+" is assigned automatically. Fill the essentials now; other details can be added later from the profile.",
- `<form class="nf" data-form="empnew"><input type="hidden" name="no" value="${no}">
- ${sec("Who")}${fld("Full name","name","text",{req:1})}${fld("Mobile","mobile","tel")}${fld("Work email","email","email")}${fld("National ID (14 digits)","nid","text")}
- ${sec("Job")}${fld("Department","dept","select",{req:1,opts:DEPTS})}${posSel("Job title","",1)}${gradeSel("")}${fld("Reporting to","mgr","select",{opts:[["","None"],...mgrs.map(e=>[e.name,e.name])]})}${fld("Start date","hire","date",{req:1,val:iso(T0)})}<label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"></label>${fld("Contract end date","end","date")}${fld("Employment type","type","select",{opts:TYPES,val:"Full-time"})}${fld("Status","status","select",{opts:["Active","Probation"],val:"Active"})}<label>Probation (months)<input name="_pdur" type="number" min="1" max="12" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=probend]" placeholder="if on probation"></label>${fld("Probation ends","probend","date")}${ccs.length?fld("Project or cost center","project","select",{opts:ccs}):""}
- ${sec("Pay")}<label>Basic salary (EGP / month)<input name="n_basic" type="number" placeholder="0" required></label>${ALWT.map(([k,l])=>`<label>${l} allowance<input name="n_${k}" type="number" placeholder="0"></label>`).join("")}
- ${sec("Bank (optional)")}${fld("Bank name","bankname","text")}${fld("Account number","bankacct","text")}${fld("IBAN","iban","text")}
- <button class="b p nsub" type="submit">Add employee</button></form><div class="err"></div>`)};
+ const sec=t=>`<div class="nsec" style="font-size:15px;font-weight:700;color:var(--hd,#0b2b4f);margin:24px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--bd,#e2e8f1);text-transform:uppercase;letter-spacing:.04em">${t}</div>`;
+ return `<div class="emp-add-page" style="max-width:960px;margin:0 auto 40px">
+  <div style="margin-bottom:18px">
+    <button type="button" class="b" data-go="emp" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;padding:0 16px;height:40px">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back to Employees
+    </button>
+  </div>
+  <div class="card" style="padding:28px 32px;box-shadow:0 2px 10px rgba(15,27,45,.06)">
+    <div style="margin-bottom:20px">
+      <h2 style="font-size:24px;font-weight:700;margin:0 0 6px">Add new employee</h2>
+      <div class="mu" style="font-size:14.5px">Number <b>${no}</b> is assigned automatically. Fill the essentials now; other details can be added later from the profile.</div>
+    </div>
+    <form class="nf" data-form="empnew" style="display:block">
+      <input type="hidden" name="no" value="${no}">
+      ${sec("Who")}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+        ${fld("Full name","name","text",{req:1})}
+        ${fld("Mobile","mobile","tel")}
+        ${fld("Work email","email","email")}
+        ${fld("National ID (14 digits)","nid","text")}
+      </div>
+      ${sec("Job")}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+        ${fld("Department","dept","select",{req:1,opts:DEPTS})}
+        ${posSel("Job title","",1)}
+        ${gradeSel("")}
+        ${fld("Reporting to","mgr","select",{opts:[["","None"],...mgrs.map(e=>[e.name,e.name])]})}
+        ${fld("Start date","hire","date",{req:1,val:iso(T0)})}
+        <label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"></label>
+        ${fld("Contract end date","end","date")}
+        ${fld("Employment type","type","select",{opts:TYPES,val:"Full-time"})}
+        ${fld("Status","status","select",{opts:["Active","Probation"],val:"Active"})}
+        <label>Probation (months)<input name="_pdur" type="number" min="1" max="12" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=probend]" placeholder="if on probation"></label>
+        ${fld("Probation ends","probend","date")}
+        ${ccs.length?fld("Project or cost center","project","select",{opts:ccs}):""}
+      </div>
+      ${sec("Pay")}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+        <label>Basic salary (EGP / month)*<input name="n_basic" type="number" placeholder="0" required></label>
+        ${ALWT.map(([k,l])=>`<label>${l} allowance<input name="n_${k}" type="number" placeholder="0"></label>`).join("")}
+      </div>
+      ${sec("Bank (optional)")}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+        ${fld("Bank name","bankname","text")}
+        ${fld("Account number","bankacct","text")}
+        ${fld("IBAN","iban","text")}
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:28px;padding-top:18px;border-top:1px solid var(--bd,#e2e8f1)">
+        <button class="b p" type="submit" style="height:44px;padding:0 24px;font-size:15px;font-weight:600">Add employee</button>
+        <button type="button" class="b" data-go="emp" style="height:44px;padding:0 20px">Cancel</button>
+      </div>
+      <div class="err" style="margin-top:12px"></div>
+    </form>
+  </div>
+ </div>`;
+}
+reg("emp_new","Add employee","Fill the essentials now; other details can be added later from the profile.",A("HRD","HRS"),empNewPage);
+
+ACTS.eadd=()=>{
+ if(!canEditEmp())return toast("Only HR Director or HR Specialist can add employees.");
+ if(MODE==="sample")return toast("Sample data is read-only.");
+ closeDr();
+ go("emp_new");
+};
 FORMS.empnew=o=>{if(!canEditEmp())return"Only HR can add employees.";const g=k=>(o[k]||"").trim(),num=v=>+String(v||0).replace(/,/g,"");
  if(!g("name"))return"Enter the full name.";if(!g("pos"))return"Enter the job title.";if(!g("hire"))return"Enter the start date.";if(g("hire")<"1980-01-01"||g("hire")>iso(addD(T0,365)))return"Check the start date. It must be between 1980 and one year from today.";if(!g("dept"))return"Choose the department.";
  if(g("email")&&!/^\S+@\S+\.\S+$/.test(g("email")))return"The email address looks invalid.";if(g("mobile")&&!/^\+?[\d\s\-]{8,16}$/.test(g("mobile")))return"The mobile number looks invalid.";
@@ -3070,7 +3126,7 @@ FORMS.empnew=o=>{if(!canEditEmp())return"Only HR can add employees.";const g=k=>
  if(g("iban")&&!ibanOK(g("iban")))return"The IBAN is not valid. An Egyptian IBAN is EG followed by 27 digits.";if(g("bankacct")&&!/^\d{6,24}$/.test(g("bankacct").replace(/\s/g,"")))return"Account number should be 6 to 24 digits.";
  if((g("bankacct")||g("iban"))&&!g("bankname"))return"Enter the bank name.";if(g("bankname")&&(g("bankacct")||g("iban"))){ch.bankname=g("bankname");ch.bankacct=g("bankacct");ch.iban=g("iban");ch.bank=true}
  if(allEmps().some(e=>e.no===ch.no))return"Employee number already used, close and try again.";
- E.push({...ch,basic:bs,allow:al,alw,end:g("end"),probend:g("probend")});save();LOGC(ch.no,"New joiner","Added, start "+ch.hire+", basic "+bs);audit("Employee added",ch.no+" - "+ch.name);closeDr();toast(ch.name+" added");PROF=ch.no;TAB.prof="ov";draw()};
+ E.push({...ch,basic:bs,allow:al,alw,end:g("end"),probend:g("probend")});save();LOGC(ch.no,"New joiner","Added, start "+ch.hire+", basic "+bs);audit("Employee added",ch.no+" - "+ch.name);closeDr();toast(ch.name+" added");PROF=ch.no;TAB.prof="ov";go("profile")};
 
 /* Dates are shown as dd/mm/yyyy everywhere on screen (stored as yyyy-mm-dd) */
 const ISOT=/\b(20\d\d)-(\d\d)-(\d\d)\b/;
