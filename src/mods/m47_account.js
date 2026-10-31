@@ -20,3 +20,5 @@ function acctUI(){const tb=document.querySelector(".topbar");if(!tb)return;const
 document.addEventListener("click",ev=>{const d=document.getElementById("acct");if(d&&d.open&&(!d.contains(ev.target)||ev.target.closest(".acm button")))d.removeAttribute("open")});
 document.addEventListener("keydown",ev=>{const d=document.getElementById("acct");if(ev.key==="Escape"&&d&&d.open){d.removeAttribute("open");d.querySelector("summary").focus()}});
 (function(){const go=()=>{const v=document.getElementById("view");if(!v)return setTimeout(go,50);acctUI();new MutationObserver(acctUI).observe(v,{childList:true});setInterval(acctUI,1500)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
+/* home-screen icon (phones, pinned tabs): the real SMR logo */
+(function(){try{if(typeof LOGO!=="string"||document.querySelector('link[rel="apple-touch-icon"]'))return;const l=document.createElement("link");l.rel="apple-touch-icon";l.href=LOGO;document.head.appendChild(l)}catch(e){}})();

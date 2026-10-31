@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>SMR Workplace</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230460B5'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Helvetica,Arial,sans-serif' font-size='30' font-weight='600' letter-spacing='-1' fill='%23ffffff'%3Esmr%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#0460B5">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
@@ -3800,6 +3802,8 @@ function acctUI(){const tb=document.querySelector(".topbar");if(!tb)return;const
 document.addEventListener("click",ev=>{const d=document.getElementById("acct");if(d&&d.open&&(!d.contains(ev.target)||ev.target.closest(".acm button")))d.removeAttribute("open")});
 document.addEventListener("keydown",ev=>{const d=document.getElementById("acct");if(ev.key==="Escape"&&d&&d.open){d.removeAttribute("open");d.querySelector("summary").focus()}});
 (function(){const go=()=>{const v=document.getElementById("view");if(!v)return setTimeout(go,50);acctUI();new MutationObserver(acctUI).observe(v,{childList:true});setInterval(acctUI,1500)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
+/* home-screen icon (phones, pinned tabs): the real SMR logo */
+(function(){try{if(typeof LOGO!=="string"||document.querySelector('link[rel="apple-touch-icon"]'))return;const l=document.createElement("link");l.rel="apple-touch-icon";l.href=LOGO;document.head.appendChild(l)}catch(e){}})();
 
 /* ===== m49: live data. When records change in another tab (same browser) or on the server (another person, another device),
    this tab picks them up without a reload: caches are dropped, lists redraw when you are not typing, and open forms get fresh choices. ===== */
