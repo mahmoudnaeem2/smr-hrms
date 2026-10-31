@@ -620,7 +620,8 @@ h2{font-size:17px;letter-spacing:-.01em;font-weight:700}
 .empty{padding:36px 16px;font-size:14px;color:var(--mu);text-align:center}
 .grid.kpis{gap:12px}
 #nav .grp2.one{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.14)}
-#nav .gh{font-size:11.5px;letter-spacing:.09em;opacity:.8}
+#nav .gh, .gh, .grp2.open .gh{font-size:11.5px!important;font-weight:800!important;letter-spacing:.12em!important;color:#e0f2fe!important;opacity:0.95!important;text-transform:uppercase!important}
+#nav .gh:hover, .gh:hover{color:#ffffff!important;opacity:1!important}
 #nav .nav{font-size:14px}
 @media (max-width:700px){td{padding:10px 12px!important}h1{font-size:23px!important}}
 /* touch targets on phones */
@@ -930,10 +931,13 @@ table.stk td:last-child,table.stk th:last-child{box-shadow:-12px 0 14px -12px rg
 .xsub{margin:8px 0 0;color:var(--mu);font-size:var(--fs-base)}
 .xact{display:flex;gap:var(--sp-2);flex-wrap:wrap}
 .xband{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;background:none;border:none;box-shadow:none;margin-bottom:var(--sp-5);overflow:visible}
-.xf{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:20px 22px;border:1px solid var(--bd);background:var(--surf);border-radius:18px;text-align:start;cursor:pointer;color:var(--tx);font:inherit;min-width:0;box-shadow:0 1px 3px rgba(16,24,40,.04),0 8px 24px -6px rgba(16,24,40,.06);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative}
+.xf{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:20px 22px;border:1px solid var(--bd);background:var(--surf);border-radius:18px;text-align:start;cursor:pointer;color:var(--tx);font:inherit;min-width:0;box-shadow:0 1px 3px rgba(16,24,40,.04),0 8px 24px -6px rgba(16,24,40,.06);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative;overflow:hidden!important}
 .xf:hover,.xf:focus-visible{transform:translateY(-2px);box-shadow:0 12px 28px -6px rgba(16,24,40,.12);border-color:color-mix(in srgb,var(--brand) 40%,var(--bd))}
 .xf-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
 .xf-ic{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;flex-shrink:0}
+.xf-mid{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:8px!important;width:100%!important;min-width:0!important;overflow:hidden!important}
+.xf-mid b.scn,.xf-mid b{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.xf-mid .sp,svg.sp{width:64px!important;height:22px!important;max-width:64px!important;flex-shrink:0!important;display:block!important;overflow:hidden!important}
 .xl{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mu);line-height:1.3}
 .xf b{font-size:clamp(24px,2.2vw,32px);font-weight:800;letter-spacing:-.03em;line-height:1.15;white-space:nowrap;color:var(--tx)}
 .xf-bot{min-height:22px;display:flex;align-items:center}
@@ -2016,6 +2020,32 @@ function pe_calc(comps,rules,otherC){
   const N=Number;
   return{gross:N(gross),wage:N(wage),empIns:N(empIns),taxableM:N(taxM),annualTaxable:N(annual),tax:N(tax),other:N(other),net:N(net),erIns:N(erIns),cost:N(cost)};
 }
+/* Egyptian Net-to-Gross Calculation (Law 7/2024 & NOSI Law 148/2019) */
+function pe_netToGross(netC, siC, rules){
+  const netBig = pe_B(netC);
+  if(netBig <= 0n) return {gross:0, wage:0, empIns:0, taxableM:0, annualTaxable:0, tax:0, other:0, net:0, erIns:0, cost:0};
+  const mn = pe_B(rules.ins.min * 100), mx = pe_B(rules.ins.max * 100);
+  const wageB = siC > 0 ? (pe_B(siC) < mn ? mn : (pe_B(siC) > mx ? mx : pe_B(siC))) : 0n;
+  const empInsB = pe_roundDiv(wageB * pe_micro(rules.ins.emp), 1000000n);
+  const erInsB = pe_roundDiv(wageB * pe_micro(rules.ins.er), 1000000n);
+  let low = netBig + empInsB, high = netBig * 2n + 10000000n, bestG = low;
+  while(low <= high){
+    const mid = (low + high) / 2n;
+    let taxM = mid - (rules.tax.insDed ? empInsB : 0n);
+    if(taxM < 0n) taxM = 0n;
+    let annual = taxM * 12n - pe_B(rules.tax.exempt * 100);
+    if(annual < 0n) annual = 0n;
+    const tax = pe_roundDiv(pe_annualTaxNum(annual, rules.tax.brackets), 12n * 1000000n);
+    if(mid - empInsB - tax >= netBig){ bestG = mid; high = mid - 1n; } else { low = mid + 1n; }
+  }
+  let taxM = bestG - (rules.tax.insDed ? empInsB : 0n);
+  if(taxM < 0n) taxM = 0n;
+  let annual = taxM * 12n - pe_B(rules.tax.exempt * 100);
+  if(annual < 0n) annual = 0n;
+  const tax = pe_roundDiv(pe_annualTaxNum(annual, rules.tax.brackets), 12n * 1000000n);
+  const N = Number;
+  return { gross: N(bestG), wage: N(wageB), empIns: N(empInsB), taxableM: N(taxM), annualTaxable: N(annual), tax: N(tax), other: 0, net: N(bestG - empInsB - tax), erIns: N(erInsB), cost: N(bestG + erInsB) };
+}
 
 
 /* ================= SAMPLE EXTRAS + SALARY HISTORY ================= */
@@ -2401,8 +2431,21 @@ function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";co
   if(mine.length){if(!opt.ot)exc.push({no:e.no,msg:"Has "+mine.reduce((t,x)=>t+x.h,0)+" approved overtime hour(s) but no overtime rules are approved, so they are not paid. Add the overtime rules in Tax & Insurance Settings.",sev:"block"});
    else{const hr=(s.basic+(opt.ot.allow?s.allow:0))*100/opt.ot.div;mine.forEach(x=>{const m=x.kind==="Night"?opt.ot.night:x.kind==="Rest day"?opt.ot.rest:opt.ot.day;otC+=Math.round(hr*x.h*m);otH+=x.h;usedOt.push(x.id)});comps.push({c:otC,taxable:opt.ot.tax,insurable:opt.ot.ins})}}
   let inC=0,dedC=0;const inl=INP.filter(x=>x.no===e.no);inl.forEach(x=>{const a=Math.round(x.amount*100);if(x.type==="Bonus"||x.type==="One-off allowance"||x.type==="Variable allowance"){inC+=a}else dedC+=a});if(inC)comps.push({c:inC,taxable:cbn.taxable,insurable:cbn.insurable});
-  const o=pe_calc(comps,rr.rules,dedC);if(o.net<0)exc.push({no:e.no,msg:"Net pay is negative after deductions",sev:"block"});if(o.annualTaxable>60000000)exc.push({no:e.no,msg:"High earner: annual taxable income is above 600,000 EGP. The tax rule that withdraws the lower bands for high earners (Law 7/2024) is not implemented in this prototype, so the tax shown may be understated. The accountant must confirm this employee's tax manually.",sev:"warn"});
-  res.push({no:e.no,name:e.name,dept:e.dept,basic:bC,allow:aC,ot:otC,otH,inp:inC,ded:dedC,wd,md:nd,pf:f,...o})});
+  let o;
+  if(e.basis==="net"||(+e.netSalary>0)){
+    const netTarget = Math.round((+e.netSalary||s.basic)*100*f);
+    const siWage = Math.round((+e.siSalary||16700)*100*f);
+    o = pe_netToGross(netTarget, siWage, rr.rules);
+  } else {
+    o = pe_calc(comps,rr.rules,dedC);
+  }
+  const medLife = Math.round((e.medLife!=null?+e.medLife:675.92)*100);
+  const hiringDocs = Math.round((+e.hiringDocs||0)*100);
+  const directCost = o.cost + medLife + hiringDocs;
+  const mgmtFee = Math.round(directCost * 0.15);
+  const billedInvoice = directCost + mgmtFee;
+  if(o.net<0)exc.push({no:e.no,msg:"Net pay is negative after deductions",sev:"block"});if(o.annualTaxable>60000000)exc.push({no:e.no,msg:"High earner: annual taxable income is above 600,000 EGP. The tax rule that withdraws the lower bands for high earners (Law 7/2024) is not implemented in this prototype, so the tax shown may be understated. The accountant must confirm this employee's tax manually.",sev:"warn"});
+  res.push({no:e.no,name:e.name,dept:e.dept,basis:e.basis||"gross",basic:bC,allow:aC,ot:otC,otH,inp:inC,ded:dedC,medLife,hiringDocs,directCost,mgmtFee,billedInvoice,wd,md:nd,pf:f,...o})});
  if(opt.unver&&(opt.ot||opt.pr))rr.unver=true;run.otIds=usedOt;
  if(run.base){const b=RUNS().find(x=>x.id===run.base);if(b)res.forEach(r=>{const o=b.results.find(x=>x.no===r.no);r.dnet=o?r.net-o.net:r.net})}
  const nb=exc.filter(x=>x.sev==="block").length;run.results=res;run.exc=exc;run.test=rr.unver;run.rules=rr.rules;run.status=nb?"validation_required":"under_review";run.calcAt=new Date().toISOString();run.hist.push({t:new Date().toISOString(),role,a:"Calculated "+res.length+" employees, "+nb+" blocking exception(s)"+(rr.unver?" using TEST rules":"")});return""}
@@ -2438,6 +2481,36 @@ function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filt
  const vpanel=nb.length&&["validation_required","under_review"].includes(s)?`<div class="card vpanel"><h2>Validate this run</h2><p class="cs">${nb.length} issue(s) block this run. Fix each one (or exclude the employee), then press Re-validate.</p>${nb.map(x=>{const em=empBy(x.no)||{};const fix=typeof canEditEmp==="function"&&canEditEmp()?`<button class="b p" data-act="eedit:${x.no}">${/bank/i.test(x.msg)?"Add bank details":/salary/i.test(x.msg)?"Fix salary":"Open employee"}</button>`:`<span class="cs">Ask HR to fix this</span>`;return`<div class="vrow"><div><b>${esc(x.no+" "+(em.name||""))}</b><div class="cs">${esc(x.msg)}</div></div><div class="vact">${fix}${can?`<button class="b" data-act="excl:${r.id}|${x.no}">Exclude from run</button>`:""}</div></div>`}).join("")}${can?`<div class="bar" style="margin-top:12px"><button class="b p" data-act="calc:${r.id}">Re-validate</button></div>`:""}</div>`:""
  return`${secH(esc(runLabel(r)),rsb(s))}<div class="bar">${btn.join(" ")}</div>${vpanel}
  ${r.results.length&&sal?`<div class="grid kpis" style="margin-top:12px">${stat("Employees",r.results.length,"",RD("Employees in this run","net"))}${stat("Gross pay",fmtC(tot(r,"gross")),"",RD("Gross pay","gross"))}${stat("Employee insurance",fmtC(tot(r,"empIns")),"",RD("Employee insurance","empIns"))}${stat("Income tax",fmtC(tot(r,"tax")),"",RD("Income tax","tax"))}${stat("Net pay",fmtC(tot(r,"net")),"",RD("Net pay","net"))}${stat("Employer cost",fmtC(tot(r,"cost")),"Gross plus employer insurance",RD("Employer cost","cost"))}</div>`:""}
+ ${r.results.length&&sal?(()=>{
+   const tNet=tot(r,"net"),tGross=tot(r,"gross"),tEmpIns=tot(r,"empIns"),tTax=tot(r,"tax"),tErIns=tot(r,"erIns");
+   const tMedLife=r.results.reduce((s,x)=>s+(x.medLife||0),0);
+   const tHiringDocs=r.results.reduce((s,x)=>s+(x.hiringDocs||0),0);
+   const tDirect=tGross+tErIns+tMedLife+tHiringDocs;
+   const tFee=Math.round(tDirect*0.15);
+   const tInvoice=tDirect+tFee;
+   return`<div class="card" style="margin-top:14px;border:1.5px solid var(--brand);background:color-mix(in srgb,var(--brand) 3%,var(--surf))">
+     <div class="xsh"><div><h3 style="color:var(--brand);display:flex;align-items:center;gap:8px">📄 SMR Project Monthly Invoice Summary (Arkan Theatre Model)</h3><p style="margin-top:4px;color:var(--mu)">Based on Egyptian Tax Law 7/2024 (20k exemption), NOSI Law 148/2019, Fixed Medical &amp; Life Insurance and 15% Management Fee.</p></div></div>
+     <div style="margin-top:12px;overflow-x:auto">
+       <table style="width:100%;font-size:13.5px;border-collapse:collapse">
+         <thead><tr style="border-bottom:1.5px solid var(--bd);background:var(--soft)"><th style="text-align:left;padding:9px 12px">Invoice Component</th><th style="text-align:right;padding:9px 12px">Amount (EGP)</th><th style="text-align:left;padding:9px 12px">Calculation &amp; Statutory Notes</th></tr></thead>
+         <tbody>
+           <tr><td style="padding:8px 12px"><b>Net Salaries Payable</b></td><td style="text-align:right;padding:8px 12px;font-weight:700">${fmtC(tNet)}</td><td style="padding:8px 12px;color:var(--mu)">Employee take-home bank transfers</td></tr>
+           <tr><td style="padding:8px 12px">Gross Salaries (Basic + Fixed Allowances)</td><td style="text-align:right;padding:8px 12px">${fmtC(tGross)}</td><td style="padding:8px 12px;color:var(--mu)">Calculated via Net-to-Gross under Law 7/2024</td></tr>
+           <tr><td style="padding:8px 12px">Employer Social Insurance (18.75%)</td><td style="text-align:right;padding:8px 12px">${fmtC(tErIns)}</td><td style="padding:8px 12px;color:var(--mu)">NOSI Employer Contribution (max 16,700 base)</td></tr>
+           <tr><td style="padding:8px 12px">Employee Social Insurance (11.00%)</td><td style="text-align:right;padding:8px 12px">${fmtC(tEmpIns)}</td><td style="padding:8px 12px;color:var(--mu)">Withheld from gross and remitted to NOSI</td></tr>
+           <tr><td style="padding:8px 12px">Salary Income Tax (Withholding)</td><td style="text-align:right;padding:8px 12px">${fmtC(tTax)}</td><td style="padding:8px 12px;color:var(--mu)">Egyptian Tax Authority monthly filing</td></tr>
+           <tr><td style="padding:8px 12px">Medical &amp; Life Insurance</td><td style="text-align:right;padding:8px 12px">${fmtC(tMedLife)}</td><td style="padding:8px 12px;color:var(--mu)">Fixed direct cost (default 675.92 EGP / employee)</td></tr>
+           ${tHiringDocs>0?`<tr><td style="padding:8px 12px">Hiring Documents Cost</td><td style="text-align:right;padding:8px 12px">${fmtC(tHiringDocs)}</td><td style="padding:8px 12px;color:var(--mu)">One-off direct onboarding charges</td></tr>`:""}
+         </tbody>
+         <tfoot>
+           <tr style="border-top:1.5px solid var(--bd);background:var(--soft)"><td style="padding:10px 12px"><b>TOTAL EMPLOYER DIRECT COST</b></td><td style="text-align:right;padding:10px 12px;font-weight:800;color:var(--brand)">${fmtC(tDirect)}</td><td style="padding:10px 12px;color:var(--mu)">Gross Salaries + Employer SI + Med/Life + Hiring Docs</td></tr>
+           <tr><td style="padding:9px 12px"><b>Management Fee (15.00%)</b></td><td style="text-align:right;padding:9px 12px;font-weight:700">${fmtC(tFee)}</td><td style="padding:9px 12px;color:var(--mu)">15% of Total Employer Direct Cost</td></tr>
+           <tr style="border-top:2px solid var(--brand);background:color-mix(in srgb,var(--brand) 12%,var(--surf))"><td style="padding:12px;font-size:15px"><b>TOTAL BILLED INVOICE AMOUNT</b></td><td style="text-align:right;padding:12px;font-size:16px;font-weight:900;color:var(--brand)">${fmtC(tInvoice)}</td><td style="padding:12px;font-weight:700">Total Employer Direct Cost + Management Fee</td></tr>
+         </tfoot>
+       </table>
+     </div>
+   </div>`;
+ })():""}
  <div class="card" style="margin-top:12px"><h2>Checks before finalizing</h2><ul class="chk">${gates.map(g=>`<li>${g[0]?bd("Pass","s-ok"):bd("Open","s-er")} ${g[1]}</li>`).join("")}</ul>${r.test?note("This run used illustrative TEST rules. It can be reviewed but never finalized.","sm"):""}</div>
  ${r.exc.length?`${secH("Validation exceptions")}${tbl(["Employee","Issue","Severity",""],r.exc.map(x=>[esc(x.no+" "+((empBy(x.no)||{}).name||"")),esc(x.msg),x.sev==="block"?bd("Blocks","s-er"):bd("Warning","s-wn"),x.sev==="block"&&can&&["validation_required","under_review"].includes(s)?`<button class="b" data-act="excl:${r.id}|${x.no}">Exclude from run</button>`:""]))}`:""}
  ${Object.keys(r.excl||{}).length?note("Excluded from this run: "+Object.entries(r.excl).map(([n,t])=>esc(n+" ("+t+")")).join(", "),"sm"):""}
@@ -3103,7 +3176,7 @@ reg("rep_cost","Payroll Cost Analysis","Pay and employer cost by department and 
 /* ===== m11: edit employee data (all modes) ===== */
 const canEditEmp=()=>[R.HRD,R.HRS].includes(role);
 const NATS=["Egyptian","Saudi","Emirati","Kuwaiti","Qatari","Jordanian","Lebanese","Sudanese","Libyan","Palestinian","Syrian","Iraqi","Yemeni","British","American","Canadian","French","German","Italian","Indian","Pakistani","Filipino","Other"];
-const EDF=["probend","wphone","wmobile","coach","lapp","tapp","sched","badge","tz","pob","marital","kids","edu","field","school","permit","permitexp","name","email","dept","project","pos","grade","loc","mgr","type","status","hire","end","term","dob","gender","nat","nid","sino","mobile","addr","ecn","ecp","bank","bankname","bankholder","bankacct","iban"];
+const EDF=["probend","wphone","wmobile","coach","lapp","tapp","sched","badge","tz","pob","marital","kids","edu","field","school","permit","permitexp","name","email","dept","project","pos","grade","loc","mgr","type","status","hire","end","term","dob","gender","nat","nid","sino","mobile","addr","ecn","ecp","bank","bankname","bankholder","bankacct","iban","basis","netSalary","siSalary","medLife","hiringDocs"];
 const PIIF=["permit","permitexp","pob","kids","dob","nid","sino","mobile","addr","ecn","ecp","bankname","bankholder","bankacct","iban"];
 const ibanOK=v=>{v=v.replace(/\s/g,"").toUpperCase();if(!/^EG\d{27}$/.test(v))return false;const r=(v.slice(4)+v.slice(0,4)).replace(/[A-Z]/g,c=>c.charCodeAt(0)-55);let m=0;for(const ch of r)m=(m*10+ +ch)%97;return m===1};
 const egyId=v=>{if(!/^\d{14}$/.test(v))return null;const c=+v[0];if(c!==2&&c!==3)return null;const y=(c===2?1900:2000)+ +v.slice(1,3),m=+v.slice(3,5),d=+v.slice(5,7),dt=new Date(Date.UTC(y,m-1,d));if(dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d)return null;return{dob:y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0"),gender:(+v[12])%2?"Male":"Female"}};
@@ -3129,7 +3202,7 @@ function empForm(e,mode){const full=mode==="full",F2=(l,n,t,o)=>fld(l,n,t,{...o,
  return`<form class="g" data-form="empEdit2"><input type="hidden" name="no" value="${esc(e.no)}"><input type="hidden" name="scope" value="${mode}">
  ${full?`${secH("Personal")}${F2("Full name","name","text",{req:1})}${F2("Work email","email","email")}${F2("Date of birth","dob","date",{req:1})}${fld("Gender","gender","select",{opts:["","Female","Male"],val:e.gender||"",req:1})}${fld("Nationality","nat","select",{opts:NATS,val:e.nat||"Egyptian"})}${F2("National ID (Egyptians, 14 digits) or passport number","nid","text",{req:1})}${F2("Social insurance number (required for Egyptians)","sino","text")}`:""}
  ${secH("Contact")}${F2("Mobile","mobile","tel",{req:1})}${F2("Home address","addr","text")}${F2("Emergency contact name","ecn","text")}${F2("Emergency contact phone","ecp","tel")}
- ${full?`${secH("Employment")}${fld("Department","dept","select",{opts:DEPTS,val:e.dept})}${fld("Project","project","select",{opts:ccOpts(e.project||""),val:e.project||"",req:1})}${posSel("Position",e.pos,1)}${gradeSel(e.grade)}${F2("Location","loc","text",{req:1})}${fld("Reporting manager","mgr","select",{opts:mgrOpts(e),val:e.mgr||"",req:1})}${fld("Coach","coach","select",{opts:pSel(e,"coach"),val:e.coach||""})}${fld("Employment type","type","select",{opts:TYPES,val:e.type})}${fld("Status","status","select",{opts:STAT,val:e.status})}${F2("Probation end date (required while on probation)","probend","date")}${F2("Hire date","hire","date",{req:1})}<label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"><span class="hint">Enter months to calculate the end date, or pick an end date to calculate the months.</span></label>${F2("Contract end date (required for fixed-term and contractors)","end","date")}${F2("Employment end date","term","date")}${secH("Work information")}${F2("Work phone","wphone","tel")}${F2("Work mobile","wmobile","tel")}${fld("Working schedule","sched","select",{opts:SCHEDS,val:e.sched||SCHEDS[0]})}${F2("Timezone","tz","text")}${F2("Attendance badge ID","badge","text")}${secH("Approvers")}${fld("Leave approver","lapp","select",{opts:pSel(e,"lapp"),val:e.lapp||""})}${fld("Attendance and timesheet approver","tapp","select",{opts:pSel(e,"tapp"),val:e.tapp||""})}${secH("Private information")}${F2("Place of birth","pob","text")}${fld("Marital status","marital","select",{opts:MARITAL,val:e.marital||""})}${F2("Number of children","kids","number",{min:0})}${fld("Certificate level","edu","select",{opts:EDUS,val:e.edu||""})}${F2("Field of study","field","text")}${F2("School","school","text")}${F2("Work permit number (non-Egyptians)","permit","text")}${F2("Work permit expiry","permitexp","date")}${canSal()?secH("Compensation")+`<div class="cs" style="grid-column:1/-1"><b>Basic ${fmtC(C(e.basic))}</b> · Allowances ${fmtC(C(e.allow))}${alwTxt(alwOf(e,salAt(e,iso(T0))))?" ("+esc(alwTxt(alwOf(e,salAt(e,iso(T0)))))+")":""} · Total ${fmtC(C(e.basic+e.allow))}. Salary and allowances are changed with an approved, dated revision. <button type="button" class="lnk" data-act="gocomp:${esc(e.no)}">Open Compensation</button></div>`:""}${secH("Payment")}${fld("Bank details on file","bank","select",{opts:["Yes","No"],val:bankOK(e)?"Yes":"No"})}${F2("Bank name","bankname","text")}${F2("Account holder name","bankholder","text")}${F2("Account number","bankacct","text")}${F2("IBAN (EG followed by 27 digits)","iban","text")}${secH("Cost allocation (optional)")}<div class="cs" style="grid-column:1/-1">Split this employee's cost across projects or cost centers. Choose from the list kept in Cost Centers &amp; Projects (Administration). The shares must add up to 100 %. Leave empty to follow the primary project.</div>${[0,1,2].map(i=>{const a=(e.alloc||[])[i]||{};return`${fld("Project or cost center "+(i+1),"al_n"+i,"select",{opts:ccOpts(a.to||""),val:a.to||""})}<label>Share % ${i+1}<input name="al_p${i}" type="number" min="1" max="100" step="1" value="${a.pct||""}"></label>`}).join("")}`:""}
+ ${full?`${secH("Employment")}${fld("Department","dept","select",{opts:DEPTS,val:e.dept})}${fld("Project","project","select",{opts:ccOpts(e.project||""),val:e.project||"",req:1})}${posSel("Position",e.pos,1)}${gradeSel(e.grade)}${F2("Location","loc","text",{req:1})}${fld("Reporting manager","mgr","select",{opts:mgrOpts(e),val:e.mgr||"",req:1})}${fld("Coach","coach","select",{opts:pSel(e,"coach"),val:e.coach||""})}${fld("Employment type","type","select",{opts:TYPES,val:e.type})}${fld("Status","status","select",{opts:STAT,val:e.status})}${F2("Probation end date (required while on probation)","probend","date")}${F2("Hire date","hire","date",{req:1})}<label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"><span class="hint">Enter months to calculate the end date, or pick an end date to calculate the months.</span></label>${F2("Contract end date (required for fixed-term and contractors)","end","date")}${F2("Employment end date","term","date")}${secH("Work information")}${F2("Work phone","wphone","tel")}${F2("Work mobile","wmobile","tel")}${fld("Working schedule","sched","select",{opts:SCHEDS,val:e.sched||SCHEDS[0]})}${F2("Timezone","tz","text")}${F2("Attendance badge ID","badge","text")}${secH("Approvers")}${fld("Leave approver","lapp","select",{opts:pSel(e,"lapp"),val:e.lapp||""})}${fld("Attendance and timesheet approver","tapp","select",{opts:pSel(e,"tapp"),val:e.tapp||""})}${secH("Private information")}${F2("Place of birth","pob","text")}${fld("Marital status","marital","select",{opts:MARITAL,val:e.marital||""})}${F2("Number of children","kids","number",{min:0})}${fld("Certificate level","edu","select",{opts:EDUS,val:e.edu||""})}${F2("Field of study","field","text")}${F2("School","school","text")}${F2("Work permit number (non-Egyptians)","permit","text")}${F2("Work permit expiry","permitexp","date")}${canSal()?secH("Compensation & SMR Net-to-Gross")+`<div class="cs" style="grid-column:1/-1"><b>Basic ${fmtC(C(e.basic))}</b> · Allowances ${fmtC(C(e.allow))}${alwTxt(alwOf(e,salAt(e,iso(T0))))?" ("+esc(alwTxt(alwOf(e,salAt(e,iso(T0)))))+")":""} · Total ${fmtC(C(e.basic+e.allow))}.</div>${fld("Contract Basis","basis","select",{opts:[["gross","Gross Contract (Standard)"],["net","Net Contract (Net-to-Gross)"]],val:e.basis||"gross"})}${fld("Target Net Salary (EGP)","netSalary","number",{step:"0.01",min:0,val:e.netSalary||""})}${fld("Social Insurance Base Wage (EGP)","siSalary","number",{step:"0.01",min:2700,max:16700,val:e.siSalary||16700})}${fld("Medical & Life Insurance (EGP)","medLife","number",{step:"0.01",min:0,val:e.medLife!=null?e.medLife:675.92})}${fld("Hiring Documents Cost (EGP)","hiringDocs","number",{step:"0.01",min:0,val:e.hiringDocs||0})}`:""}${secH("Payment")}${fld("Bank details on file","bank","select",{opts:["Yes","No"],val:bankOK(e)?"Yes":"No"})}${F2("Bank name","bankname","text")}${F2("Account holder name","bankholder","text")}${F2("Account number","bankacct","text")}${F2("IBAN (EG followed by 27 digits)","iban","text")}${secH("Cost allocation (optional)")}<div class="cs" style="grid-column:1/-1">Split this employee's cost across projects or cost centers. Choose from the list kept in Cost Centers &amp; Projects (Administration). The shares must add up to 100 %. Leave empty to follow the primary project.</div>${[0,1,2].map(i=>{const a=(e.alloc||[])[i]||{};return`${fld("Project or cost center "+(i+1),"al_n"+i,"select",{opts:ccOpts(a.to||""),val:a.to||""})}<label>Share % ${i+1}<input name="al_p${i}" type="number" min="1" max="100" step="1" value="${a.pct||""}"></label>`}).join("")}`:""}
  <button class="b p" type="submit">Save changes</button></form><div class="err"></div><div class="cs">${full?"Salary changes go through Compensation, so they are approved and effective-dated. ":""}Every change is recorded in the audit log. Sensitive fields (ID, birth date, phone, address, bank) are stored in this browser only and are not written into the log.</div>`}
 ACTS.eedit=no=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist can edit employee records.");const e=allEmps().find(x=>x.no===no);if(!e)return;
  $("#dt").textContent="Edit: "+e.name;$("#dd").textContent=e.no+" · "+e.dept;$("#db").innerHTML=empForm(e,"full");$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
@@ -3505,7 +3578,11 @@ function portalBase(initial){const L=allEmps().filter(x=>x.status!=="Terminated"
  if(TAB._pp!==page){TAB._pp=page;TAB.pt=initial||"ov"}const cur=TAB.pt||"ov";
  const body=({ov:pt_ov,ps:pt_ps,dc:pt_dc,wn:pt_wn,ln:pt_ln,ct:pt_ct,to:pt_to,at:pt_at,rq:()=>my_req(),pf:()=>profile(true)}[cur]||pt_ov)(e);
  const nWn=WARNS().filter(w=>w.no===e.no&&!w.withdrawn&&!w.ack).length;
+ const hr=new Date().getHours(),greet=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening",gIc=hr<12?"☀️":hr<18?"🌤️":"🌙";
+ const D0=new Date(iso(T0)+"T00:00:00"),dayN=D0.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ const portalHdr=`<header class="xhd" style="margin-bottom:16px"><div><p class="xorg"><span class="ldot"></span> ${gIc} ${greet}</p><h2 class="xtt">Welcome, ${esc(e.name.split(" ")[0])} 👋</h2><p class="xsub">${esc(e.pos||"Employee")} · ${esc(e.dept)} · As of ${esc(dayN)} · ID: ${esc(e.no)}</p></div><div class="xact"><button class="b p" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg><span>New Request</span></button></div></header>`;
  return`${MODE==="sample"?note("<b>Sample data.</b> Leave entitlements are sample policy values, not verified against Egyptian labour law.","sm"):""}
+ ${portalHdr}
  <div class="pbn"><div class="pwho"><span class="avw">${avi(e,"pav")}${photoCtl(e)}</span><div class="pwt"><h2 style="font-size:24px;margin:0">${esc(e.name)} ${bd(e.status,{Active:"s-ok","On leave":"s-wn",Probation:"s-wn"}[e.status]||"s-mu")}</h2><div class="pps">${esc(e.pos||"–")} · ${esc(e.dept)}</div><div class="pchips"><span>No. ${esc(e.no)}</span>${e.mgr?`<span>Manager: ${esc(e.mgr)}</span>`:""}${e.hire?`<span>Joined ${esc(fmtNiceD(e.hire))}</span>`:""}<span>${pSvc(e)}</span></div></div></div><div class="pact"><button class="pnew" data-act="pt:rq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${PIC.rq}"/></svg> New Request</button></div></div>
  <div class="pstats">${pStats(e)}</div>${(typeof ESES!=="undefined"&&ESES)?"":`<label class="pprev2"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Previewing as</span><select id="wsel">${L.filter(x=>inScope(x)).map(x=>`<option value="${esc(x.no)}" ${x.no===WSNO?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>`}
  ${cur!=="ov"&&!(page==="myprofile"&&cur==="pf")?`<button class="zback" data-act="pt:${page==="myprofile"?"pf":"ov"}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>${page==="myprofile"?"Back to profile":"Back to portal"}</button>`:""}
