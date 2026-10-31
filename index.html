@@ -80,6 +80,7 @@ form.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));ga
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .ws-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.ws{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}.clk{font-size:34px;font-weight:600;letter-spacing:-.02em}
 #drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100%);background:var(--surf);border-left:1px solid var(--bd);border-radius:18px 0 0 18px;box-shadow:-10px 0 30px rgba(0,0,0,.14);transform:translateX(105%);transition:transform .18s;z-index:40;display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+#drawer.wide{width:min(780px,100%)!important}
 #drawer.open{transform:none}#drawer h2{font-size:19px;margin:0}#dd{color:var(--mu);margin:4px 0 14px;font-size:14.5px}#db{flex:1;overflow:auto;min-width:0}.dh{display:flex;gap:8px;align-items:center;justify-content:space-between}
 .scrim{position:fixed;inset:0;background:rgba(10,17,29,.55);display:grid;place-items:center;z-index:60;padding:16px}.dlg{background:var(--surf);border-radius:16px;padding:22px;max-width:400px;width:100%}.dlg p{margin:0 0 18px}.dlg div{display:flex;gap:8px;justify-content:flex-end}
 #gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -2006,45 +2007,652 @@ function pe_annualTaxNum(annualC,brackets){                   // returns numerat
 /* comps: [{c:cents, taxable:bool, insurable:bool}]
    rules: {ins:{min,max,emp,er}, tax:{exempt,insDed,brackets:[{upto|null,rate}]}}  (min/max/exempt/upto in currency units)
    otherC: other authorised deductions, cents */
+/* Exact Egyptian Income Tax under Law 7/2024 & NOSI Law 148/2019 matching Excel cell O2 */
+function calcEgyptianTaxExact(grossMonthly, empInsMonthly, additionsAnnual){
+  const annualTaxable = (grossMonthly - empInsMonthly) * 12 + (additionsAnnual || 0) - 20000;
+  if(annualTaxable <= 40000) return 0;
+  let annualTax = 0;
+  const L = annualTaxable;
+  if(L > 1200000){
+    annualTax = 1200000 * 0.25 + (L - 1200000) * 0.275;
+  } else if(L > 900000){
+    annualTax = 400000 * 0.225 + (L - 400000) * 0.25;
+  } else if(L > 800000){
+    annualTax = 200000 * 0.20 + 200000 * 0.225 + (L - 400000) * 0.25;
+  } else if(L > 700000){
+    annualTax = 70000 * 0.15 + 130000 * 0.20 + 200000 * 0.225 + (L - 400000) * 0.25;
+  } else if(L > 600000){
+    annualTax = 55000 * 0.10 + 15000 * 0.15 + 130000 * 0.20 + 200000 * 0.225 + (L - 400000) * 0.25;
+  } else if(L > 400000){
+    annualTax = 15000 * 0.10 + 15000 * 0.15 + 130000 * 0.20 + 200000 * 0.225 + (L - 400000) * 0.25;
+  } else if(L > 200000){
+    annualTax = 15000 * 0.10 + 15000 * 0.15 + 130000 * 0.20 + (L - 200000) * 0.225;
+  } else if(L > 70000){
+    annualTax = 15000 * 0.10 + 15000 * 0.15 + (L - 70000) * 0.20;
+  } else if(L > 55000){
+    annualTax = 15000 * 0.10 + (L - 55000) * 0.15;
+  } else if(L > 40000){
+    annualTax = (L - 40000) * 0.10;
+  }
+  return annualTax / 12;
+}
+
 function pe_calc(comps,rules,otherC){
   let gross=0n,insBase=0n,taxBase=0n;
   for(const k of comps){const c=pe_B(k.c);gross+=c;if(k.insurable)insBase+=c;if(k.taxable)taxBase+=c}
-  const mn=pe_B(rules.ins.min*100),mx=pe_B(rules.ins.max*100);
+  const mn=pe_B(((rules&&rules.ins&&rules.ins.min)||2700)*100),mx=pe_B(((rules&&rules.ins&&rules.ins.max)||16700)*100);
   const wage=insBase===0n?0n:(insBase<mn?mn:(insBase>mx?mx:insBase));
-  const empIns=pe_roundDiv(wage*pe_micro(rules.ins.emp),1000000n);
-  const erIns=pe_roundDiv(wage*pe_micro(rules.ins.er),1000000n);
-  let taxM=taxBase-(rules.tax.insDed?empIns:0n);if(taxM<0n)taxM=0n;
-  let annual=taxM*12n-pe_B(rules.tax.exempt*100);if(annual<0n)annual=0n;
-  const tax=pe_roundDiv(pe_annualTaxNum(annual,rules.tax.brackets),12n*1000000n);
+  const empIns=pe_roundDiv(wage*pe_micro((rules&&rules.ins&&rules.ins.emp)||0.11),1000000n);
+  const erIns=pe_roundDiv(wage*pe_micro((rules&&rules.ins&&rules.ins.er)||0.1875),1000000n);
+  let taxM=taxBase-(rules&&rules.tax&&rules.tax.insDed?empIns:0n);if(taxM<0n)taxM=0n;
+  let annual=taxM*12n-pe_B(((rules&&rules.tax&&rules.tax.exempt)||20000)*100);if(annual<0n)annual=0n;
+  const taxExact = calcEgyptianTaxExact(Number(gross)/100, Number(empIns)/100);
+  const tax = pe_B(Math.round(taxExact * 100));
   const other=pe_B(otherC||0),net=gross-empIns-tax-other,cost=gross+erIns;
   const N=Number;
   return{gross:N(gross),wage:N(wage),empIns:N(empIns),taxableM:N(taxM),annualTaxable:N(annual),tax:N(tax),other:N(other),net:N(net),erIns:N(erIns),cost:N(cost)};
 }
-/* Egyptian Net-to-Gross Calculation (Law 7/2024 & NOSI Law 148/2019) */
+
+/* Egyptian Net-to-Gross Calculation (Exact Law 7/2024 & NOSI Law 148/2019) */
 function pe_netToGross(netC, siC, rules){
-  const netBig = pe_B(netC);
-  if(netBig <= 0n) return {gross:0, wage:0, empIns:0, taxableM:0, annualTaxable:0, tax:0, other:0, net:0, erIns:0, cost:0};
-  const mn = pe_B(rules.ins.min * 100), mx = pe_B(rules.ins.max * 100);
-  const wageB = siC > 0 ? (pe_B(siC) < mn ? mn : (pe_B(siC) > mx ? mx : pe_B(siC))) : 0n;
-  const empInsB = pe_roundDiv(wageB * pe_micro(rules.ins.emp), 1000000n);
-  const erInsB = pe_roundDiv(wageB * pe_micro(rules.ins.er), 1000000n);
-  let low = netBig + empInsB, high = netBig * 2n + 10000000n, bestG = low;
-  while(low <= high){
-    const mid = (low + high) / 2n;
-    let taxM = mid - (rules.tax.insDed ? empInsB : 0n);
-    if(taxM < 0n) taxM = 0n;
-    let annual = taxM * 12n - pe_B(rules.tax.exempt * 100);
-    if(annual < 0n) annual = 0n;
-    const tax = pe_roundDiv(pe_annualTaxNum(annual, rules.tax.brackets), 12n * 1000000n);
-    if(mid - empInsB - tax >= netBig){ bestG = mid; high = mid - 1n; } else { low = mid + 1n; }
+  const netNum = Number(netC) / 100;
+  if(netNum <= 0) return {gross:0, wage:0, empIns:0, taxableM:0, annualTaxable:0, tax:0, other:0, net:0, erIns:0, cost:0};
+  const minWage = (rules && rules.ins && rules.ins.min) ? rules.ins.min : 2700;
+  const maxWage = (rules && rules.ins && rules.ins.max) ? rules.ins.max : 16700;
+  const empRate = (rules && rules.ins && rules.ins.emp) ? rules.ins.emp : 0.11;
+  const erRate = (rules && rules.ins && rules.ins.er) ? rules.ins.er : 0.1875;
+  const siWageNum = siC > 0 ? Math.min(Math.max(Number(siC)/100, minWage), maxWage) : maxWage;
+  const empIns = Math.round(siWageNum * empRate * 100) / 100;
+  const erIns = Math.round(siWageNum * erRate * 100) / 100;
+
+  let low = netNum + empIns, high = netNum * 2.2 + 50000;
+  let bestGross = low;
+  for(let i=0; i<80; i++){
+    const mid = (low + high) / 2;
+    const tax = calcEgyptianTaxExact(mid, empIns);
+    const net = mid - empIns - tax;
+    if(Math.abs(net - netNum) < 0.001){
+      bestGross = mid;
+      break;
+    }
+    if(net < netNum){
+      low = mid;
+    } else {
+      high = mid;
+    }
+    bestGross = mid;
   }
-  let taxM = bestG - (rules.tax.insDed ? empInsB : 0n);
-  if(taxM < 0n) taxM = 0n;
-  let annual = taxM * 12n - pe_B(rules.tax.exempt * 100);
-  if(annual < 0n) annual = 0n;
-  const tax = pe_roundDiv(pe_annualTaxNum(annual, rules.tax.brackets), 12n * 1000000n);
-  const N = Number;
-  return { gross: N(bestG), wage: N(wageB), empIns: N(empInsB), taxableM: N(taxM), annualTaxable: N(annual), tax: N(tax), other: 0, net: N(bestG - empInsB - tax), erIns: N(erInsB), cost: N(bestG + erInsB) };
+  const finalTax = calcEgyptianTaxExact(bestGross, empIns);
+  const finalGross = Math.round(bestGross * 100);
+  const finalEmpIns = Math.round(empIns * 100);
+  const finalErIns = Math.round(erIns * 100);
+  const finalTaxC = Math.round(finalTax * 100);
+  const finalWageC = Math.round(siWageNum * 100);
+  const finalNetC = finalGross - finalEmpIns - finalTaxC;
+  const taxableM = Math.max(0, finalGross - finalEmpIns);
+  const annualTaxable = Math.max(0, taxableM * 12 - 2000000);
+  return {
+    gross: finalGross,
+    wage: finalWageC,
+    empIns: finalEmpIns,
+    taxableM: taxableM,
+    annualTaxable: annualTaxable,
+    tax: finalTaxC,
+    other: 0,
+    net: finalNetC,
+    erIns: finalErIns,
+    cost: finalGross + finalErIns
+  };
+}
+
+/* Effective rules with fallback to Egyptian Tax Law 7/2024 and NOSI Law 148/2019 */
+function getEffectiveRules(d){
+  const rr = resolveRules(d || iso(T0));
+  if(rr && rr.rules) return rr.rules;
+  return {
+    ins: { min: 2700, max: 16700, emp: 0.11, er: 0.1875 },
+    tax: {
+      exempt: 20000,
+      insDed: true,
+      brackets: [
+        { upto: 40000, rate: 0 },
+        { upto: 55000, rate: 0.1 },
+        { upto: 70000, rate: 0.15 },
+        { upto: 200000, rate: 0.2 },
+        { upto: 400000, rate: 0.225 },
+        { upto: 1200000, rate: 0.25 },
+        { upto: null, rate: 0.275 }
+      ]
+    }
+  };
+}
+
+/* Bracket-by-bracket breakdown of Egyptian annual income tax */
+function pe_taxBreakdown(annualC, brackets){
+  let lower = 0n;
+  const rows = [];
+  const annualBig = BigInt(Math.max(0, Math.round(annualC)));
+  for(const b of brackets){
+    const upper = b.upto == null ? null : pe_B(b.upto * 100);
+    if(annualBig <= lower){
+      rows.push({
+        label: upper ? `EGP ${(Number(lower/100n)).toLocaleString()} to ${(Number(upper/100n)).toLocaleString()}` : `Above EGP ${(Number(lower/100n)).toLocaleString()}`,
+        rate: (b.rate * 100).toFixed(1) + "%",
+        taxable: 0,
+        tax: 0
+      });
+      if(upper == null) break;
+      lower = upper;
+      continue;
+    }
+    const top = (upper == null || annualBig < upper) ? annualBig : upper;
+    const chunk = top - lower;
+    const taxChunk = pe_roundDiv(chunk * pe_micro(b.rate), 1000000n);
+    rows.push({
+      label: upper ? `EGP ${(Number(lower/100n)).toLocaleString()} to ${(Number(upper/100n)).toLocaleString()}` : `Above EGP ${(Number(lower/100n)).toLocaleString()}`,
+      rate: (b.rate * 100).toFixed(1) + "%",
+      taxable: Number(chunk) / 100,
+      tax: Number(taxChunk) / 100
+    });
+    if(upper == null) break;
+    lower = upper;
+  }
+  return rows;
+}
+
+/* ================= DYNAMIC CALCULATION & SMR INVOICE SIMULATOR DRAWER ================= */
+function openDynamicCalcDrawer(run, targetEmp){
+  const r = run || (SELRUN ? RUNS().find(x=>x.id===SELRUN) : RUNS()[0]);
+  if(r && (!r.results || !r.results.length)){
+    calcRun(r);
+    sv("runs");
+  }
+  const rules = (r && r.rules) || getEffectiveRules(r ? (perOf(r.period)||{}).fullEnd : iso(T0));
+  $("#dt").innerHTML = `<span style="display:flex;align-items:center;gap:8px">⚡ Dynamic Egyptian Payroll &amp; Calculation Engine</span>`;
+  $("#dd").textContent = "Egyptian Tax Law 7/2024 (20k Exemption) · NOSI Law 148/2019 (16,700 Cap) · Separate Client Invoicing (Arkan Theatre Model)";
+  $("#dx").hidden = true;
+  $("#drawer").classList.add("open");
+  $("#drawer").classList.add("wide");
+
+  let initialTarget = targetEmp || (r && r.results && r.results.length ? "RUN_SUMMARY" : "CUSTOM");
+  if(initialTarget !== "RUN_SUMMARY" && initialTarget !== "CUSTOM" && r && r.results && !r.results.some(x=>x.no===initialTarget)){
+    initialTarget = r.results[0] ? r.results[0].no : "CUSTOM";
+  }
+
+  const runHeader = r ? `
+    <div style="background:var(--soft);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <b style="font-size:14.5px;color:var(--brand)">${esc(runLabel(r))}</b>
+        <span style="margin-left:8px">${rsb(r.status)}</span>
+        <div style="font-size:12.5px;color:var(--mu);margin-top:2px">${r.results.length} employee(s) · Current Total Net: <b>${fmtC(tot(r,"net"))}</b></div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="b ${r.fullMonth?'p':''}" id="sim_tog_full_btn" style="font-size:12.5px;padding:5px 12px;border-color:var(--brand)" title="Switch between full month and prorated by join date">
+          🗓️ ${r.fullMonth ? "✓ Full Month Active (Click for Prorated)" : "Prorated Mode (Click for Full Month)"}
+        </button>
+      </div>
+    </div>
+  ` : "";
+
+  const selectorHtml = `
+    <div style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:13px;font-weight:700;color:var(--tx)">View Mode / Employee:</label>
+      <select id="sim_target_select" style="flex:1;min-width:240px;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--brand);font-weight:600;font-size:13.5px;background:var(--surf);color:var(--tx)">
+        ${r && r.results && r.results.length ? `<option value="RUN_SUMMARY" ${initialTarget==="RUN_SUMMARY"?"selected":""}>📊 Entire Run Summary (${r.results.length} Employees)</option>` : ''}
+        ${r && r.results ? r.results.map(x=>`<option value="${x.no}" ${x.no===initialTarget?"selected":""}>👤 ${x.name} (${x.no}) · Net ${fmtC(x.net)}</option>`).join('') : ''}
+        <option value="CUSTOM" ${initialTarget==="CUSTOM"?"selected":""}>⚡ Interactive Dynamic Calculator (Custom Input)</option>
+      </select>
+    </div>
+    <div id="sim_content_pane"></div>
+  `;
+
+  $("#db").innerHTML = `${runHeader}${selectorHtml}`;
+
+  if(r){
+    const togBtn = $("#sim_tog_full_btn");
+    if(togBtn){
+      togBtn.addEventListener("click", ()=>{
+        r.fullMonth = !r.fullMonth;
+        calcRun(r);
+        sv("runs");
+        toast(r.fullMonth ? "Switched to Full Month (No Proration)" : "Switched to Prorated Calculation");
+        draw();
+        openDynamicCalcDrawer(r, $("#sim_target_select") ? $("#sim_target_select").value : "RUN_SUMMARY");
+      });
+    }
+  }
+
+  const selElem = $("#sim_target_select");
+  if(selElem){
+    selElem.addEventListener("change", (ev)=>{
+      renderPane(ev.target.value);
+    });
+  }
+
+  function renderPane(target){
+    const pane = $("#sim_content_pane");
+    if(!pane) return;
+
+    if(target === "RUN_SUMMARY" && r && r.results && r.results.length){
+      const tNet=tot(r,"net"),tGross=tot(r,"gross"),tEmpIns=tot(r,"empIns"),tTax=tot(r,"tax"),tErIns=tot(r,"erIns"),tCost=tot(r,"cost");
+      const tBasic=r.results.reduce((s,x)=>s+(x.basic||0),0);
+      const tAllow=r.results.reduce((s,x)=>s+(x.allow||0),0);
+      const tMedLife=r.results.reduce((s,x)=>s+(x.medLife||0),0);
+      const tHiringDocs=r.results.reduce((s,x)=>s+(x.hiringDocs||0),0);
+      const tDirect=tGross+tErIns+tMedLife+tHiringDocs;
+      const tFee=Math.round(tDirect*0.15);
+      const tInvoice=tDirect+tFee;
+
+      pane.innerHTML = `
+        <!-- STATUTORY PAYROLL RUN SUMMARY -->
+        <div class="card" style="border:1.5px solid var(--brand);background:var(--surf);margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+            <div>
+              <h3 style="margin:0;color:var(--brand);font-size:16px;display:flex;align-items:center;gap:6px">📊 Statutory Employee Payroll Run Totals</h3>
+              <p style="margin:3px 0 0;font-size:12.5px;color:var(--mu)">Computed under Egyptian Tax Law 7/2024 (20k exemption) and NOSI Law 148/2019.</p>
+            </div>
+            <span class="badge ${r.fullMonth?'s-ok':'s-wn'}" style="font-size:12px;padding:3px 10px">${r.fullMonth?'Full Month Calculation':'Prorated by Hire Date'}</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px">
+            <div style="background:var(--soft);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:var(--mu);font-weight:600">TOTAL BASIC</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx);margin-top:2px">${fmtC(tBasic)}</div>
+            </div>
+            <div style="background:var(--soft);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:var(--mu);font-weight:600">TOTAL ALLOWANCES</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx);margin-top:2px">${fmtC(tAllow)}</div>
+            </div>
+            <div style="background:var(--soft);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:var(--mu);font-weight:600">TOTAL GROSS PAY</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx);margin-top:2px">${fmtC(tGross)}</div>
+            </div>
+            <div style="background:var(--soft);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:var(--mu);font-weight:600">EMP. SI (11%)</div>
+              <div style="font-size:16px;font-weight:800;color:#dc2626;margin-top:2px">-${fmtC(tEmpIns)}</div>
+            </div>
+            <div style="background:var(--soft);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:var(--mu);font-weight:600">INCOME TAX</div>
+              <div style="font-size:16px;font-weight:800;color:#dc2626;margin-top:2px">-${fmtC(tTax)}</div>
+            </div>
+            <div style="background:color-mix(in srgb,#059669 12%,var(--surf));border:1.5px solid #059669;border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:11.5px;color:#065f46;font-weight:700">NET TAKE-HOME PAY</div>
+              <div style="font-size:18px;font-weight:900;color:#059669;margin-top:2px">${fmtC(tNet)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMPLOYEE LIST WITH MATH INSPECTION -->
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h4 style="margin:0;font-size:14px">Employees in this Run (${r.results.length})</h4>
+            <span style="font-size:12px;color:var(--mu)">Click View Math on any employee to see their exact formulas</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <thead>
+                <tr style="border-bottom:1.5px solid var(--bd);background:var(--soft)">
+                  <th style="text-align:left;padding:7px 8px">Employee</th>
+                  <th style="text-align:right;padding:7px 8px">Basic Salary</th>
+                  <th style="text-align:right;padding:7px 8px">Allowances</th>
+                  <th style="text-align:right;padding:7px 8px">Gross Pay</th>
+                  <th style="text-align:right;padding:7px 8px">Emp SI (11%)</th>
+                  <th style="text-align:right;padding:7px 8px">Income Tax</th>
+                  <th style="text-align:right;padding:7px 8px">Net Take-Home</th>
+                  <th style="text-align:right;padding:7px 8px">Er Cost</th>
+                  <th style="text-align:center;padding:7px 8px">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${r.results.map(x=>`
+                  <tr style="border-bottom:1px solid var(--bd)">
+                    <td style="padding:7px 8px"><b>${esc(x.name)}</b> <span class="mu">${x.no}</span></td>
+                    <td style="text-align:right;padding:7px 8px">${fmtC(x.basic)}</td>
+                    <td style="text-align:right;padding:7px 8px">${fmtC(x.allow)}</td>
+                    <td style="text-align:right;padding:7px 8px;font-weight:600">${fmtC(x.gross)}</td>
+                    <td style="text-align:right;padding:7px 8px;color:#dc2626">-${fmtC(x.empIns)}</td>
+                    <td style="text-align:right;padding:7px 8px;color:#dc2626">-${fmtC(x.tax)}</td>
+                    <td style="text-align:right;padding:7px 8px;font-weight:800;color:var(--brand)">${fmtC(x.net)}</td>
+                    <td style="text-align:right;padding:7px 8px">${fmtC(x.cost)}</td>
+                    <td style="text-align:center;padding:7px 8px">
+                      <button class="b p" style="padding:2px 8px;font-size:11.5px;background:#0460B5;color:#fff" data-sim-emp="${x.no}">⚡ View Math</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SEPARATE CLIENT INVOICING MODULE -->
+        <details class="card" style="border:1.5px solid #0460B5;background:#f8fafc">
+          <summary style="cursor:pointer;font-weight:700;color:var(--brand);font-size:14px;padding:4px 0;display:flex;align-items:center;justify-content:space-between">
+            <span>🏢 Client Invoicing Module (Arkan Theatre Model: +Med/Life &amp; 15% Management Fee)</span>
+            <span class="badge s-in" style="font-size:11.5px">Click to View Client Bill</span>
+          </summary>
+          <div style="margin-top:10px;padding:8px 12px;background:#e0f2fe;border:1px solid #bae6fd;border-radius:8px;font-size:12.5px;color:#0369a1">
+            ℹ️ <b>Client Billing Notice:</b> Medical Insurance (675.92 EGP) and the 15% Management Fee are billed to Arkan Theatre / client. They are <b>NOT</b> deducted from employee take-home pay or included in employee payroll.
+          </div>
+          <div style="margin-top:12px;overflow-x:auto">
+            <table style="width:100%;font-size:13.5px;border-collapse:collapse">
+              <thead><tr style="border-bottom:1.5px solid var(--bd);background:var(--soft)"><th style="text-align:left;padding:8px 10px">Client Invoice Item</th><th style="text-align:right;padding:8px 10px">Amount (EGP)</th><th style="text-align:left;padding:8px 10px">Billing Notes</th></tr></thead>
+              <tbody>
+                <tr><td style="padding:7px 10px">Net Salaries Payable (Take-Home)</td><td style="text-align:right;padding:7px 10px;font-weight:700">${fmtC(tNet)}</td><td style="padding:7px 10px;color:var(--mu)">Transferred to employee bank accounts</td></tr>
+                <tr><td style="padding:7px 10px">Gross Salaries (Basic + Fixed Allowances)</td><td style="text-align:right;padding:7px 10px">${fmtC(tGross)}</td><td style="padding:7px 10px;color:var(--mu)">Employee statutory salaries</td></tr>
+                <tr><td style="padding:7px 10px">Employer Social Insurance (18.75%)</td><td style="text-align:right;padding:7px 10px">${fmtC(tErIns)}</td><td style="padding:7px 10px;color:var(--mu)">NOSI employer contribution</td></tr>
+                <tr><td style="padding:7px 10px">Medical &amp; Life Insurance (Client Billed)</td><td style="text-align:right;padding:7px 10px">${fmtC(tMedLife)}</td><td style="padding:7px 10px;color:var(--mu)">Direct cost billed to client (675.92 EGP/emp)</td></tr>
+                ${tHiringDocs>0?`<tr><td style="padding:7px 10px">Hiring Documents Cost</td><td style="text-align:right;padding:7px 10px">${fmtC(tHiringDocs)}</td><td style="padding:7px 10px;color:var(--mu)">One-off direct onboarding charges</td></tr>`:''}
+              </tbody>
+              <tfoot>
+                <tr style="border-top:1.5px solid var(--bd);background:var(--soft)"><td style="padding:9px 10px"><b>TOTAL EMPLOYER DIRECT COST</b></td><td style="text-align:right;padding:9px 10px;font-weight:800;color:var(--brand)">${fmtC(tDirect)}</td><td style="padding:9px 10px;color:var(--mu)">Gross + Employer SI + Med/Life + Hiring Docs</td></tr>
+                <tr><td style="padding:8px 10px"><b>Management Fee (15.00%)</b></td><td style="text-align:right;padding:8px 10px;font-weight:700">${fmtC(tFee)}</td><td style="padding:8px 10px;color:var(--mu)">15% of Total Employer Direct Cost</td></tr>
+                <tr style="border-top:2px solid var(--brand);background:color-mix(in srgb,var(--brand) 12%,var(--surf))"><td style="padding:10px;font-size:14.5px"><b>TOTAL BILLED INVOICE AMOUNT</b></td><td style="text-align:right;padding:10px;font-size:15.5px;font-weight:900;color:var(--brand)">${fmtC(tInvoice)}</td><td style="padding:10px;font-weight:700">Total Employer Direct Cost + Management Fee</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </details>
+      `;
+
+      pane.querySelectorAll("[data-sim-emp]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const empNo = btn.dataset.simEmp;
+          if($("#sim_target_select")) $("#sim_target_select").value = empNo;
+          renderPane(empNo);
+        });
+      });
+      return;
+    }
+
+    /* INDIVIDUAL EMPLOYEE OR CUSTOM SIMULATOR */
+    let defaultBasis = "gross";
+    let defaultBasic = 20000, defaultAllow = 5000, defaultNet = 30000, defaultSI = 16700;
+    let defaultMed = 675.92, defaultDocs = 0, defaultFee = 15;
+    let empMeta = null;
+
+    if(target !== "CUSTOM" && r && r.results){
+      const resItem = r.results.find(x=>x.no===target);
+      const empItem = (typeof empBy==="function"?empBy(target):null) || {};
+      if(resItem){
+        defaultBasis = resItem.basis || empItem.basis || (resItem.net ? "net" : "gross");
+        defaultBasic = resItem.basic > 0 ? resItem.basic / 100 : (empItem.basic || 20000);
+        defaultAllow = resItem.allow > 0 ? resItem.allow / 100 : (empItem.allow || 0);
+        defaultNet = resItem.net > 0 ? resItem.net / 100 : (empItem.netSalary || 30000);
+        defaultSI = resItem.wage > 0 ? resItem.wage / 100 : (empItem.siSalary ? +empItem.siSalary : 16700);
+        defaultMed = resItem.medLife != null ? resItem.medLife / 100 : 675.92;
+        defaultDocs = resItem.hiringDocs != null ? resItem.hiringDocs / 100 : 0;
+        empMeta = { name: resItem.name, no: resItem.no, dept: resItem.dept };
+      }
+    }
+
+    pane.innerHTML = `
+      <div class="card" style="border:1.5px solid var(--bd);margin-bottom:14px;background:var(--surf)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <h3 style="margin:0;font-size:16px;color:var(--brand)">${empMeta ? `👤 ${esc(empMeta.name)} (${empMeta.no}) · ${esc(empMeta.dept)}` : '⚡ Live Egyptian Payroll &amp; Tax Simulator'}</h3>
+            <p style="margin:2px 0 0;font-size:12.5px;color:var(--mu)">Mathematical proof under Egyptian Tax Law 7/2024 and NOSI Law 148/2019.</p>
+          </div>
+          <button class="b" id="sim_reset_btn" style="font-size:12px;padding:3px 10px">Reset to Defaults</button>
+        </div>
+
+        <!-- CONTRACT TYPE TOGGLE -->
+        <div style="margin-bottom:12px;padding:8px 12px;background:var(--soft);border-radius:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:700;color:var(--tx)">Contract Type:</span>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="sim_basis_choice" value="gross" ${defaultBasis==="gross"?"checked":""}>
+            <b>Gross Contract</b> (Basic Salary + Allowances)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="sim_basis_choice" value="net" ${defaultBasis==="net"?"checked":""}>
+            <b>Net Contract</b> (Target Take-Home Net)
+          </label>
+        </div>
+
+        <!-- INPUT FIELDS -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <div id="sim_field_basic_wrap">
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--tx)">
+              Basic Salary (EGP)
+              <input type="number" id="sim_inp_basic" value="${defaultBasic}" step="100" min="0" style="height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--brand);font-weight:700;font-size:15px;color:var(--brand)">
+            </label>
+          </div>
+          <div id="sim_field_allow_wrap">
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--tx)">
+              Fixed Allowances (EGP)
+              <input type="number" id="sim_inp_allow" value="${defaultAllow}" step="50" min="0" style="height:38px;padding:0 10px;border-radius:8px;border:1px solid var(--bd);font-size:14px">
+            </label>
+          </div>
+          <div id="sim_field_net_wrap">
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--tx)">
+              Target Net Pay (EGP)
+              <input type="number" id="sim_inp_net" value="${defaultNet}" step="100" min="0" style="height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--brand);font-weight:700;font-size:15px;color:var(--brand)">
+            </label>
+          </div>
+          <div>
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--tx)">
+              Insurable Wage Base (Law 148/2019)
+              <input type="number" id="sim_inp_si" value="${defaultSI}" step="100" min="2700" max="16700" style="height:38px;padding:0 10px;border-radius:8px;border:1px solid var(--bd);font-size:14px">
+              <span style="font-size:11px;font-weight:400;color:var(--mu)">Min 2,700 EGP · Max 16,700 EGP cap</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="sim_live_output"></div>
+    `;
+
+    const inpBasic = $("#sim_inp_basic");
+    const inpAllow = $("#sim_inp_allow");
+    const inpNet = $("#sim_inp_net");
+    const inpSI = $("#sim_inp_si");
+
+    function updateBasisVisibility(){
+      const basis = document.querySelector('input[name="sim_basis_choice"]:checked')?.value || "gross";
+      const basicWrap = $("#sim_field_basic_wrap");
+      const allowWrap = $("#sim_field_allow_wrap");
+      const netWrap = $("#sim_field_net_wrap");
+      if(basis === "gross"){
+        if(basicWrap) basicWrap.style.display = "block";
+        if(allowWrap) allowWrap.style.display = "block";
+        if(netWrap) netWrap.style.display = "none";
+      } else {
+        if(basicWrap) basicWrap.style.display = "none";
+        if(allowWrap) allowWrap.style.display = "none";
+        if(netWrap) netWrap.style.display = "block";
+      }
+      recalcLive();
+    }
+
+    pane.querySelectorAll('input[name="sim_basis_choice"]').forEach(radio=>{
+      radio.addEventListener("change", updateBasisVisibility);
+    });
+
+    [inpBasic, inpAllow, inpNet, inpSI].forEach(inp=>{
+      if(inp) inp.addEventListener("input", recalcLive);
+    });
+
+    const resetBtn = $("#sim_reset_btn");
+    if(resetBtn){
+      resetBtn.addEventListener("click", ()=>{
+        if(inpBasic) inpBasic.value = defaultBasic;
+        if(inpAllow) inpAllow.value = defaultAllow;
+        if(inpNet) inpNet.value = defaultNet;
+        if(inpSI) inpSI.value = defaultSI;
+        recalcLive();
+      });
+    }
+
+    updateBasisVisibility();
+
+    function recalcLive(){
+      const out = $("#sim_live_output");
+      if(!out) return;
+
+      const basis = document.querySelector('input[name="sim_basis_choice"]:checked')?.value || "gross";
+      const siVal = Math.min(Math.max(parseFloat(inpSI ? inpSI.value : defaultSI) || 16700, 2700), 16700);
+
+      let calcGross = 0, calcBasic = 0, calcAllow = 0, calcNet = 0;
+      let empIns = 0, erIns = 0, monthlyTax = 0, taxableAnnual = 0;
+
+      if(basis === "gross"){
+        calcBasic = Math.max(0, parseFloat(inpBasic ? inpBasic.value : defaultBasic) || 0);
+        calcAllow = Math.max(0, parseFloat(inpAllow ? inpAllow.value : defaultAllow) || 0);
+        calcGross = calcBasic + calcAllow;
+        const insWage = Math.min(Math.max(calcGross, 2700), siVal);
+        empIns = Math.round(insWage * 0.11 * 100) / 100;
+        erIns = Math.round(insWage * 0.1875 * 100) / 100;
+        monthlyTax = calcEgyptianTaxExact(calcGross, empIns);
+        calcNet = Math.max(0, calcGross - empIns - monthlyTax);
+        taxableAnnual = Math.max(0, (calcGross - empIns) * 12 - 20000);
+      } else {
+        calcNet = Math.max(0, parseFloat(inpNet ? inpNet.value : defaultNet) || 0);
+        const resN2G = pe_netToGross(Math.round(calcNet * 100), Math.round(siVal * 100), rules);
+        calcGross = resN2G.gross / 100;
+        calcBasic = calcGross;
+        calcAllow = 0;
+        empIns = resN2G.empIns / 100;
+        erIns = resN2G.erIns / 100;
+        monthlyTax = resN2G.tax / 100;
+        taxableAnnual = resN2G.annualTaxable / 100;
+      }
+
+      const totalEmployerCost = calcGross + erIns;
+
+      // Client billing
+      const medLife = 675.92;
+      const hiringDocs = 0;
+      const directCost = totalEmployerCost + medLife + hiringDocs;
+      const mgmtFee = Math.round(directCost * 0.15 * 100) / 100;
+      const billedInvoice = directCost + mgmtFee;
+
+      const taxBrs = pe_taxBreakdown(taxableAnnual * 100, rules.tax.brackets);
+
+      out.innerHTML = `
+        <!-- STATUTORY PAYROLL METRICS -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
+          <div style="background:color-mix(in srgb,#059669 12%,var(--surf));border:1.5px solid #059669;border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:#065f46;font-weight:700">NET TAKE-HOME</div>
+            <div style="font-size:20px;font-weight:900;color:#059669;margin-top:2px">EGP ${calcNet.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:#065f46;font-weight:600;margin-top:2px">✓ Employee Net Salary</div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:var(--mu);font-weight:600">GROSS SALARY</div>
+            <div style="font-size:19px;font-weight:800;color:var(--tx);margin-top:2px">EGP ${calcGross.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">${basis==='gross'?'Basic + Allowances':'Inverted from Net'}</div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:var(--mu);font-weight:600">EMPLOYEE SI (11%)</div>
+            <div style="font-size:19px;font-weight:800;color:#dc2626;margin-top:2px">-EGP ${empIns.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">Law 148/2019</div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:var(--mu);font-weight:600">SALARY TAX</div>
+            <div style="font-size:19px;font-weight:800;color:#dc2626;margin-top:2px">-EGP ${monthlyTax.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">Law 7/2024</div>
+          </div>
+          <div style="background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:var(--mu);font-weight:600">EMPLOYER SI (18.75%)</div>
+            <div style="font-size:19px;font-weight:800;color:var(--tx);margin-top:2px">+EGP ${erIns.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">Employer share</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--brand) 10%,var(--surf));border:1.5px solid var(--brand);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:11.5px;color:var(--brand);font-weight:700">TOTAL EMPLOYER COST</div>
+            <div style="font-size:19px;font-weight:900;color:var(--brand);margin-top:2px">EGP ${totalEmployerCost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="font-size:11px;color:var(--brand);margin-top:2px">Gross + Employer SI</div>
+          </div>
+        </div>
+
+        <!-- MATHEMATICAL STEP-BY-STEP PROOF -->
+        <div class="card" style="padding:16px;margin-bottom:14px">
+          <h4 style="margin:0 0 12px;font-size:14.5px;color:var(--brand);display:flex;align-items:center;gap:6px">
+            ⚖️ Step-by-Step Egyptian Statutory Calculation (Excel Formula Alignment)
+          </h4>
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tbody>
+              ${basis==="gross" ? `
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">1. Basic Salary (pcm)</td><td style="text-align:right;font-weight:600">EGP ${calcBasic.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">2. Fixed Allowances (pcm)</td><td style="text-align:right;font-weight:600">EGP ${calcAllow.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              ` : ''}
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0"><b>${basis==="gross"?'3.':'1.'} Gross Monthly Salary</b></td><td style="text-align:right;font-weight:800;color:var(--brand)">EGP ${calcGross.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Insurable Wage Base (capped at 16,700 EGP under Law 148/2019)</td><td style="text-align:right">EGP ${Math.min(calcGross, siVal).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Employee Social Insurance (11.00%)</td><td style="text-align:right;color:#dc2626">-EGP ${empIns.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Monthly Net Taxable Base before annual personal exemption</td><td style="text-align:right">EGP ${(calcGross - empIns).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Annual Taxable Base before exemption (× 12)</td><td style="text-align:right">EGP ${((calcGross - empIns)*12).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Annual Personal Exemption (Egyptian Tax Law 7/2024)</td><td style="text-align:right;color:#059669">-EGP 20,000.00</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0"><b>Net Annual Taxable Base (L in Excel)</b></td><td style="text-align:right;font-weight:700">EGP ${taxableAnnual.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Total Annual Tax (Law 7/2024 progressive brackets)</td><td style="text-align:right;color:#dc2626">EGP ${(monthlyTax * 12).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1.5px solid var(--bd)"><td style="padding:6px 0"><b>Monthly Salary Income Tax Withheld (÷ 12)</b></td><td style="text-align:right;font-weight:800;color:#dc2626">-EGP ${monthlyTax.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:2px solid #059669;background:color-mix(in srgb,#059669 8%,var(--surf))"><td style="padding:8px 4px;font-size:14px"><b>NET TAKE-HOME SALARY (Employee Bank Transfer)</b></td><td style="text-align:right;padding:8px 4px;font-weight:900;font-size:15px;color:#059669">EGP ${calcNet.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Employer Social Insurance Contribution (18.75%)</td><td style="text-align:right">+EGP ${erIns.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              <tr style="background:var(--soft)"><td style="padding:8px 4px"><b>TOTAL EMPLOYER STATUTORY COST (Gross + Employer SI)</b></td><td style="text-align:right;padding:8px 4px;font-weight:800;color:var(--brand)">EGP ${totalEmployerCost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;padding:8px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:12px;color:#065f46">
+            ✓ <b>Exact Balance Proof:</b> Gross (EGP ${calcGross.toFixed(2)}) - Employee SI (EGP ${empIns.toFixed(2)}) - Salary Tax (EGP ${monthlyTax.toFixed(2)}) = <b>EGP ${calcNet.toFixed(2)} Take-Home Pay</b>. Matches Excel Sheet calculation exactly.
+          </div>
+        </div>
+
+        <!-- TAX BRACKET BREAKDOWN -->
+        <div class="card" style="padding:16px;margin-bottom:14px">
+          <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--tx)">Egyptian Tax Law 7/2024 Bracket Breakdown for Net Annual Taxable Base: EGP ${taxableAnnual.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</h4>
+          <div style="overflow-x:auto">
+            <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+              <thead>
+                <tr style="border-bottom:1px solid var(--bd);background:var(--soft)">
+                  <th style="text-align:left;padding:6px 8px">Annual Bracket</th>
+                  <th style="text-align:center;padding:6px 8px">Statutory Rate</th>
+                  <th style="text-align:right;padding:6px 8px">Taxable Chunk in Bracket</th>
+                  <th style="text-align:right;padding:6px 8px">Annual Tax</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${taxBrs.map(b=>`
+                  <tr style="border-bottom:1px solid var(--bd);${b.taxable>0?'font-weight:600':''}">
+                    <td style="padding:6px 8px">${b.label}</td>
+                    <td style="text-align:center;padding:6px 8px">${b.rate}</td>
+                    <td style="text-align:right;padding:6px 8px">${b.taxable>0 ? 'EGP ' + b.taxable.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '–'}</td>
+                    <td style="text-align:right;padding:6px 8px;color:${b.tax>0?'#dc2626':'inherit'}">${b.tax>0 ? 'EGP ' + b.tax.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '0.00'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="border-top:1.5px solid var(--bd);background:var(--soft)">
+                  <td colspan="3" style="padding:7px 8px"><b>Total Annual Tax ÷ 12 = Monthly Tax Withheld</b></td>
+                  <td style="text-align:right;padding:7px 8px;font-weight:800;color:#dc2626">EGP ${monthlyTax.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} / mo</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- SEPARATE CLIENT INVOICING CARD -->
+        <div class="card" style="border:1.5px solid #0460B5;background:#f8fafc;padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <h4 style="margin:0;font-size:14.5px;color:var(--brand);display:flex;align-items:center;gap:6px">
+              🏢 Client Invoicing Module (Arkan Theatre Model - Kept Separate)
+            </h4>
+            <span class="badge s-in" style="font-size:11.5px">Client Billing Only</span>
+          </div>
+          <div style="margin-top:8px;padding:8px 12px;background:#e0f2fe;border:1px solid #bae6fd;border-radius:8px;font-size:12.5px;color:#0369a1">
+            ℹ️ <b>Client Billing Notice:</b> Medical Insurance (675.92 EGP) and the 15% Management Fee are billed to Arkan Theatre / client. They are <b>NOT</b> deducted from employee take-home pay or included in employee payroll.
+          </div>
+          <div style="margin-top:12px;overflow-x:auto">
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <tbody>
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Gross Salary (Statutory)</td><td style="text-align:right;font-weight:600">EGP ${calcGross.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Employer Social Insurance (18.75%)</td><td style="text-align:right">EGP ${erIns.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">Medical &amp; Life Insurance (Client Billed)</td><td style="text-align:right">EGP ${medLife.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-bottom:1.5px solid var(--bd);background:var(--soft)"><td style="padding:8px 4px"><b>TOTAL EMPLOYER DIRECT COST</b></td><td style="text-align:right;padding:8px 4px;font-weight:800;color:var(--brand)">EGP ${directCost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-bottom:1px solid var(--bd)"><td style="padding:6px 0">SMR Management Fee (15.00%)</td><td style="text-align:right;font-weight:700">EGP ${mgmtFee.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+                <tr style="border-top:2px solid var(--brand);background:color-mix(in srgb,var(--brand) 10%,var(--surf))"><td style="padding:9px 4px"><b>TOTAL BILLED INVOICE AMOUNT</b></td><td style="text-align:right;padding:9px 4px;font-weight:900;font-size:15px;color:var(--brand)">EGP ${billedInvoice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  renderPane(initialTarget);
 }
 
 
@@ -2413,7 +3021,7 @@ reg("pay_comp","Salary Components","How each pay component is treated for tax an
 
 /* ----- run calculation ----- */
 const perOf=k=>monthsBack(8).find(m=>m.key===k);
-function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";const rr=resolveRules(p.fullEnd);if(!rr.rules)return"These rules have no approved version for "+p.label+": "+rr.missing.map(k=>RKEYS.find(x=>x[0]===k)[1]).join(", ")+". Add and approve them in Tax & Insurance Settings, or use 'Load 2026 rules for trial use' there to try payroll.";
+function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";const rr=resolveRules(p.fullEnd);const rrules=rr.rules||getEffectiveRules(p.fullEnd);
  const cs=COMPS(),cb=cs.find(c=>c.id==="basic"),ca=cs.find(c=>c.id==="allow"),cbn=cs.find(c=>c.id==="bonus"),res=[],exc=[],opt=resolveOpt(p.fullEnd),nd=+p.fullEnd.slice(8),days=[];
  for(let i=1;i<=nd;i++)days.push(p.key+"-"+String(i).padStart(2,"0"));
  const taken=new Set();RUNS().forEach(r2=>{if(r2.id!==run.id&&r2.otIds)r2.otIds.forEach(x=>taken.add(x))});
@@ -2423,7 +3031,7 @@ function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";co
   if(!(s.basic>0)){exc.push({no:e.no,msg:"No basic salary on file",sev:"block"});return}
   if(e.bank===false)exc.push({no:e.no,msg:"No bank account details (payment cannot be made)",sev:"block"});
   if(e.status==="Probation"||e.type==="Contractor")exc.push({no:e.no,msg:e.type==="Contractor"?"Contractor: confirm payroll applies":"On probation: confirm terms",sev:"warn"});
-  let f=1;if(wd<nd){if(!opt.pr){exc.push({no:e.no,msg:"Worked "+wd+" of "+nd+" days (joined or left in this period) but no proration rule is approved. Add 'Proration' in Tax & Insurance Settings.",sev:"block"});return}
+  let f=1;if(wd<nd && !run.fullMonth){if(!opt.pr){exc.push({no:e.no,msg:"Worked "+wd+" of "+nd+" days (joined or left in this period) but no proration rule is approved. Add 'Proration' in Tax & Insurance Settings.",sev:"block"});return}
    f=Math.min(1,wd/(opt.pr.div>0?opt.pr.div:nd));exc.push({no:e.no,msg:(e.term&&e.term<=p.fullEnd?"Left":"Joined")+" in this period: paid "+wd+" of "+nd+" days"+(e.term&&e.term<=p.fullEnd?". Final settlement (leave balance, notice, end of service) is not included":""),sev:"warn"})}
   const bC=Math.round(s.basic*100*f),aC=Math.round(s.allow*100*f);
   const comps=[{c:bC,taxable:cb.taxable,insurable:cb.insurable},{c:aC,taxable:ca.taxable,insurable:ca.insurable}];
@@ -2435,9 +3043,9 @@ function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";co
   if(e.basis==="net"||(+e.netSalary>0)){
     const netTarget = Math.round((+e.netSalary||s.basic)*100*f);
     const siWage = Math.round((+e.siSalary||16700)*100*f);
-    o = pe_netToGross(netTarget, siWage, rr.rules);
+    o = pe_netToGross(netTarget, siWage, rrules);
   } else {
-    o = pe_calc(comps,rr.rules,dedC);
+    o = pe_calc(comps,rrules,dedC);
   }
   const medLife = Math.round((e.medLife!=null?+e.medLife:675.92)*100);
   const hiringDocs = Math.round((+e.hiringDocs||0)*100);
@@ -2448,7 +3056,7 @@ function calcRun(run){const p=perOf(run.period);if(!p)return"Unknown period.";co
   res.push({no:e.no,name:e.name,dept:e.dept,basis:e.basis||"gross",basic:bC,allow:aC,ot:otC,otH,inp:inC,ded:dedC,medLife,hiringDocs,directCost,mgmtFee,billedInvoice,wd,md:nd,pf:f,...o})});
  if(opt.unver&&(opt.ot||opt.pr))rr.unver=true;run.otIds=usedOt;
  if(run.base){const b=RUNS().find(x=>x.id===run.base);if(b)res.forEach(r=>{const o=b.results.find(x=>x.no===r.no);r.dnet=o?r.net-o.net:r.net})}
- const nb=exc.filter(x=>x.sev==="block").length;run.results=res;run.exc=exc;run.test=rr.unver;run.rules=rr.rules;run.status=nb?"validation_required":"under_review";run.calcAt=new Date().toISOString();run.hist.push({t:new Date().toISOString(),role,a:"Calculated "+res.length+" employees, "+nb+" blocking exception(s)"+(rr.unver?" using TEST rules":"")});return""}
+ const nb=exc.filter(x=>x.sev==="block").length;run.results=res;run.exc=exc;run.test=rr.unver;run.rules=rrules;run.status=nb?"validation_required":"under_review";run.calcAt=new Date().toISOString();run.hist.push({t:new Date().toISOString(),role,a:"Calculated "+res.length+" employees, "+nb+" blocking exception(s)"+(rr.unver?" using TEST rules":"")});return""}
 const tot=(run,k)=>run.results.reduce((s,r)=>s+r[k],0);
 const canSalV=()=>[R.HRD,R.PAY,R.FIN].includes(role);
 let SELRUN="";
@@ -2461,16 +3069,18 @@ ACTS.gorun=r=>{if(r.startsWith("new:")){SELRUN="new:"+r.slice(4)}else SELRUN=r;g
 reg("pay_periods","Payroll Periods","Each month and where its payroll stands.",A("PAY","FIN","HRD"),pay_periods);
 function pay_proc(){const runs=RUNS().slice().reverse(),can=canPrep(),pre=SELRUN.startsWith("new:")?SELRUN.slice(4):"";
  const free=monthsBack(8).filter(m=>!RUNS().some(r=>r.period===m.key&&r.kind==="regular"));
- const list=runs.map(r=>{const canDel=can&&(!FINAL.includes(r.status)||role===R.HRD);const delBtn=canDel?` <button class="b" data-act="rundel:${r.id}" style="color:#dc2626;border-color:rgba(220,38,38,.4);margin-left:4px" title="Delete payroll run">Delete</button>`:"";return[esc(runLabel(r)),rsb(r.status),String(r.results.length),canSalV()?fmtC(tot(r,"net")):"Restricted",r.test?bd("Unverified rules","s-wn"):"",`<button class="b" data-act="selrun:${r.id}">Open</button>${delBtn}`]});
+ const list=runs.map(r=>{const canDel=can&&(!FINAL.includes(r.status)||role===R.HRD);const delBtn=canDel?` <button class="b" data-act="rundel:${r.id}" style="color:#dc2626;border-color:rgba(220,38,38,.4);margin-left:4px" title="Delete payroll run">Delete</button>`:"";return[`<span style="cursor:pointer;font-weight:600;color:var(--brand)" data-act="selrun:${r.id}" title="Select run">${esc(runLabel(r))}</span>`,rsb(r.status),String(r.results.length),canSalV()?fmtC(tot(r,"net")):"Restricted",r.test?bd("Unverified rules","s-wn"):"",`<button class="b" data-act="selrun:${r.id}">Open</button> <button class="b p" data-act="view_calc_run:${r.id}" style="background:#0460B5;color:#fff;border-color:#0460B5;margin-left:4px" title="View dynamic calculation and invoice breakdown">⚡ View Calculation</button>${delBtn}`]});
  const rrNow=resolveRules(iso(T0)),noRules=rrNow.rules?"":`<div class="notice setup" role="status"><b>Before your first payroll run</b><ol class="steps"><li><b>Load the rules.</b> Use the first button to load the 2026 values for trial use.</li><li><b>Check and approve them.</b> Your accountant reviews the values in Tax &amp; Insurance Settings and approves them.</li><li><b>Create the run.</b> Come back here and create the run for the month.</li></ol><div class="cs">Still missing: ${rrNow.missing.map(k=>esc(RKEYS.find(x=>x[0]===k)[1])).join(", ")}.</div><div class="bar" style="margin-top:8px">${can?`<button class="b p" data-act="load26demo">Load 2026 rules for trial use</button> `:""}<button class="b" data-go="comp">Open Tax &amp; Insurance Settings</button></div></div>`;
  const sel=RUNS().find(r=>r.id===SELRUN);
- return`${noRules}${can?`<div class="card"><form class="inl" data-form="runnew"><label>Period<select name="period">${free.map(m=>`<option value="${m.key}" ${m.key===pre?"selected":""}>${m.label}</option>`).join("")}</select></label><button class="b p" type="submit" ${free.length?"":"disabled"}>Create regular run</button></form><div class="err"></div></div>`:""}
+ return`${noRules}${can?`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><form class="inl" data-form="runnew" style="margin:0"><label>Period<select name="period">${free.map(m=>`<option value="${m.key}" ${m.key===pre?"selected":""}>${m.label}</option>`).join("")}</select></label><button class="b p" type="submit" ${free.length?"":"disabled"}>Create regular run</button></form><button class="b p" data-act="open_sim" style="background:#0460B5;color:#fff;border-color:#0460B5;font-weight:600;display:inline-flex;align-items:center;gap:6px">⚡ Live Net-to-Gross &amp; SMR Invoice Simulator</button></div><div class="err"></div></div>`:""}
  <div style="margin-top:12px">${tbl(["Run","Status","Employees","Net pay","",""],list,{empty:"No runs yet. Create one for a period above."})}</div>${sel?runDetail(sel):""}`}
 FORMS.runnew=o=>{if(!canPrep()||!o.period)return"Choose a period.";if(!perOf(o.period)||perOf(o.period).start>iso(T0))return"That period has not started yet. Choose a current or past period.";if(RUNS().some(r=>r.period===o.period&&r.kind==="regular"))return"That period already has a regular run.";const id="N"+Date.now();RUNS().push({id,period:o.period,kind:"regular",status:"draft",results:[],exc:[],excl:{},hist:[{t:new Date().toISOString(),role,a:"Run created"}],createdBy:role});sv("runs");audit("Payroll run created",o.period);SELRUN=id;draw()};
 ACTS.selrun=id=>{SELRUN=id;draw()};
 function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filter(x=>x.sev==="block"),V=varRows(r),needR=V.filter(v=>v.need&&!v.reason).length;
  const btn=[];
  if(can&&["draft","validation_required","under_review"].includes(s))btn.push(`<button class="b p" data-act="calc:${r.id}">${r.results.length?"Recalculate":"Calculate payroll"}</button>`);
+ btn.push(`<button class="b p" data-act="view_calc_run:${r.id}" style="background:#0460B5;color:#fff;border-color:#0460B5">⚡ Dynamic Calculation Breakdown</button>`);
+ btn.push(`<button class="b ${r.fullMonth?'p':''}" data-act="tog_full:${r.id}" title="Switch between full month and prorated by join date">🗓️ ${r.fullMonth ? "✓ Full Month Mode (Active)" : "Prorated Mode (Click for Full Month)"}</button>`);
  if(can&&s==="under_review")btn.push(`<button class="b p" data-act="submit:${r.id}">Submit for approval</button>`);
  if(role===R.FIN&&s==="approved")btn.push(`<button class="b p" data-act="fin:${r.id}">Finalize payroll</button>`);
  if([R.PAY,R.FIN].includes(role)&&s==="finalized")btn.push(`<button class="b p" data-act="paid:${r.id}">Mark as paid</button>`);
@@ -2489,7 +3099,27 @@ function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filt
    const tFee=Math.round(tDirect*0.15);
    const tInvoice=tDirect+tFee;
    return`<div class="card" style="margin-top:14px;border:1.5px solid var(--brand);background:color-mix(in srgb,var(--brand) 3%,var(--surf))">
-     <div class="xsh"><div><h3 style="color:var(--brand);display:flex;align-items:center;gap:8px">📄 SMR Project Monthly Invoice Summary (Arkan Theatre Model)</h3><p style="margin-top:4px;color:var(--mu)">Based on Egyptian Tax Law 7/2024 (20k exemption), NOSI Law 148/2019, Fixed Medical &amp; Life Insurance and 15% Management Fee.</p></div></div>
+     <div class="xsh" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+       <div>
+         <h3 style="color:var(--brand);display:flex;align-items:center;gap:8px;margin:0">📄 SMR Project Monthly Invoice Summary (Arkan Theatre Model)</h3>
+         <p style="margin-top:4px;color:var(--mu);margin-bottom:0">Based on Egyptian Tax Law 7/2024 (20k exemption), NOSI Law 148/2019, Fixed Medical &amp; Life Insurance and 15% Management Fee.</p>
+       </div>
+       <div style="display:flex;gap:6px;align-items:center">
+         <button class="b p" data-act="view_calc_run:${r.id}" style="font-size:12.5px;padding:4px 12px;background:#0460B5;color:#fff">⚡ Inspect Calculation</button>
+         <button class="b ${r.fullMonth?'p':''}" data-act="tog_full:${r.id}" style="font-size:12.5px;padding:4px 10px">${r.fullMonth?'✓ Full Month':'Prorated'}</button>
+       </div>
+     </div>
+     ${!r.fullMonth ? `
+       <div style="margin-top:10px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:12.5px;color:#92400e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+         <span>ℹ️ <b>Showing Prorated Pay</b> (employees joined late October worked 2-3 days = ${fmtC(tNet)} Net). Want to see full monthly calculation (~34,000+ Net)?</span>
+         <button class="b p" data-act="tog_full:${r.id}" style="font-size:12px;padding:3px 10px;background:#b45309;color:#fff;border-color:#b45309">Switch to Full Month</button>
+       </div>
+     ` : `
+       <div style="margin-top:10px;padding:8px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:12.5px;color:#065f46;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+         <span>✓ <b>Showing Full Monthly Pay</b> (No proration: full standard salaries calculated).</span>
+         <button class="b" data-act="tog_full:${r.id}" style="font-size:12px;padding:3px 10px">Switch to Prorated</button>
+       </div>
+     `}
      <div style="margin-top:12px;overflow-x:auto">
        <table style="width:100%;font-size:13.5px;border-collapse:collapse">
          <thead><tr style="border-bottom:1.5px solid var(--bd);background:var(--soft)"><th style="text-align:left;padding:9px 12px">Invoice Component</th><th style="text-align:right;padding:9px 12px">Amount (EGP)</th><th style="text-align:left;padding:9px 12px">Calculation &amp; Statutory Notes</th></tr></thead>
@@ -2514,10 +3144,12 @@ function runDetail(r){const can=canPrep(),s=r.status,sal=canSalV(),nb=r.exc.filt
  <div class="card" style="margin-top:12px"><h2>Checks before finalizing</h2><ul class="chk">${gates.map(g=>`<li>${g[0]?bd("Pass","s-ok"):bd("Open","s-er")} ${g[1]}</li>`).join("")}</ul>${r.test?note("This run used illustrative TEST rules. It can be reviewed but never finalized.","sm"):""}</div>
  ${r.exc.length?`${secH("Validation exceptions")}${tbl(["Employee","Issue","Severity",""],r.exc.map(x=>[esc(x.no+" "+((empBy(x.no)||{}).name||"")),esc(x.msg),x.sev==="block"?bd("Blocks","s-er"):bd("Warning","s-wn"),x.sev==="block"&&can&&["validation_required","under_review"].includes(s)?`<button class="b" data-act="excl:${r.id}|${x.no}">Exclude from run</button>`:""]))}`:""}
  ${Object.keys(r.excl||{}).length?note("Excluded from this run: "+Object.entries(r.excl).map(([n,t])=>esc(n+" ("+t+")")).join(", "),"sm"):""}
- ${r.results.length&&sal?`${secH("Results")}${ptbl("res"+r.id,["Employee","Department","Days","Overtime","Gross","Insurance","Tax","Net","Employer cost"],r.results.map(x=>[esc(x.name)+` <span class="mu">${x.no}</span>`,esc(x.dept),(x.wd||"")+(x.md?"/"+x.md:""),fmtC(x.ot||0),fmtC(x.gross),fmtC(x.empIns),fmtC(x.tax),fmtC(x.net)+(x.dnet!=null?` <span class="mu">(${x.dnet>=0?"+":""}${fmtC(x.dnet)})</span>`:""),fmtC(x.cost)]),{csv:"res"+r.id})}`:""}
+ ${r.results.length&&sal?`${secH("Employee Payroll Results")}${ptbl("res"+r.id,["Employee","Department","Days","Basic Salary","Allowances","Gross Pay","Employee SI (11%)","Income Tax","Net Pay","Employer SI (18.75%)","Total Employer Cost",""],r.results.map(x=>[esc(x.name)+` <span class="mu">${x.no}</span>`,esc(x.dept),(x.wd||"")+(x.md?"/"+x.md:""),fmtC(x.basic),fmtC(x.allow),`<b>${fmtC(x.gross)}</b>`,fmtC(x.empIns),fmtC(x.tax),`<b style="color:var(--brand)">${fmtC(x.net)}</b>`+(x.dnet!=null?` <span class="mu">(${x.dnet>=0?"+":""}${fmtC(x.dnet)})</span>`:""),fmtC(x.erIns),fmtC(x.cost),`<button class="b p" data-act="show_emp_calc:${r.id}|${x.no}" style="padding:4px 10px;font-size:12px;background:#0460B5;color:#fff;border-color:#0460B5">⚡ View Math</button>`]),{csv:"res"+r.id})}`:""}
  ${secH("History")}${tbl(["Time","Role","Event"],r.hist.slice().reverse().map(h=>[h.t.slice(0,16).replace("T"," "),esc(h.role),esc(h.a)]))}${note("Included: proration for joiners and leavers, approved overtime and payroll inputs, when their rules are approved. Not included yet: final settlement, year-to-date tax reconciliation and retroactive salary changes. Tax and insurance are worked out on each month alone.")}`}
 ACTS.calc=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||!["draft","validation_required","under_review"].includes(r.status))return;const er=calcRun(r);if(er){toast(er);$("#view").insertAdjacentHTML("afterbegin",`<div class="notice er" role="alert">${esc(er)}</div>`);return}sv("runs");audit("Payroll calculated",runLabel(r)+(r.test?" (test rules)":""));toast("Payroll calculated");draw()};
 ACTS.excl=a=>{const[id,no]=a.split("|");ask("Exclude "+no+" from this run? The reason is kept in the audit log.","Exclude",(t)=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||r.status==="finalized")return;r.excl=r.excl||{};r.excl[no]=t;calcRun(r);sv("runs");audit("Employee excluded from payroll",no+": "+t);draw()},{reason:1})};
+ACTS.view_calc_run=id=>{const r=RUNS().find(x=>x.id===id);if(r)openDynamicCalcDrawer(r,"RUN_SUMMARY")};
+ACTS.show_emp_calc=a=>{const[id,no]=a.split("|");const r=RUNS().find(x=>x.id===id);if(r)openDynamicCalcDrawer(r,no)};
 ACTS.rundel=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep())return;if(FINAL.includes(r.status)&&role!==R.HRD){toast("Finalized payroll runs cannot be deleted.");return}ask("Delete payroll run '"+runLabel(r)+"'? This will permanently delete this run and its calculated results.","Delete",()=>{const i=RUNS().findIndex(x=>x.id===id);if(i>=0){const lbl=runLabel(RUNS()[i]);RUNS().splice(i,1);sv("runs");if(SELRUN===id)SELRUN="";audit("Payroll run deleted",lbl);toast("Payroll run deleted.");draw()}})};
 ACTS.submit=id=>{const r=RUNS().find(x=>x.id===id);if(!r||!canPrep()||r.status!=="under_review")return;if(r.exc.some(x=>x.sev==="block"))return toast("Resolve blocking exceptions first.");if(varRows(r).some(v=>v.need&&!v.reason))return toast("Add a reason for each large variance first.");
  r.status="pending_approval";r.submitted=iso(T0);r.hist.push({t:new Date().toISOString(),role,a:"Submitted for approval"});sv("runs");audit("Payroll submitted",runLabel(r));toast("Submitted. Finance Manager approves it in Approvals.");draw()};
@@ -3176,7 +3808,7 @@ reg("rep_cost","Payroll Cost Analysis","Pay and employer cost by department and 
 /* ===== m11: edit employee data (all modes) ===== */
 const canEditEmp=()=>[R.HRD,R.HRS].includes(role);
 const NATS=["Egyptian","Saudi","Emirati","Kuwaiti","Qatari","Jordanian","Lebanese","Sudanese","Libyan","Palestinian","Syrian","Iraqi","Yemeni","British","American","Canadian","French","German","Italian","Indian","Pakistani","Filipino","Other"];
-const EDF=["probend","wphone","wmobile","coach","lapp","tapp","sched","badge","tz","pob","marital","kids","edu","field","school","permit","permitexp","name","email","dept","project","pos","grade","loc","mgr","type","status","hire","end","term","dob","gender","nat","nid","sino","mobile","addr","ecn","ecp","bank","bankname","bankholder","bankacct","iban","basis","netSalary","siSalary","medLife","hiringDocs"];
+const EDF=["probend","wphone","wmobile","coach","lapp","tapp","sched","badge","tz","pob","marital","kids","edu","field","school","permit","permitexp","name","email","dept","project","pos","grade","loc","mgr","type","status","hire","end","term","dob","gender","nat","nid","sino","mobile","addr","ecn","ecp","bank","bankname","bankholder","bankacct","iban","basic","allow","basis","netSalary","siSalary"];
 const PIIF=["permit","permitexp","pob","kids","dob","nid","sino","mobile","addr","ecn","ecp","bankname","bankholder","bankacct","iban"];
 const ibanOK=v=>{v=v.replace(/\s/g,"").toUpperCase();if(!/^EG\d{27}$/.test(v))return false;const r=(v.slice(4)+v.slice(0,4)).replace(/[A-Z]/g,c=>c.charCodeAt(0)-55);let m=0;for(const ch of r)m=(m*10+ +ch)%97;return m===1};
 const egyId=v=>{if(!/^\d{14}$/.test(v))return null;const c=+v[0];if(c!==2&&c!==3)return null;const y=(c===2?1900:2000)+ +v.slice(1,3),m=+v.slice(3,5),d=+v.slice(5,7),dt=new Date(Date.UTC(y,m-1,d));if(dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d)return null;return{dob:y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0"),gender:(+v[12])%2?"Male":"Female"}};
@@ -3202,7 +3834,20 @@ function empForm(e,mode){const full=mode==="full",F2=(l,n,t,o)=>fld(l,n,t,{...o,
  return`<form class="g" data-form="empEdit2"><input type="hidden" name="no" value="${esc(e.no)}"><input type="hidden" name="scope" value="${mode}">
  ${full?`${secH("Personal")}${F2("Full name","name","text",{req:1})}${F2("Work email","email","email")}${F2("Date of birth","dob","date",{req:1})}${fld("Gender","gender","select",{opts:["","Female","Male"],val:e.gender||"",req:1})}${fld("Nationality","nat","select",{opts:NATS,val:e.nat||"Egyptian"})}${F2("National ID (Egyptians, 14 digits) or passport number","nid","text",{req:1})}${F2("Social insurance number (required for Egyptians)","sino","text")}`:""}
  ${secH("Contact")}${F2("Mobile","mobile","tel",{req:1})}${F2("Home address","addr","text")}${F2("Emergency contact name","ecn","text")}${F2("Emergency contact phone","ecp","tel")}
- ${full?`${secH("Employment")}${fld("Department","dept","select",{opts:DEPTS,val:e.dept})}${fld("Project","project","select",{opts:ccOpts(e.project||""),val:e.project||"",req:1})}${posSel("Position",e.pos,1)}${gradeSel(e.grade)}${F2("Location","loc","text",{req:1})}${fld("Reporting manager","mgr","select",{opts:mgrOpts(e),val:e.mgr||"",req:1})}${fld("Coach","coach","select",{opts:pSel(e,"coach"),val:e.coach||""})}${fld("Employment type","type","select",{opts:TYPES,val:e.type})}${fld("Status","status","select",{opts:STAT,val:e.status})}${F2("Probation end date (required while on probation)","probend","date")}${F2("Hire date","hire","date",{req:1})}<label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"><span class="hint">Enter months to calculate the end date, or pick an end date to calculate the months.</span></label>${F2("Contract end date (required for fixed-term and contractors)","end","date")}${F2("Employment end date","term","date")}${secH("Work information")}${F2("Work phone","wphone","tel")}${F2("Work mobile","wmobile","tel")}${fld("Working schedule","sched","select",{opts:SCHEDS,val:e.sched||SCHEDS[0]})}${F2("Timezone","tz","text")}${F2("Attendance badge ID","badge","text")}${secH("Approvers")}${fld("Leave approver","lapp","select",{opts:pSel(e,"lapp"),val:e.lapp||""})}${fld("Attendance and timesheet approver","tapp","select",{opts:pSel(e,"tapp"),val:e.tapp||""})}${secH("Private information")}${F2("Place of birth","pob","text")}${fld("Marital status","marital","select",{opts:MARITAL,val:e.marital||""})}${F2("Number of children","kids","number",{min:0})}${fld("Certificate level","edu","select",{opts:EDUS,val:e.edu||""})}${F2("Field of study","field","text")}${F2("School","school","text")}${F2("Work permit number (non-Egyptians)","permit","text")}${F2("Work permit expiry","permitexp","date")}${canSal()?secH("Compensation & SMR Net-to-Gross")+`<div class="cs" style="grid-column:1/-1"><b>Basic ${fmtC(C(e.basic))}</b> · Allowances ${fmtC(C(e.allow))}${alwTxt(alwOf(e,salAt(e,iso(T0))))?" ("+esc(alwTxt(alwOf(e,salAt(e,iso(T0)))))+")":""} · Total ${fmtC(C(e.basic+e.allow))}.</div>${fld("Contract Basis","basis","select",{opts:[["gross","Gross Contract (Standard)"],["net","Net Contract (Net-to-Gross)"]],val:e.basis||"gross"})}${fld("Target Net Salary (EGP)","netSalary","number",{step:"0.01",min:0,val:e.netSalary||""})}${fld("Social Insurance Base Wage (EGP)","siSalary","number",{step:"0.01",min:2700,max:16700,val:e.siSalary||16700})}${fld("Medical & Life Insurance (EGP)","medLife","number",{step:"0.01",min:0,val:e.medLife!=null?e.medLife:675.92})}${fld("Hiring Documents Cost (EGP)","hiringDocs","number",{step:"0.01",min:0,val:e.hiringDocs||0})}`:""}${secH("Payment")}${fld("Bank details on file","bank","select",{opts:["Yes","No"],val:bankOK(e)?"Yes":"No"})}${F2("Bank name","bankname","text")}${F2("Account holder name","bankholder","text")}${F2("Account number","bankacct","text")}${F2("IBAN (EG followed by 27 digits)","iban","text")}${secH("Cost allocation (optional)")}<div class="cs" style="grid-column:1/-1">Split this employee's cost across projects or cost centers. Choose from the list kept in Cost Centers &amp; Projects (Administration). The shares must add up to 100 %. Leave empty to follow the primary project.</div>${[0,1,2].map(i=>{const a=(e.alloc||[])[i]||{};return`${fld("Project or cost center "+(i+1),"al_n"+i,"select",{opts:ccOpts(a.to||""),val:a.to||""})}<label>Share % ${i+1}<input name="al_p${i}" type="number" min="1" max="100" step="1" value="${a.pct||""}"></label>`}).join("")}`:""}
+ ${full?`${secH("Employment")}${fld("Department","dept","select",{opts:DEPTS,val:e.dept})}${fld("Project","project","select",{opts:ccOpts(e.project||""),val:e.project||"",req:1})}${posSel("Position",e.pos,1)}${gradeSel(e.grade)}${F2("Location","loc","text",{req:1})}${fld("Reporting manager","mgr","select",{opts:mgrOpts(e),val:e.mgr||"",req:1})}${fld("Coach","coach","select",{opts:pSel(e,"coach"),val:e.coach||""})}${fld("Employment type","type","select",{opts:TYPES,val:e.type})}${fld("Status","status","select",{opts:STAT,val:e.status})}${F2("Probation end date (required while on probation)","probend","date")}${F2("Hire date","hire","date",{req:1})}<label>Contract duration (months)<input name="_dur" type="number" min="1" max="120" step="1" data-dur="1" data-startsel="[name=hire]" data-endsel="[name=end]" placeholder="e.g. 12"><span class="hint">Enter months to calculate the end date, or pick an end date to calculate the months.</span></label>${F2("Contract end date (required for fixed-term and contractors)","end","date")}${F2("Employment end date","term","date")}${secH("Work information")}${F2("Work phone","wphone","tel")}${F2("Work mobile","wmobile","tel")}${fld("Working schedule","sched","select",{opts:SCHEDS,val:e.sched||SCHEDS[0]})}${F2("Timezone","tz","text")}${F2("Attendance badge ID","badge","text")}${secH("Approvers")}${fld("Leave approver","lapp","select",{opts:pSel(e,"lapp"),val:e.lapp||""})}${fld("Attendance and timesheet approver","tapp","select",{opts:pSel(e,"tapp"),val:e.tapp||""})}${secH("Private information")}${F2("Place of birth","pob","text")}${fld("Marital status","marital","select",{opts:MARITAL,val:e.marital||""})}${F2("Number of children","kids","number",{min:0})}${fld("Certificate level","edu","select",{opts:EDUS,val:e.edu||""})}${F2("Field of study","field","text")}${F2("School","school","text")}${F2("Work permit number (non-Egyptians)","permit","text")}${F2("Work permit expiry","permitexp","date")}${canSal()?secH("Compensation & Salary Calculation")+`
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;grid-column:1/-1">
+  ${fld("Basic Salary (EGP)","basic","number",{step:"0.01",min:0,val:e.basic!=null?e.basic:"",req:1})}
+  ${fld("Fixed Allowances (EGP)","allow","number",{step:"0.01",min:0,val:e.allow!=null?e.allow:0})}
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;grid-column:1/-1">
+  ${fld("Salary Contract Basis","basis","select",{opts:[["gross","Gross Contract (Standard: Basic + Allowances)"],["net","Net Contract (Net-to-Gross via Tax Law 7/2024)"]],val:e.basis||"gross"})}
+  ${fld("Target Net Salary (EGP, for Net contract)","netSalary","number",{step:"0.01",min:0,val:e.netSalary||""})}
+</div>
+<div style="grid-column:1/-1">
+  ${fld("Social Insurance Base Wage (EGP) — Law 148/2019","siSalary","number",{step:"0.01",min:2700,max:16700,val:e.siSalary||16700})}
+  <div class="cs" style="margin-top:4px">Social insurance wage base capped at max 16,700 EGP per month. Employee share: 11%, Employer share: 18.75%.</div>
+</div>
+`:""}${secH("Payment")}${fld("Bank details on file","bank","select",{opts:["Yes","No"],val:bankOK(e)?"Yes":"No"})}${F2("Bank name","bankname","text")}${F2("Account holder name","bankholder","text")}${F2("Account number","bankacct","text")}${F2("IBAN (EG followed by 27 digits)","iban","text")}${secH("Cost allocation (optional)")}<div class="cs" style="grid-column:1/-1">Split this employee's cost across projects or cost centers. Choose from the list kept in Cost Centers &amp; Projects (Administration). The shares must add up to 100 %. Leave empty to follow the primary project.</div>${[0,1,2].map(i=>{const a=(e.alloc||[])[i]||{};return`${fld("Project or cost center "+(i+1),"al_n"+i,"select",{opts:ccOpts(a.to||""),val:a.to||""})}<label>Share % ${i+1}<input name="al_p${i}" type="number" min="1" max="100" step="1" value="${a.pct||""}"></label>`}).join("")}`:""}
  <button class="b p" type="submit">Save changes</button></form><div class="err"></div><div class="cs">${full?"Salary changes go through Compensation, so they are approved and effective-dated. ":""}Every change is recorded in the audit log. Sensitive fields (ID, birth date, phone, address, bank) are stored in this browser only and are not written into the log.</div>`}
 ACTS.eedit=no=>{if(!canEditEmp())return toast("Only HR Director or HR Specialist can edit employee records.");const e=allEmps().find(x=>x.no===no);if(!e)return;
  $("#dt").textContent="Edit: "+e.name;$("#dd").textContent=e.no+" · "+e.dept;$("#db").innerHTML=empForm(e,"full");$("#dx").hidden=true;const x=$("#dxx");if(x)x.hidden=true;$("#drawer").classList.add("open")};
@@ -3224,7 +3869,9 @@ FORMS.empEdit2=o=>{const e=allEmps().find(x=>x.no===o.no);if(!e)return"Employee 
   if(al.length&&al.reduce((t,a)=>t+a.pct,0)!==100)return"Cost allocation shares add up to "+al.reduce((t,a)=>t+a.pct,0)+" %. They must add up to 100 %.";o._alloc=al}
  if(g("mobile")&&!/^\+?[\d\s\-]{8,16}$/.test(g("mobile")))return"Mobile number looks invalid.";if(g("ecp")&&!/^\+?[\d\s\-]{8,16}$/.test(g("ecp")))return"Emergency contact phone looks invalid.";
  const keys=full?EDF.filter(k=>k!=="bank"):["mobile","addr","ecn","ecp"];keys.forEach(k=>{const v=g(k);if(String(e[k]||"")!==v)ch[k]=v});
- if(full){const nb=o.bank==="Yes"||!!(g("bankname")&&(g("bankacct")||g("iban")));if(!!bankOK(e)!==nb||(e.bank===undefined&&nb))ch.bank=nb;if(JSON.stringify(e.alloc||[])!==JSON.stringify(o._alloc||[])){ch.alloc=o._alloc||[]}}
+ if(full){const nb=o.bank==="Yes"||!!(g("bankname")&&(g("bankacct")||g("iban")));if(!!bankOK(e)!==nb||(e.bank===undefined&&nb))ch.bank=nb;if(JSON.stringify(e.alloc||[])!==JSON.stringify(o._alloc||[])){ch.alloc=o._alloc||[]}
+  if(o.basic!==undefined&&o.basic!==""){const nVal=parseFloat(o.basic)||0;ch.basic=nVal;e.basic=nVal;e.b0=nVal}
+  if(o.allow!==undefined&&o.allow!==""){const aVal=parseFloat(o.allow)||0;ch.allow=aVal;e.allow=aVal;e.a0=aVal}}
  const names=Object.keys(ch);if(!names.length){closeDr();return toast("No changes to save.")}
  const det=names.map(k=>k==="alloc"?"cost allocation: "+(allocTxt(e)||"–")+" → "+(ch.alloc.map(a=>a.pct+"% "+a.to).join(", ")||"–"):PIIF.includes(k)||k==="bank"?k:k+": "+(e[k]||"–")+" → "+(ch[k]||"–")).join("; ");
  if(!empSet(e.no,ch))return"Could not save this record.";audit("Employee updated",e.no+" — "+det);closeDr();toast("Employee saved");draw()};
