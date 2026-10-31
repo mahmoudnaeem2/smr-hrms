@@ -2,7 +2,7 @@
 const HUBS=[
  {g:"Home",n:"Dashboard",ic:"dash",p:[["Summary","dash"]]},
  {g:"Home",n:"Inbox",ic:"appr",p:[["Approvals","appr"],["HR requests","hr_req"],["Notifications","notif"]]},
- {g:"Home",n:"My profile",ic:"work",p:[["My profile","myprofile"]]},
+ {g:"Home",n:"My profile",ic:"work",p:[["My profile","myprofile"],["My portal","work"]]},
  {g:"People",n:"Employees",ic:"emp",p:[["Directory","emp"],["Organization chart","org"],["Reporting lines","reporting"],["Departments","depts"],["Titles & grades","positions"]]},
  {g:"People",n:"Contracts & records",ic:"contracts",p:[["Contracts","contracts"],["Probation","probation"],["Documents","docs"],["Warnings","warns"],["Offboarding","offboard"]]},
  {g:"Time & pay",n:"Attendance",ic:"att_d",p:[["Daily","att_d"],["Monthly","att_m"],["Timesheets","timesheets"],["Shifts","shifts"],["Overtime","overtime"],["Exceptions","exceptions"]]},
