@@ -1605,14 +1605,11 @@ function build(){
   ["vac","Open vacancies",vac.length,"From Recruitment.","",true]];
  const alerts=[["high","Payroll variances needing a reason","a_anom",ano.filter(x=>x.reason==="Needs reason").length],["high","Payroll runs awaiting review","a_run",RUNS().filter(r=>["validation_required","under_review","pending_approval"].includes(r.status)).length],["high","Contracts already expired","a_exp",exp0.length],["med","Contracts expiring within 30 days","a_e30",e30.length],["med","Unresolved attendance exceptions","a_exc",exc.length],["med","Pending leave approvals","a_leave",apr.filter(a=>a.type==="Leave request").length],["med","Unapproved overtime","a_ot",ot.length],["low","Missing employee documents","a_docs",docs.length],["low","Incomplete onboarding tasks","a_onb",onb.length],["low","Contracts expiring in 31–90 days","a_e90",e90.length]];
  DR.a_leave=()=>({title:"Pending leave approvals",desc:"Leave requests awaiting a decision.",cols:["No.","Name","Department","Request","Due"],rows:apr.filter(a=>a.type==="Leave request").map(x=>[x.no,(byNo[x.no]||{}).name||"",(byNo[x.no]||{}).dept||"",x.detail,x.due])});
- M={S,L,now,k,alerts,DR,months,mP,hcS,gSeries,varp,e30,e60,e90,exp0,cx,kw,hP,hM,gross,canS:canSal(),sal:salRows,RUN_};return M}
+ M={S,L,now,lv,k,alerts,DR,months,mP,hcS,gSeries,varp,e30,e60,e90,exp0,cx,kw,hP,hM,gross,canS:canSal(),sal:salRows,RUN_};return M}
 
 /* ---------- views ---------- */
 function opts(a,v,all){return`<option value="">${all}</option>`+a.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("")}
 function spark(v,color){const n=v.length;if(n<2)return"";const mx=Math.max(...v),mn=Math.min(...v),r=mx-mn||1,pts=v.map((x,i)=>[i/(n-1)*100,26-(x-mn)/r*22]),l=pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");return`<svg class="sp" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,30 ${l} 100,30" fill="${color}" opacity=".14"/><polyline points="${l}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`}
-ACTS.dflt=d=>{F.dept=(F.dept===d?"":d);draw()};
-ACTS.dhor=h=>{DASH_HOR=+h||12;draw()};
-ACTS.dccm=m=>{DASH_CCMODE=m||"dept";draw()};
 function buildCostCenterData(emps,run){
  const R_={};if(run&&run.results)run.results.forEach(x=>R_[x.no]=x);
  const erRate=0.1125; /* statutory est when no run calculated yet */
@@ -1635,7 +1632,7 @@ function buildCostCenterData(emps,run){
 }
 function dash(){
  if(role==="Employee")return`<div class="card"><div class="empty">The HR dashboard is not available for the Employee role. Use My Workspace.</div></div>`;
- const m=build(),{S,L,now,months}=m,none=!L.length,allNow=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0))),
+ const m=build(),{S,L,now,lv,months}=m,none=!L.length,allNow=allEmps().filter(inScope).filter(e=>empAt(e,iso(T0))),
  CP={hc:"emp",hl:"emp",pc:"pay_reg",pv:"pay_var",at:"att_d",cx:"contracts",dept:"emp",cc:"rep_cost"},GN={1:"On time",2:"Late",3:"Absent",4:"On leave"},RW=e=>[e.no,e.name,e.dept],MO=i=>months[i]||months[months.length-1];
  const ccData=buildCostCenterData(now,m.RUN_);
  window.CDGO=id=>{const p=CP[id.split(":")[1]];return p&&canSee(p)?p:null};
@@ -1839,6 +1836,9 @@ const secH=(t,right)=>`<div class="sech"><h2 class="sec">${t}</h2>${right||""}</
 
 /* ----- delegated actions and forms ----- */
 const ACTS={},FORMS={};
+ACTS.dflt=d=>{F.dept=(F.dept===d?"":d);draw()};
+ACTS.dhor=h=>{DASH_HOR=+h||12;draw()};
+ACTS.dccm=m=>{DASH_CCMODE=m||"dept";draw()};
 document.addEventListener("click",ev=>{const t=ev.target.closest("[data-act],[data-tab],[data-pgk]");if(!t)return;
  if(t.dataset.tab){const[k,v]=t.dataset.tab.split(":");TAB[k]=v;PGS[k]=0;draw();return}
  if(t.dataset.pgk){const[k,d]=t.dataset.pgk.split(":");PGS[k]=(PGS[k]||0)+ +d;draw();return}
